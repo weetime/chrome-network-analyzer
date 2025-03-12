@@ -1,8 +1,0 @@
-Please replace these placeholder files with actual icon images:
-
-1. icon16.png (16x16 pixels)
-2. icon48.png (48x48 pixels)
-3. icon128.png (128x128 pixels)
-
-You can create simple icons using any image editor or find free icons online.
-The icons should be in PNG format with the exact dimensions specified above.

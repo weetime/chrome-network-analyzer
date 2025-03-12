@@ -5,6 +5,7 @@
   "description": "Analyzes the timing of all network requests on the current page",
   "permissions": ["webRequest", "tabs", "storage"],
   "host_permissions": ["<all_urls>"],
+
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

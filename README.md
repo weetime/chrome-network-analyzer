@@ -11,6 +11,32 @@ This Chrome extension analyzes the timing of all network requests on the current
 - Performance metrics (P99, P95, P90, P50, Average)
 - And more...
 
+## Screenshots
+
+The extension supports both light and dark themes:
+
+### Light Mode
+![Light Mode Screenshot](images/light.jpg)
+
+### Dark Mode
+![Dark Mode Screenshot](images/dark.jpg)
+
+## How It Works
+
+Below is a simplified workflow of how the extension captures and analyzes network requests:
+
+```mermaid
+graph TD
+    A[User browses website] --> B[Chrome extension activates]
+    B --> C[Extension hooks into Chrome DevTools Protocol]
+    C --> D[Captures all network requests]
+    D --> E[Analyzes timing data]
+    E --> F[Calculates performance metrics]
+    F --> G[Displays results in extension UI]
+    G --> H[User can filter/search requests]
+    G --> I[User can export data as CSV]
+```
+
 ## Installation
 
 1. Download or clone this repository

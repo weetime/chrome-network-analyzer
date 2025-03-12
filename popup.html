@@ -297,6 +297,85 @@
     .export-btn:hover {
       background-color: var(--primary-btn-hover);
     }
+
+    /* Minimalist button styles */
+    .btn-minimal {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      background: none;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+      margin-left: 8px;
+    }
+    
+    .btn-minimal:hover {
+      background-color: var(--stats-bg);
+      border-color: var(--primary-btn);
+    }
+    
+    .btn-minimal.danger:hover {
+      border-color: var(--danger-btn);
+    }
+    
+    .btn-minimal svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-color);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    
+    .btn-minimal.danger:hover svg {
+      stroke: var(--danger-btn);
+    }
+    
+    .btn-minimal:hover svg {
+      stroke: var(--primary-btn);
+    }
+    
+    /* Tooltip styles */
+    .btn-minimal .tooltip {
+      visibility: hidden;
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--header-bg);
+      color: var(--text-color);
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 1;
+      box-shadow: 0 2px 5px var(--shadow-color);
+      opacity: 0;
+      transition: opacity 0.3s;
+      border: 1px solid var(--border-color);
+    }
+    
+    .btn-minimal:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    [data-theme="dark"] .btn-minimal svg {
+      stroke: var(--text-color);
+    }
+    
+    [data-theme="dark"] .btn-minimal:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
     .search-input, .type-filter, .status-filter {
       padding: 5px;
       background-color: var(--bg-color);
@@ -366,6 +445,120 @@
       background-color: var(--primary-btn);
       color: white;
       margin-right: 5px;
+    }
+    
+    /* Updated theme toggle styles to match minimalist design */
+    .theme-toggle-minimal {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      background: none;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+      margin-right: 8px;
+    }
+    
+    /* Button group container for consistent spacing */
+    .button-group {
+      display: flex;
+      align-items: center;
+      gap: 8px; /* Consistent spacing between all buttons */
+    }
+    
+    /* Reset individual button margins */
+    .button-group .theme-toggle-minimal,
+    .button-group .btn-minimal {
+      margin: 0;
+    }
+    
+    .theme-toggle-minimal:hover {
+      background-color: var(--stats-bg);
+      border-color: var(--primary-btn);
+    }
+    
+    .theme-toggle-minimal svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-color);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    
+    /* Moon icon specific styling */
+    #moonIcon {
+      fill: none;
+      stroke: var(--text-color);
+    }
+    
+    [data-theme="dark"] #moonIcon {
+      stroke: var(--text-color);
+    }
+    
+    /* Sun icon specific styling */
+    #sunIcon {
+      fill: none;
+      stroke: var(--text-color);
+    }
+    
+    [data-theme="light"] #sunIcon {
+      fill: var(--primary-btn);
+      stroke: var(--primary-btn);
+      opacity: 0.8;
+    }
+    
+    [data-theme="light"] [id^="sunRay"] {
+      stroke: var(--primary-btn);
+      opacity: 0.8;
+    }
+    
+    .theme-toggle-minimal.dark-mode #moonIcon {
+      fill: var(--primary-btn);
+      opacity: 0.8;
+    }
+    
+    .theme-toggle-minimal:hover svg {
+      stroke: var(--primary-btn);
+    }
+    
+    .theme-toggle-minimal .tooltip {
+      visibility: hidden;
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--header-bg);
+      color: var(--text-color);
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 1;
+      box-shadow: 0 2px 5px var(--shadow-color);
+      opacity: 0;
+      transition: opacity 0.3s;
+      border: 1px solid var(--border-color);
+    }
+    
+    .theme-toggle-minimal:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    [data-theme="dark"] .theme-toggle-minimal svg {
+      stroke: var(--text-color);
+    }
+    
+    [data-theme="dark"] .theme-toggle-minimal:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
     
     /* Authorized Domains styles */
@@ -479,6 +672,23 @@
       transform: translateX(20px);
     }
     
+    /* Header switch specific styles */
+    .domain-info .switch {
+      width: 36px;
+      height: 18px;
+    }
+    
+    .domain-info .slider:before {
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+    }
+    
+    .domain-info input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+    
     /* Authorization status text */
     .auth-status {
       font-size: 11px;
@@ -543,7 +753,22 @@
   </style>
 </head>
 <body>
-  <h1>Network Request Analyzer</h1>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h1 style="margin: 0;">Network Request Analyzer</h1>
+    <div class="domain-info" style="display: none; align-items: center; background-color: var(--stats-bg); border-radius: 4px; padding: 4px 8px; border: 1px solid var(--border-color);">
+      <h3 style="margin: 0; font-size: 12px; margin-right: 6px; white-space: nowrap;">Current Domain:</h3>
+      <div id="headerDomainsList" style="display: flex; align-items: center; margin-right: 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">
+        <!-- Current domain authorization status will be shown here -->
+      </div>
+      <div style="display: flex; align-items: center;">
+        <label class="switch" style="margin: 0 4px; width: 36px; height: 18px;">
+          <input type="checkbox" id="headerAuthorizationSwitch">
+          <span class="slider" style="height: 18px;"></span>
+        </label>
+        <span id="headerAuthStatus" class="auth-status enabled" style="font-size: 11px; margin-left: 4px;">Enabled</span>
+      </div>
+    </div>
+  </div>
   
   <div id="domainAuthContainer" class="domain-auth-container" style="display: none; margin-bottom: 15px; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--stats-bg);">
     <h3 style="margin-top: 0; margin-bottom: 10px;">Domain Authorization</h3>
@@ -587,29 +812,34 @@
           <option value="error">Network Error</option>
         </select>
       </div>
-      <div style="display: flex; align-items: center;">
-        <div id="themeToggle" class="theme-toggle">
-          <span class="theme-toggle-icon">☀️</span>
-          <span id="themeLabel">Light</span>
-        </div>
-        <button id="clearBtn" class="export-btn" style="background-color: var(--danger-btn); margin-right: 10px;">Clear Data</button>
-        <button id="exportBtn" class="export-btn">Export CSV</button>
-      </div>
-    </div>
-    
-    <div id="authorizedDomainsContainer" class="authorized-domains" style="margin-bottom: 15px; margin-top: 0;">
-      <div style="display: flex; align-items: center; justify-content: space-between;">
-        <h3 style="margin: 0; flex: 0 0 auto;">Current Domain:</h3>
-        <div id="authorizedDomainsList" style="flex: 1; display: flex; align-items: center; margin-left: 10px;">
-          <!-- Current domain authorization status will be shown here -->
-        </div>
-        <div style="display: flex; align-items: center; margin-left: 10px;">
-          <label class="switch">
-            <input type="checkbox" id="toggleAuthorizationSwitch" checked>
-            <span class="slider"></span>
-          </label>
-          <span id="currentAuthStatus" class="auth-status enabled">Enabled</span>
-        </div>
+      <div class="button-group">
+        <button id="themeToggle" class="theme-toggle-minimal">
+          <svg viewBox="0 0 24 24" id="themeIcon">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" id="moonIcon"></path>
+            <circle cx="12" cy="12" r="5" id="sunIcon"></circle>
+            <line x1="12" y1="1" x2="12" y2="3" id="sunRay1"></line>
+            <line x1="12" y1="21" x2="12" y2="23" id="sunRay2"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" id="sunRay3"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" id="sunRay4"></line>
+            <line x1="1" y1="12" x2="3" y2="12" id="sunRay5"></line>
+            <line x1="21" y1="12" x2="23" y2="12" id="sunRay6"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" id="sunRay7"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" id="sunRay8"></line>
+          </svg>
+          <span class="tooltip" id="themeTooltip">Toggle Dark Mode</span>
+        </button>
+        <button id="clearBtn" class="btn-minimal danger">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
+          </svg>
+          <span class="tooltip">Clear Data</span>
+        </button>
+        <button id="exportBtn" class="btn-minimal">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+          </svg>
+          <span class="tooltip">Export CSV</span>
+        </button>
       </div>
     </div>
     

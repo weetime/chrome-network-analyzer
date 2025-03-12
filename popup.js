@@ -18,22 +18,29 @@ const exportBtn = document.getElementById('exportBtn');
 const clearBtn = document.getElementById('clearBtn');
 const statsContainer = document.getElementById('statsContainer');
 const themeToggle = document.getElementById('themeToggle');
-const themeLabel = document.getElementById('themeLabel');
+const themeTooltip = document.getElementById('themeTooltip');
+const moonIcon = document.getElementById('moonIcon');
+const sunIcon = document.getElementById('sunIcon');
+const sunRays = document.querySelectorAll('[id^="sunRay"]');
 const domainAuthContainer = document.getElementById('domainAuthContainer');
 const currentDomainSpan = document.getElementById('currentDomain');
 const authorizeDomainSwitch = document.getElementById('authorizeDomainSwitch');
 const authStatus = document.getElementById('authStatus');
-const authorizedDomainsContainer = document.getElementById('authorizedDomainsContainer');
-const authorizedDomainsList = document.getElementById('authorizedDomainsList');
-const toggleAuthorizationSwitch = document.getElementById('toggleAuthorizationSwitch');
-const currentAuthStatus = document.getElementById('currentAuthStatus');
+// Header domain elements
+const headerDomainsList = document.getElementById('headerDomainsList');
+const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
+const headerAuthStatus = document.getElementById('headerAuthStatus');
 
 // Theme management
 function loadTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
-  themeLabel.textContent = savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1);
-  themeToggle.querySelector('.theme-toggle-icon').textContent = savedTheme === 'light' ? '☀️' : '🌙';
+  
+  // Update theme icon visibility
+  updateThemeIcon(savedTheme);
+  
+  // Update tooltip text
+  themeTooltip.textContent = savedTheme === 'light' ? 'Toggle Dark Mode' : 'Toggle Light Mode';
 }
 
 function toggleTheme() {
@@ -43,15 +50,36 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
   
-  themeLabel.textContent = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
-  themeToggle.querySelector('.theme-toggle-icon').textContent = newTheme === 'light' ? '☀️' : '🌙';
+  // Update theme icon visibility
+  updateThemeIcon(newTheme);
+  
+  // Update tooltip text
+  themeTooltip.textContent = newTheme === 'light' ? 'Toggle Dark Mode' : 'Toggle Light Mode';
+}
+
+function updateThemeIcon(theme) {
+  if (theme === 'light') {
+    // Show sun icon for light theme
+    moonIcon.style.display = 'none';
+    sunIcon.style.display = 'block';
+    sunRays.forEach(ray => ray.style.display = 'block');
+    themeToggle.classList.remove('dark-mode');
+  } else {
+    // Show moon icon for dark theme
+    moonIcon.style.display = 'block';
+    sunIcon.style.display = 'none';
+    sunRays.forEach(ray => ray.style.display = 'none');
+    themeToggle.classList.add('dark-mode');
+  }
 }
 
 // Initialize theme
 loadTheme();
 
 // Theme toggle event listener
-themeToggle.addEventListener('click', toggleTheme);
+if (themeToggle) {
+  themeToggle.addEventListener('click', toggleTheme);
+}
 
 // Get current tab and load request data
 document.addEventListener('DOMContentLoaded', async () => {
@@ -87,10 +115,22 @@ document.addEventListener('DOMContentLoaded', async () => {
               // Domain is authorized, request data
               // Show authorized content area
               document.getElementById('authorizedContent').style.display = 'block';
+              
+              // Show domain info in header
+              document.querySelector('.domain-info').style.display = 'flex';
+              
+              // Update header authorization switch
+              headerAuthorizationSwitch.checked = true;
+              headerAuthStatus.textContent = 'Enabled';
+              headerAuthStatus.className = 'auth-status enabled';
+              
               requestNetworkData();
             } else {
               // Domain is not authorized, show authorization UI
               showDomainAuthorizationUI();
+              
+              // Hide domain info in header
+              document.querySelector('.domain-info').style.display = 'none';
             }
           }
         );
@@ -127,82 +167,168 @@ function requestNetworkData() {
 
 // Function to show domain authorization UI
 function showDomainAuthorizationUI() {
+  if (!domainAuthContainer || !currentDomainSpan) return;
+  
   domainAuthContainer.style.display = 'block';
   currentDomainSpan.textContent = currentDomain;
   
   // Set switch to unchecked state
-  authorizeDomainSwitch.checked = false;
-  authStatus.textContent = 'Disabled';
-  authStatus.className = 'auth-status disabled';
-  
-  // Hide authorized content area
-  document.getElementById('authorizedContent').style.display = 'none';
-}
-
-// Domain authorization switch event listeners
-authorizeDomainSwitch.addEventListener('change', () => {
-  if (authorizeDomainSwitch.checked) {
-    // Switch opened, authorize domain
-    authStatus.textContent = 'Enabled';
-    authStatus.className = 'auth-status enabled';
-    
-    chrome.runtime.sendMessage(
-      { action: "authorizeDomain", domain: currentDomain },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Error authorizing domain:", chrome.runtime.lastError);
-          // Authorization failed, restore switch state
-          authorizeDomainSwitch.checked = false;
-          authStatus.textContent = 'Disabled';
-          authStatus.className = 'auth-status disabled';
-          return;
-        }
-        
-        if (response && response.success) {
-          // Domain authorized, hide UI and request data
-          domainAuthContainer.style.display = 'none';
-          
-          // Show authorized content area
-          document.getElementById('authorizedContent').style.display = 'block';
-          
-          requestNetworkData();
-          // Update the authorized domains list
-          loadAuthorizedDomains();
-        } else {
-          // Authorization failed, restore switch state
-          authorizeDomainSwitch.checked = false;
-          authStatus.textContent = 'Disabled';
-          authStatus.className = 'auth-status disabled';
-        }
-      }
-    );
-  } else {
-    // Switch closed, cancel authorization
+  if (authorizeDomainSwitch && authStatus) {
+    authorizeDomainSwitch.checked = false;
     authStatus.textContent = 'Disabled';
     authStatus.className = 'auth-status disabled';
-    
-    // If already authorized, then cancel authorization
-    if (document.getElementById('authorizedContent').style.display === 'block') {
-      removeDomainAuthorization(currentDomain);
-    }
   }
+  
+  // Hide authorized content area
+  const authorizedContentElement = document.getElementById('authorizedContent');
+  if (authorizedContentElement) {
+    authorizedContentElement.style.display = 'none';
+  }
+}
+
+// Add event listeners for filters
+searchInput.addEventListener('input', () => {
+  renderRequestsTable();
+  updateStatistics();
+});
+typeFilter.addEventListener('change', () => {
+  renderRequestsTable();
+  updateStatistics();
+});
+statusFilter.addEventListener('change', () => {
+  renderRequestsTable();
+  updateStatistics();
 });
 
-// Add toggle authorization switch event processing in authorized page
-toggleAuthorizationSwitch.addEventListener('change', () => {
-  if (toggleAuthorizationSwitch.checked) {
-    // Switch opened, keep authorization status
-    currentAuthStatus.textContent = 'Enabled';
-    currentAuthStatus.className = 'auth-status enabled';
-  } else {
-    // Switch closed, cancel authorization
-    currentAuthStatus.textContent = 'Disabled';
-    currentAuthStatus.className = 'auth-status disabled';
-    
-    // Cancel authorization
-    removeDomainAuthorization(currentDomain);
-  }
+// Add event listener for clear button
+clearBtn.addEventListener('click', () => {
+  // Get current tab
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const currentTab = tabs[0];
+    if (currentTab) {
+      // Clear data for current tab
+      allRequestsData = {};
+      
+      // Clear data in background script
+      chrome.runtime.sendMessage(
+        { action: "clearRequestData", tabId: currentTab.id },
+        () => {
+          // Update UI
+          renderRequestsTable();
+          updateStatistics();
+          
+          // Hide request details if visible
+          requestDetails.style.display = 'none';
+          
+          // Remove selected class from all rows
+          const allRows = document.querySelectorAll('#requestsTableBody tr');
+          allRows.forEach(row => row.classList.remove('selected'));
+          
+          // Show no data message
+          noDataMessage.textContent = 'No network requests captured yet. Browse a website to see data.';
+          noDataMessage.style.display = 'block';
+        }
+      );
+    }
+  });
 });
+
+// Add event listener for header authorization switch
+if (headerAuthorizationSwitch) {
+  headerAuthorizationSwitch.addEventListener('change', () => {
+    if (headerAuthorizationSwitch.checked) {
+      // Switch opened, authorize domain if not already authorized
+      headerAuthStatus.textContent = 'Enabled';
+      headerAuthStatus.className = 'auth-status enabled';
+      
+      // If domain is not already authorized, authorize it
+      if (document.getElementById('authorizedContent').style.display !== 'block') {
+        chrome.runtime.sendMessage(
+          { action: "authorizeDomain", domain: currentDomain },
+          (response) => {
+            if (chrome.runtime.lastError || !response || !response.success) {
+              console.error("Error authorizing domain:", chrome.runtime.lastError);
+              // Authorization failed, restore switch state
+              headerAuthorizationSwitch.checked = false;
+              headerAuthStatus.textContent = 'Disabled';
+              headerAuthStatus.className = 'auth-status disabled';
+              return;
+            }
+            
+            // Domain authorized, show authorized content
+            document.getElementById('authorizedContent').style.display = 'block';
+            domainAuthContainer.style.display = 'none';
+            requestNetworkData();
+          }
+        );
+      }
+    } else {
+      // Switch closed, cancel authorization
+      headerAuthStatus.textContent = 'Disabled';
+      headerAuthStatus.className = 'auth-status disabled';
+      
+      // Cancel authorization
+      removeDomainAuthorization(currentDomain);
+    }
+  });
+}
+
+// Add event listener for domain authorization switch
+if (authorizeDomainSwitch) {
+  authorizeDomainSwitch.addEventListener('change', () => {
+    if (authorizeDomainSwitch.checked) {
+      // Switch opened, authorize domain
+      authStatus.textContent = 'Enabled';
+      authStatus.className = 'auth-status enabled';
+      
+      chrome.runtime.sendMessage(
+        { action: "authorizeDomain", domain: currentDomain },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error("Error authorizing domain:", chrome.runtime.lastError);
+            // Authorization failed, restore switch state
+            authorizeDomainSwitch.checked = false;
+            authStatus.textContent = 'Disabled';
+            authStatus.className = 'auth-status disabled';
+            return;
+          }
+          
+          if (response && response.success) {
+            // Domain authorized, hide UI and request data
+            domainAuthContainer.style.display = 'none';
+            
+            // Show authorized content area
+            document.getElementById('authorizedContent').style.display = 'block';
+            
+            // Show domain info in header and update its state
+            document.querySelector('.domain-info').style.display = 'flex';
+            headerAuthorizationSwitch.checked = true;
+            headerAuthStatus.textContent = 'Enabled';
+            headerAuthStatus.className = 'auth-status enabled';
+            
+            requestNetworkData();
+            // Update the authorized domains list
+            loadAuthorizedDomains();
+          } else {
+            // Authorization failed, restore switch state
+            authorizeDomainSwitch.checked = false;
+            authStatus.textContent = 'Disabled';
+            authStatus.className = 'auth-status disabled';
+          }
+        }
+      );
+    } else {
+      // Switch closed, cancel authorization
+      authStatus.textContent = 'Disabled';
+      authStatus.className = 'auth-status disabled';
+      
+      // If already authorized, then cancel authorization
+      if (document.getElementById('authorizedContent').style.display === 'block') {
+        removeDomainAuthorization(currentDomain);
+      }
+    }
+  });
+}
 
 // Listen for new request data from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -928,12 +1054,18 @@ function loadAuthorizedDomains() {
       if (response && response.authorizedDomains) {
         // Check if current domain is authorized
         if (currentDomain && response.authorizedDomains.includes(currentDomain)) {
-          // Current domain is authorized, show authorization status area
-          authorizedDomainsContainer.style.display = 'block';
+          // Current domain is authorized, show domain info in header
+          const domainInfoElement = document.querySelector('.domain-info');
+          if (domainInfoElement) {
+            domainInfoElement.style.display = 'flex';
+          }
           displayAuthorizedDomains(response.authorizedDomains);
         } else {
-          // Current domain is not authorized, hide authorization status area
-          authorizedDomainsContainer.style.display = 'none';
+          // Current domain is not authorized, hide domain info in header
+          const domainInfoElement = document.querySelector('.domain-info');
+          if (domainInfoElement) {
+            domainInfoElement.style.display = 'none';
+          }
         }
       }
     }
@@ -942,7 +1074,10 @@ function loadAuthorizedDomains() {
 
 // Function to display authorized domains
 function displayAuthorizedDomains(domains) {
-  authorizedDomainsList.innerHTML = '';
+  // Update header domain info
+  if (!headerDomainsList) return;
+  
+  headerDomainsList.innerHTML = '';
   
   // Only show current domain if it's authorized
   if (!currentDomain || !domains.includes(currentDomain)) {
@@ -951,12 +1086,22 @@ function displayAuthorizedDomains(domains) {
     noDomainsElement.style.fontStyle = 'italic';
     noDomainsElement.style.color = 'var(--stats-label)';
     noDomainsElement.style.margin = '0';
-    authorizedDomainsList.appendChild(noDomainsElement);
+    headerDomainsList.appendChild(noDomainsElement);
     
     // Set switch state
-    toggleAuthorizationSwitch.checked = false;
-    currentAuthStatus.textContent = 'Disabled';
-    currentAuthStatus.className = 'auth-status disabled';
+    if (headerAuthorizationSwitch) {
+      headerAuthorizationSwitch.checked = false;
+    }
+    if (headerAuthStatus) {
+      headerAuthStatus.textContent = 'Disabled';
+      headerAuthStatus.className = 'auth-status disabled';
+    }
+    
+    // Hide domain info in header
+    const domainInfoElement = document.querySelector('.domain-info');
+    if (domainInfoElement) {
+      domainInfoElement.style.display = 'none';
+    }
     return;
   }
   
@@ -968,12 +1113,22 @@ function displayAuthorizedDomains(domains) {
   domainText.style.overflow = 'hidden';
   domainText.style.textOverflow = 'ellipsis';
   domainText.style.whiteSpace = 'nowrap';
-  authorizedDomainsList.appendChild(domainText);
+  headerDomainsList.appendChild(domainText);
   
   // Set switch state
-  toggleAuthorizationSwitch.checked = true;
-  currentAuthStatus.textContent = 'Enabled';
-  currentAuthStatus.className = 'auth-status enabled';
+  if (headerAuthorizationSwitch) {
+    headerAuthorizationSwitch.checked = true;
+  }
+  if (headerAuthStatus) {
+    headerAuthStatus.textContent = 'Enabled';
+    headerAuthStatus.className = 'auth-status enabled';
+  }
+  
+  // Show domain info in header
+  const domainInfoElement = document.querySelector('.domain-info');
+  if (domainInfoElement) {
+    domainInfoElement.style.display = 'flex';
+  }
 }
 
 // Function to remove domain authorization
@@ -999,7 +1154,9 @@ function removeDomainAuthorization(domain) {
             updateStatistics();
             
             // Hide request details (if visible)
-            requestDetails.style.display = 'none';
+            if (requestDetails) {
+              requestDetails.style.display = 'none';
+            }
           }
         );
         
@@ -1008,8 +1165,18 @@ function removeDomainAuthorization(domain) {
         
         // If the removed domain is the current domain, show authorization UI
         if (domain === currentDomain) {
+          // Hide domain info in header
+          const domainInfoElement = document.querySelector('.domain-info');
+          if (domainInfoElement) {
+            domainInfoElement.style.display = 'none';
+          }
+          
           // Hide authorized content area
-          document.getElementById('authorizedContent').style.display = 'none';
+          const authorizedContentElement = document.getElementById('authorizedContent');
+          if (authorizedContentElement) {
+            authorizedContentElement.style.display = 'none';
+          }
+          
           showDomainAuthorizationUI();
         }
       }
@@ -1029,27 +1196,67 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Add table header sort event
   const tableHeaders = document.querySelectorAll('#requestsTable th[data-sort]');
-  tableHeaders.forEach(header => {
-    header.addEventListener('click', () => {
-      const sortColumn = header.getAttribute('data-sort');
-      
-      // If clicked is current sort column, switch sort direction
-      if (sortColumn === currentSortColumn) {
-        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
-      } else {
-        currentSortColumn = sortColumn;
-        currentSortDirection = 'desc'; // New column default descending
-      }
-      
-      // Update table header style
-      tableHeaders.forEach(h => {
-        h.classList.remove('sort-asc', 'sort-desc');
+  if (tableHeaders && tableHeaders.length > 0) {
+    tableHeaders.forEach(header => {
+      header.addEventListener('click', () => {
+        const sortColumn = header.getAttribute('data-sort');
+        
+        // If clicked is current sort column, switch sort direction
+        if (sortColumn === currentSortColumn) {
+          currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentSortColumn = sortColumn;
+          currentSortDirection = 'desc'; // New column default descending
+        }
+        
+        // Update table header style
+        tableHeaders.forEach(h => {
+          h.classList.remove('sort-asc', 'sort-desc');
+        });
+        
+        header.classList.add(`sort-${currentSortDirection}`);
+        
+        // Re-render table
+        renderRequestsTable();
       });
-      
-      header.classList.add(`sort-${currentSortDirection}`);
-      
-      // Re-render table
-      renderRequestsTable();
     });
-  });
+  }
+});
+
+// Add toggle authorization switch event processing in authorized page
+headerAuthorizationSwitch.addEventListener('change', () => {
+  if (headerAuthorizationSwitch.checked) {
+    // Switch opened, authorize domain if not already authorized
+    headerAuthStatus.textContent = 'Enabled';
+    headerAuthStatus.className = 'auth-status enabled';
+    
+    // If domain is not already authorized, authorize it
+    if (document.getElementById('authorizedContent').style.display !== 'block') {
+      chrome.runtime.sendMessage(
+        { action: "authorizeDomain", domain: currentDomain },
+        (response) => {
+          if (chrome.runtime.lastError || !response || !response.success) {
+            console.error("Error authorizing domain:", chrome.runtime.lastError);
+            // Authorization failed, restore switch state
+            headerAuthorizationSwitch.checked = false;
+            headerAuthStatus.textContent = 'Disabled';
+            headerAuthStatus.className = 'auth-status disabled';
+            return;
+          }
+          
+          // Domain authorized, show authorized content
+          document.getElementById('authorizedContent').style.display = 'block';
+          domainAuthContainer.style.display = 'none';
+          requestNetworkData();
+        }
+      );
+    }
+  } else {
+    // Switch closed, cancel authorization
+    headerAuthStatus.textContent = 'Disabled';
+    headerAuthStatus.className = 'auth-status disabled';
+    
+    // Cancel authorization
+    removeDomainAuthorization(currentDomain);
+  }
 });

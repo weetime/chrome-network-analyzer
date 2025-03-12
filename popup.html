@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Network Request Analyzer</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 800px;
+      min-height: 400px;
+      margin: 0;
+      padding: 10px;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .controls {
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .filter-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+      position: sticky;
+      top: 0;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .url-cell {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .slow {
+      background-color: #ffdddd;
+    }
+    .medium {
+      background-color: #ffffdd;
+    }
+    .fast {
+      background-color: #ddffdd;
+    }
+    .error {
+      background-color: #ffcccc;
+    }
+    .request-details {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      display: none;
+    }
+    .export-btn {
+      padding: 5px 10px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .export-btn:hover {
+      background-color: #3367d6;
+    }
+    .search-input {
+      padding: 5px;
+      width: 200px;
+    }
+    .type-filter {
+      padding: 5px;
+    }
+    .status-filter {
+      padding: 5px;
+    }
+    .no-data {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .table-container {
+      max-height: 350px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Network Request Analyzer</h1>
+  
+  <div class="controls">
+    <div class="filter-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search URL...">
+      <select id="typeFilter" class="type-filter">
+        <option value="all">All Types</option>
+        <option value="document">Document</option>
+        <option value="stylesheet">CSS</option>
+        <option value="script">JavaScript</option>
+        <option value="image">Image</option>
+        <option value="xmlhttprequest">XHR/Fetch</option>
+        <option value="font">Font</option>
+        <option value="other">Other</option>
+      </select>
+      <select id="statusFilter" class="status-filter">
+        <option value="all">All Status</option>
+        <option value="success">Success (2xx)</option>
+        <option value="redirect">Redirect (3xx)</option>
+        <option value="client-error">Client Error (4xx)</option>
+        <option value="server-error">Server Error (5xx)</option>
+        <option value="error">Network Error</option>
+      </select>
+    </div>
+    <button id="exportBtn" class="export-btn">Export CSV</button>
+  </div>
+  
+  <div class="table-container">
+    <table id="requestsTable">
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Type</th>
+          <th>Method</th>
+          <th>Status</th>
+          <th>Total Time (ms)</th>
+          <th>TTFB (ms)</th>
+        </tr>
+      </thead>
+      <tbody id="requestsTableBody">
+        <!-- Request data will be inserted here -->
+      </tbody>
+    </table>
+    <div id="noDataMessage" class="no-data">No network requests captured yet. Browse a website to see data.</div>
+  </div>
+  
+  <div id="requestDetails" class="request-details">
+    <!-- Detailed request info will be shown here -->
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

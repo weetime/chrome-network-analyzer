@@ -77,12 +77,6 @@ The extension calculates the following performance metrics:
 
 These metrics are calculated based on the currently filtered requests, allowing you to analyze performance for specific request types or status codes.
 
-## Note
-
-You'll need to add your own icon images in the `images` directory:
-- icon16.png (16x16)
-- icon48.png (48x48)
-- icon128.png (128x128)
 
 ## License
 

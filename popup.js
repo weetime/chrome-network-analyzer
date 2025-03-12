@@ -51,6 +51,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.runtime.sendMessage(
         { action: "getRequestData", tabId: currentTab.id },
         (response) => {
+          if (chrome.runtime.lastError) {
+            console.error("Error getting request data:", chrome.runtime.lastError);
+            return;
+          }
+          
           if (response && response.requestData) {
             allRequestsData = response.requestData;
             renderRequestsTable();
@@ -65,21 +70,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Listen for new request data from background script
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.action === "requestCompleted" || message.action === "requestFailed") {
-    // Get current tab
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const currentTab = tabs[0];
-      if (currentTab && message.tabId === currentTab.id) {
-        // Update our data
-        if (!allRequestsData[message.requestId]) {
-          allRequestsData[message.requestId] = message.requestData;
-          renderRequestsTable();
-          updateStatistics();
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  try {
+    if (message.action === "requestCompleted" || message.action === "requestFailed") {
+      // Get current tab
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (chrome.runtime.lastError) {
+          console.error("Error querying tabs:", chrome.runtime.lastError);
+          return;
         }
-      }
-    });
+        
+        const currentTab = tabs[0];
+        if (currentTab && message.tabId === currentTab.id) {
+          // Update our data
+          if (!allRequestsData[message.requestId]) {
+            allRequestsData[message.requestId] = message.requestData;
+            renderRequestsTable();
+            updateStatistics();
+          }
+        }
+      });
+    }
+    
+    // Always send a response to prevent "The message port closed before a response was received" error
+    if (sendResponse) {
+      sendResponse({ received: true });
+    }
+  } catch (error) {
+    console.error("Error handling message:", error);
+    if (sendResponse) {
+      sendResponse({ error: error.message });
+    }
   }
+  
+  return true; // Required for async response
 });
 
 // Calculate percentile value

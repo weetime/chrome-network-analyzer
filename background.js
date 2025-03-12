@@ -59,12 +59,22 @@ chrome.webRequest.onCompleted.addListener(
       
       // Send data to popup if it's open
       try {
-        chrome.runtime.sendMessage({
-          action: "requestCompleted",
-          tabId: details.tabId,
-          requestId: details.requestId,
-          requestData: request
-        });
+        // Check if we can send a message by checking if any listeners exist
+        chrome.runtime.sendMessage(
+          {
+            action: "requestCompleted",
+            tabId: details.tabId,
+            requestId: details.requestId,
+            requestData: request
+          },
+          // Add a callback to handle the case where no receivers exist
+          (response) => {
+            if (chrome.runtime.lastError) {
+              // This is expected if popup is not open, no need to log an error
+              // console.debug("No receivers for message (this is normal if popup is closed)");
+            }
+          }
+        );
       } catch (error) {
         console.error("Error sending requestCompleted message:", error);
       }
@@ -87,12 +97,22 @@ chrome.webRequest.onErrorOccurred.addListener(
       
       // Send data to popup if it's open
       try {
-        chrome.runtime.sendMessage({
-          action: "requestFailed",
-          tabId: details.tabId,
-          requestId: details.requestId,
-          requestData: request
-        });
+        // Check if we can send a message by checking if any listeners exist
+        chrome.runtime.sendMessage(
+          {
+            action: "requestFailed",
+            tabId: details.tabId,
+            requestId: details.requestId,
+            requestData: request
+          },
+          // Add a callback to handle the case where no receivers exist
+          (response) => {
+            if (chrome.runtime.lastError) {
+              // This is expected if popup is not open, no need to log an error
+              // console.debug("No receivers for message (this is normal if popup is closed)");
+            }
+          }
+        );
       } catch (error) {
         console.error("Error sending requestFailed message:", error);
       }

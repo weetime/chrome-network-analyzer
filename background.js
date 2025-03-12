@@ -22,9 +22,15 @@ chrome.webRequest.onHeadersReceived.addListener(
   (details) => {
     if (requestData[details.tabId] && requestData[details.tabId][details.requestId]) {
       requestData[details.tabId][details.requestId].headerReceivedTime = details.timeStamp;
+      
+      // Store response headers size
+      if (details.responseHeaders) {
+        requestData[details.tabId][details.requestId].responseHeadersSize = JSON.stringify(details.responseHeaders).length;
+      }
     }
   },
-  { urls: ["<all_urls>"] }
+  { urls: ["<all_urls>"] },
+  ["responseHeaders"]
 );
 
 // Track when request is completed
@@ -41,13 +47,27 @@ chrome.webRequest.onCompleted.addListener(
         request.ttfb = request.headerReceivedTime - request.startTime;
       }
       
+      // Calculate content download time (total time minus TTFB)
+      if (request.ttfb) {
+        request.contentDownloadTime = request.totalTime - request.ttfb;
+      }
+      
+      // Store content size if available
+      if (details.responseSize) {
+        request.responseSize = details.responseSize;
+      }
+      
       // Send data to popup if it's open
-      chrome.runtime.sendMessage({
-        action: "requestCompleted",
-        tabId: details.tabId,
-        requestId: details.requestId,
-        requestData: request
-      });
+      try {
+        chrome.runtime.sendMessage({
+          action: "requestCompleted",
+          tabId: details.tabId,
+          requestId: details.requestId,
+          requestData: request
+        });
+      } catch (error) {
+        console.error("Error sending requestCompleted message:", error);
+      }
       
       // Store in local storage for persistence
       storeRequestData(details.tabId);
@@ -66,12 +86,16 @@ chrome.webRequest.onErrorOccurred.addListener(
       request.error = details.error;
       
       // Send data to popup if it's open
-      chrome.runtime.sendMessage({
-        action: "requestFailed",
-        tabId: details.tabId,
-        requestId: details.requestId,
-        requestData: request
-      });
+      try {
+        chrome.runtime.sendMessage({
+          action: "requestFailed",
+          tabId: details.tabId,
+          requestId: details.requestId,
+          requestData: request
+        });
+      } catch (error) {
+        console.error("Error sending requestFailed message:", error);
+      }
       
       // Store in local storage for persistence
       storeRequestData(details.tabId);
@@ -109,5 +133,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return true; // Required for async response
     }
+  } else if (message.action === "clearRequestData") {
+    const tabId = message.tabId;
+    // Clear data for the tab
+    if (requestData[tabId]) {
+      requestData[tabId] = {};
+    }
+    // Clear from storage
+    chrome.storage.local.remove(`requestData_${tabId}`, () => {
+      sendResponse({ success: true });
+    });
+    return true; // Required for async response
   }
 });

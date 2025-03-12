@@ -98,10 +98,42 @@
       max-height: 350px;
       overflow-y: auto;
     }
+    .stats-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      padding: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stat-item {
+      text-align: center;
+      flex: 1;
+      padding: 0 5px;
+      border-right: 1px solid #e0e0e0;
+    }
+    .stat-item:last-child {
+      border-right: none;
+    }
+    .stat-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #4285f4;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 3px;
+    }
   </style>
 </head>
 <body>
   <h1>Network Request Analyzer</h1>
+  
+  <div id="statsContainer" class="stats-container">
+    <!-- Statistics will be inserted here -->
+  </div>
   
   <div class="controls">
     <div class="filter-container">
@@ -125,7 +157,10 @@
         <option value="error">Network Error</option>
       </select>
     </div>
-    <button id="exportBtn" class="export-btn">Export CSV</button>
+    <div>
+      <button id="clearBtn" class="export-btn" style="background-color: #f44336; margin-right: 10px;">清空数据</button>
+      <button id="exportBtn" class="export-btn">Export CSV</button>
+    </div>
   </div>
   
   <div class="table-container">
@@ -138,6 +173,8 @@
           <th>Status</th>
           <th>Total Time (ms)</th>
           <th>TTFB (ms)</th>
+          <th>访问次数</th>
+          <th>P99 (ms)</th>
         </tr>
       </thead>
       <tbody id="requestsTableBody">

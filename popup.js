@@ -11,6 +11,33 @@ const statusFilter = document.getElementById('statusFilter');
 const exportBtn = document.getElementById('exportBtn');
 const clearBtn = document.getElementById('clearBtn');
 const statsContainer = document.getElementById('statsContainer');
+const themeToggle = document.getElementById('themeToggle');
+const themeLabel = document.getElementById('themeLabel');
+
+// Theme management
+function loadTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  themeLabel.textContent = savedTheme.charAt(0).toUpperCase() + savedTheme.slice(1);
+  themeToggle.querySelector('.theme-toggle-icon').textContent = savedTheme === 'light' ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  
+  themeLabel.textContent = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
+  themeToggle.querySelector('.theme-toggle-icon').textContent = newTheme === 'light' ? '☀️' : '🌙';
+}
+
+// Initialize theme
+loadTheme();
+
+// Theme toggle event listener
+themeToggle.addEventListener('click', toggleTheme);
 
 // Get current tab and load request data
 document.addEventListener('DOMContentLoaded', async () => {

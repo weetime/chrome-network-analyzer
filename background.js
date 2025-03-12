@@ -1,14 +1,78 @@
 // Object to store request data
 let requestData = {};
 
+// Function to extract domain from URL
+function extractDomain(url) {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname;
+  } catch (e) {
+    console.error("Error extracting domain:", e);
+    return null;
+  }
+}
+
+// Function to check if a domain is authorized
+function isDomainAuthorized(domain) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['authorizedDomains'], (result) => {
+      const authorizedDomains = result.authorizedDomains || [];
+      resolve(authorizedDomains.includes(domain));
+    });
+  });
+}
+
+// Function to authorize a domain
+function authorizeDomain(domain) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['authorizedDomains'], (result) => {
+      const authorizedDomains = result.authorizedDomains || [];
+      if (!authorizedDomains.includes(domain)) {
+        authorizedDomains.push(domain);
+        chrome.storage.local.set({ authorizedDomains }, () => {
+          resolve(true);
+        });
+      } else {
+        resolve(true);
+      }
+    });
+  });
+}
+
+// Function to remove domain authorization
+function removeDomainAuthorization(domain) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['authorizedDomains'], (result) => {
+      const authorizedDomains = result.authorizedDomains || [];
+      const index = authorizedDomains.indexOf(domain);
+      
+      if (index !== -1) {
+        authorizedDomains.splice(index, 1);
+        chrome.storage.local.set({ authorizedDomains }, () => {
+          resolve(true);
+        });
+      } else {
+        resolve(false);
+      }
+    });
+  });
+}
+
 // Listen for web request events
 chrome.webRequest.onBeforeRequest.addListener(
-  (details) => {
+  async (details) => {
+    const domain = extractDomain(details.url);
+    if (!domain) return;
+    
+    const isAuthorized = await isDomainAuthorized(domain);
+    if (!isAuthorized) return;
+    
     if (!requestData[details.tabId]) {
       requestData[details.tabId] = {};
     }
     requestData[details.tabId][details.requestId] = {
       url: details.url,
+      domain: domain,
       startTime: details.timeStamp,
       method: details.method,
       type: details.type
@@ -162,6 +226,30 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Clear from storage
     chrome.storage.local.remove(`requestData_${tabId}`, () => {
       sendResponse({ success: true });
+    });
+    return true; // Required for async response
+  } else if (message.action === "checkDomainAuthorization") {
+    const domain = message.domain;
+    isDomainAuthorized(domain).then(isAuthorized => {
+      sendResponse({ isAuthorized });
+    });
+    return true; // Required for async response
+  } else if (message.action === "authorizeDomain") {
+    const domain = message.domain;
+    authorizeDomain(domain).then(success => {
+      sendResponse({ success });
+    });
+    return true; // Required for async response
+  } else if (message.action === "getAuthorizedDomains") {
+    chrome.storage.local.get(['authorizedDomains'], (result) => {
+      const authorizedDomains = result.authorizedDomains || [];
+      sendResponse({ authorizedDomains });
+    });
+    return true; // Required for async response
+  } else if (message.action === "removeDomainAuthorization") {
+    const domain = message.domain;
+    removeDomainAuthorization(domain).then(success => {
+      sendResponse({ success });
     });
     return true; // Required for async response
   }

@@ -54,6 +54,7 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       transition: background-color 0.3s, color 0.3s;
+      box-sizing: border-box;
     }
     h1 {
       font-size: 18px;
@@ -74,25 +75,142 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
+      table-layout: fixed;
     }
     th, td {
       border: 1px solid var(--border-color);
       padding: 6px;
       text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     th {
       background-color: var(--header-bg);
       position: sticky;
       top: 0;
+      cursor: pointer;
+      position: relative;
+      padding: 6px 4px;
+      font-size: 11px;
+      z-index: 10;
+      box-shadow: 0 1px 0 var(--border-color);
     }
-    tr:nth-child(even) {
-      background-color: var(--row-even-bg);
+    th:hover {
+      background-color: var(--stats-bg);
+    }
+    th[title] {
+      text-decoration: underline dotted 1px;
+    }
+    .sort-icon {
+      font-size: 8px;
+      margin-left: 2px;
+      display: inline-block;
+      vertical-align: middle;
+      opacity: 0.3;
+      position: relative;
+      top: -1px;
+    }
+    th.sort-asc .sort-icon {
+      content: "▲";
+      opacity: 1;
+      color: var(--primary-btn);
+    }
+    th.sort-desc .sort-icon {
+      content: "▼";
+      opacity: 1;
+      color: var(--primary-btn);
+    }
+    #requestsTableBody tr {
+      cursor: pointer;
+      transition: background-color 0.2s;
+      background-color: var(--bg-color);
+    }
+    #requestsTableBody tr:hover {
+      background-color: var(--stats-bg);
+    }
+    #requestsTableBody tr.selected {
+      background-color: rgba(66, 133, 244, 0.15);
+      border-left: 3px solid var(--primary-btn);
+      box-shadow: 0 0 2px var(--shadow-color);
+    }
+    [data-theme="dark"] #requestsTableBody tr.selected {
+      background-color: rgba(92, 154, 255, 0.2);
+      box-shadow: 0 0 3px var(--shadow-color);
     }
     .url-cell {
       max-width: 300px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      width: 30%;
+    }
+    .detail-url-container {
+      margin-bottom: 10px;
+    }
+    .detail-url-wrapper {
+      display: flex;
+      align-items: center;
+      margin-top: 4px;
+      position: relative;
+      background-color: var(--bg-color);
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    .detail-url {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-all;
+      padding-right: 30px;
+    }
+    .detail-copy-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.5;
+      padding: 2px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-color);
+      transition: opacity 0.2s, background-color 0.2s;
+      z-index: 10;
+    }
+    .detail-copy-btn:hover {
+      opacity: 1;
+      background-color: var(--border-color);
+    }
+    .detail-copy-btn.copied {
+      opacity: 1;
+      background-color: var(--primary-btn);
+      color: white;
+      position: relative;
+    }
+    .detail-copy-btn.copied::after {
+      content: 'Copied';
+      position: absolute;
+      bottom: -25px;
+      right: 0;
+      background-color: var(--primary-btn);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 9999;
+      pointer-events: none;
+      display: block;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    [data-theme="dark"] .detail-copy-btn svg {
+      stroke: var(--text-color);
     }
     .slow {
       background-color: var(--slow-bg);
@@ -110,8 +228,64 @@
       margin-top: 10px;
       padding: 10px;
       border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: var(--stats-bg);
+      max-height: 300px;
+      overflow-y: auto;
       display: none;
     }
+    .close-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--text-color);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+    
+    .close-button:hover {
+      background-color: var(--border-color);
+    }
+    
+    .close-button::before,
+    .close-button::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 2px;
+      background-color: var(--text-color);
+      border-radius: 1px;
+    }
+    
+    .close-button::before {
+      transform: rotate(45deg);
+    }
+    
+    .close-button::after {
+      transform: rotate(-45deg);
+    }
+    
+    [data-theme="dark"] .close-button::before,
+    [data-theme="dark"] .close-button::after {
+      background-color: #fff;
+    }
+    
+    [data-theme="dark"] .close-button {
+      opacity: 0.8;
+    }
+    
+    [data-theme="dark"] .close-button:hover {
+      opacity: 1;
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
     .export-btn {
       padding: 5px 10px;
       background-color: var(--primary-btn);
@@ -138,8 +312,15 @@
       color: var(--stats-label);
     }
     .table-container {
-      max-height: 350px;
+      max-height: 250px;
       overflow-y: auto;
+      overflow-x: hidden;
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
     }
     .stats-container {
       display: flex;
@@ -186,70 +367,276 @@
       color: white;
       margin-right: 5px;
     }
+    
+    /* Authorized Domains styles */
+    .authorized-domains {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: var(--stats-bg);
+      margin-bottom: 15px;
+    }
+    
+    .authorized-domains h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .authorized-domains ul {
+      margin: 0;
+      padding-left: 0;
+      list-style-type: none;
+      width: 100%;
+    }
+    
+    .authorized-domains li {
+      margin-bottom: 2px;
+      padding: 2px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    
+    .authorized-domains button {
+      margin-left: 10px;
+      font-size: 11px;
+      padding: 1px 6px;
+      background-color: var(--danger-btn);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      min-width: 60px;
+      text-align: center;
+    }
+    
+    .authorized-domains button:hover {
+      opacity: 0.8;
+    }
+    
+    /* Additional styles */
+    .authorized-domains h3 {
+      margin: 0;
+      font-size: 13px;
+      color: var(--stats-label);
+    }
+    
+    #authorizedDomainsList {
+      display: flex;
+      align-items: center;
+    }
+    
+    #authorizedDomainsList span {
+      font-size: 13px;
+    }
+    
+    /* Switch styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+      margin-left: 10px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 20px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: var(--primary-btn);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+    /* Authorization status text */
+    .auth-status {
+      font-size: 11px;
+      margin-left: 8px;
+    }
+    
+    .auth-status.enabled {
+      color: var(--primary-btn);
+    }
+    
+    .auth-status.disabled {
+      color: var(--stats-label);
+    }
+    
+    /* 优化表格列宽 */
+    #requestsTable th:nth-child(1) { width: 30%; } /* URL */
+    #requestsTable th:nth-child(2) { width: 8%; }  /* Type */
+    #requestsTable th:nth-child(3) { width: 7%; }  /* Method */
+    #requestsTable th:nth-child(4) { width: 7%; }  /* Status */
+    #requestsTable th:nth-child(5) { width: 12%; } /* Time */
+    #requestsTable th:nth-child(6) { width: 10%; } /* TTFB */
+    #requestsTable th:nth-child(7) { width: 10%; } /* Visits */
+    #requestsTable th:nth-child(8) { width: 16%; } /* P99 */
+    
+    /* P99梯度变色 */
+    .p99-very-slow {
+      background-color: rgba(255, 0, 0, 0.2);
+      font-weight: bold;
+      color: #d32f2f;
+    }
+    .p99-slow {
+      background-color: rgba(255, 152, 0, 0.2);
+      font-weight: bold;
+      color: #ef6c00;
+    }
+    .p99-medium {
+      background-color: rgba(255, 235, 59, 0.2);
+      color: #f57f17;
+    }
+    .p99-fast {
+      background-color: rgba(76, 175, 80, 0.2);
+      color: #2e7d32;
+    }
+    
+    /* 深色模式下的P99梯度变色 */
+    [data-theme="dark"] .p99-very-slow {
+      background-color: rgba(255, 0, 0, 0.3);
+      color: #ff6e6e;
+    }
+    [data-theme="dark"] .p99-slow {
+      background-color: rgba(255, 152, 0, 0.3);
+      color: #ffb74d;
+    }
+    [data-theme="dark"] .p99-medium {
+      background-color: rgba(255, 235, 59, 0.3);
+      color: #fff176;
+    }
+    [data-theme="dark"] .p99-fast {
+      background-color: rgba(76, 175, 80, 0.3);
+      color: #81c784;
+    }
   </style>
 </head>
 <body>
   <h1>Network Request Analyzer</h1>
   
-  <div id="statsContainer" class="stats-container">
-    <!-- Statistics will be inserted here -->
-  </div>
-  
-  <div class="controls">
-    <div class="filter-container">
-      <input type="text" id="searchInput" class="search-input" placeholder="Search URL...">
-      <select id="typeFilter" class="type-filter">
-        <option value="all">All Types</option>
-        <option value="document">Document</option>
-        <option value="stylesheet">CSS</option>
-        <option value="script">JavaScript</option>
-        <option value="image">Image</option>
-        <option value="xmlhttprequest">XHR/Fetch</option>
-        <option value="font">Font</option>
-        <option value="other">Other</option>
-      </select>
-      <select id="statusFilter" class="status-filter">
-        <option value="all">All Status</option>
-        <option value="success">Success (2xx)</option>
-        <option value="redirect">Redirect (3xx)</option>
-        <option value="client-error">Client Error (4xx)</option>
-        <option value="server-error">Server Error (5xx)</option>
-        <option value="error">Network Error</option>
-      </select>
-    </div>
-    <div style="display: flex; align-items: center;">
-      <div id="themeToggle" class="theme-toggle">
-        <span class="theme-toggle-icon">☀️</span>
-        <span id="themeLabel">Light</span>
+  <div id="domainAuthContainer" class="domain-auth-container" style="display: none; margin-bottom: 15px; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--stats-bg);">
+    <h3 style="margin-top: 0; margin-bottom: 10px;">Domain Authorization</h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+      <span>Domain: <span id="currentDomain" style="font-weight: bold;"></span></span>
+      <div style="display: flex; align-items: center;">
+        <label class="switch">
+          <input type="checkbox" id="authorizeDomainSwitch">
+          <span class="slider"></span>
+        </label>
+        <span id="authStatus" class="auth-status disabled">Disabled</span>
       </div>
-      <button id="clearBtn" class="export-btn" style="background-color: var(--danger-btn); margin-right: 10px;">清空数据</button>
-      <button id="exportBtn" class="export-btn">Export CSV</button>
     </div>
+    <p style="margin: 0; font-size: 12px; color: var(--stats-label);">Enable authorization to collect network request data for this domain.</p>
   </div>
   
-  <div class="table-container">
-    <table id="requestsTable">
-      <thead>
-        <tr>
-          <th>URL</th>
-          <th>Type</th>
-          <th>Method</th>
-          <th>Status</th>
-          <th>Total Time (ms)</th>
-          <th>TTFB (ms)</th>
-          <th>访问次数</th>
-          <th>P99 (ms)</th>
-        </tr>
-      </thead>
-      <tbody id="requestsTableBody">
-        <!-- Request data will be inserted here -->
-      </tbody>
-    </table>
-    <div id="noDataMessage" class="no-data">No network requests captured yet. Browse a website to see data.</div>
-  </div>
-  
-  <div id="requestDetails" class="request-details">
-    <!-- Detailed request info will be shown here -->
+  <div id="authorizedContent">
+    <div id="statsContainer" class="stats-container">
+      <!-- Statistics will be inserted here -->
+    </div>
+    
+    <div class="controls">
+      <div class="filter-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search URL...">
+        <select id="typeFilter" class="type-filter">
+          <option value="all">All Types</option>
+          <option value="document">Document</option>
+          <option value="stylesheet">CSS</option>
+          <option value="script">JavaScript</option>
+          <option value="image">Image</option>
+          <option value="xmlhttprequest">XHR/Fetch</option>
+          <option value="font">Font</option>
+          <option value="other">Other</option>
+        </select>
+        <select id="statusFilter" class="status-filter">
+          <option value="all">All Status</option>
+          <option value="success">Success (2xx)</option>
+          <option value="redirect">Redirect (3xx)</option>
+          <option value="client-error">Client Error (4xx)</option>
+          <option value="server-error">Server Error (5xx)</option>
+          <option value="error">Network Error</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <div id="themeToggle" class="theme-toggle">
+          <span class="theme-toggle-icon">☀️</span>
+          <span id="themeLabel">Light</span>
+        </div>
+        <button id="clearBtn" class="export-btn" style="background-color: var(--danger-btn); margin-right: 10px;">Clear Data</button>
+        <button id="exportBtn" class="export-btn">Export CSV</button>
+      </div>
+    </div>
+    
+    <div id="authorizedDomainsContainer" class="authorized-domains" style="margin-bottom: 15px; margin-top: 0;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h3 style="margin: 0; flex: 0 0 auto;">Current Domain:</h3>
+        <div id="authorizedDomainsList" style="flex: 1; display: flex; align-items: center; margin-left: 10px;">
+          <!-- Current domain authorization status will be shown here -->
+        </div>
+        <div style="display: flex; align-items: center; margin-left: 10px;">
+          <label class="switch">
+            <input type="checkbox" id="toggleAuthorizationSwitch" checked>
+            <span class="slider"></span>
+          </label>
+          <span id="currentAuthStatus" class="auth-status enabled">Enabled</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <table id="requestsTable">
+        <thead>
+          <tr>
+            <th data-sort="url" title="URL of the network request">URL <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="type" title="Resource type">Type <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="method" title="HTTP method">Method <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="status" title="HTTP status code">Status <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="totalTime" title="Total response time in milliseconds">Time <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="ttfb" title="Time to First Byte in milliseconds">TTFB <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="visitCount" title="Number of times this URL was requested">Visits <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="p99" title="99th percentile response time in milliseconds">P99 <span class="sort-icon">&#x25BC;</span></th>
+          </tr>
+        </thead>
+        <tbody id="requestsTableBody">
+          <!-- Request data will be inserted here -->
+        </tbody>
+      </table>
+      <div id="noDataMessage" class="no-data">No network requests captured yet. Browse a website to see data.</div>
+    </div>
+    
+    <div id="requestDetails" class="request-details">
+      <!-- Detailed request info will be shown here -->
+    </div>
   </div>
   
   <script src="popup.js"></script>

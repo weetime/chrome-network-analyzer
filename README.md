@@ -19,6 +19,7 @@ The extension supports both light and dark themes:
 ![Light Mode Screenshot](images/light.jpg)
 
 ### Dark Mode
+![Dark Mode authorization](images/authorization.jpg)
 ![Dark Mode Screenshot](images/dark.jpg)
 
 ## How It Works

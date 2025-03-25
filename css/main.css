@@ -1,0 +1,6 @@
+/* Main CSS file - imports all modular CSS files */
+@import 'theme.css';
+@import 'layout.css';
+@import 'controls.css';
+@import 'table.css';
+@import 'details.css';

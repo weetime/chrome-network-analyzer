@@ -171,12 +171,14 @@ function formatNetworkDataForAI(requestsData, statistics) {
   return summary;
 }
 
-// Make functions available globally
-window.AiConnector = {
-  sendToAI,
-  sendToOpenAI,
-  sendToAnthropic,
-  formatNetworkDataForAI,
-  OPENAI_MODELS,
-  ANTHROPIC_MODELS
-}; 
+// Make functions available globally using a self-executing function
+(function(global) {
+  global.AiConnector = {
+    sendToAI,
+    sendToOpenAI,
+    sendToAnthropic,
+    formatNetworkDataForAI,
+    OPENAI_MODELS,
+    ANTHROPIC_MODELS
+  };
+})(typeof window !== 'undefined' ? window : self); 

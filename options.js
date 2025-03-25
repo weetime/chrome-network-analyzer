@@ -78,14 +78,14 @@ function updateModelOptions(provider) {
   
   // 添加模型选项
   if (provider === 'openai') {
-    Object.keys(AiConnector.OPENAI_MODELS).forEach(model => {
+    Object.keys(window.AiConnector.OPENAI_MODELS).forEach(model => {
       const option = document.createElement('option');
       option.value = model;
       option.textContent = model;
       aiModel.appendChild(option);
     });
   } else if (provider === 'anthropic') {
-    Object.keys(AiConnector.ANTHROPIC_MODELS).forEach(model => {
+    Object.keys(window.AiConnector.ANTHROPIC_MODELS).forEach(model => {
       const option = document.createElement('option');
       option.value = model;
       option.textContent = model;

@@ -1,0 +1,216 @@
+/* Layout and page structure styles */
+
+/* Page header and layout */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.page-title {
+  margin: 0;
+}
+
+.domain-info {
+  display: none; /* Will be changed to flex when active */
+  align-items: center;
+  background-color: var(--stats-bg);
+  border-radius: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+}
+
+.domain-info h3 {
+  margin: 0;
+  font-size: 12px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.domain-header-list {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.domain-switch-container {
+  display: flex;
+  align-items: center;
+}
+
+.domain-switch {
+  margin: 0 4px;
+  width: 36px;
+  height: 18px;
+}
+
+.domain-auth-status {
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.settings-link {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--primary-btn);
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.settings-link svg {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* Unauthorized content */
+.unauthorized-box {
+  display: none;
+  margin-bottom: 15px;
+  padding: 30px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--stats-bg);
+  text-align: center;
+}
+
+.unauthorized-text {
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.quick-auth-btn {
+  padding: 8px 16px;
+  background-color: var(--primary-btn);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.unauthorized-settings-link {
+  font-size: 14px;
+  color: var(--primary-btn);
+  text-decoration: none;
+}
+
+/* Authorization status text */
+.auth-status {
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+.auth-status.enabled {
+  color: var(--primary-btn);
+}
+
+.auth-status.disabled {
+  color: var(--stats-label);
+}
+
+/* Authorized Domains styles */
+.authorized-domains {
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--stats-bg);
+  margin-bottom: 15px;
+}
+
+.authorized-domains h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.authorized-domains ul {
+  margin: 0;
+  padding-left: 0;
+  list-style-type: none;
+  width: 100%;
+}
+
+.authorized-domains li {
+  margin-bottom: 2px;
+  padding: 2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.authorized-domains button {
+  margin-left: 10px;
+  font-size: 11px;
+  padding: 1px 6px;
+  background-color: var(--danger-btn);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  min-width: 60px;
+  text-align: center;
+}
+
+.authorized-domains button:hover {
+  opacity: 0.8;
+}
+
+/* Additional styles */
+.authorized-domains h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--stats-label);
+}
+
+#authorizedDomainsList {
+  display: flex;
+  align-items: center;
+}
+
+#authorizedDomainsList span {
+  font-size: 13px;
+}
+
+/* Statistics container */
+.stats-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  background-color: var(--stats-bg);
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+  padding: 0 5px;
+  border-right: 1px solid var(--stats-border);
+}
+
+.stat-item:last-child {
+  border-right: none;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--stats-value);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--stats-label);
+  margin-top: 3px;
+}

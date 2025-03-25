@@ -1,0 +1,180 @@
+/* Theme related variables */
+:root {
+  /* Light theme (default) */
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --border-color: #ddd;
+  --header-bg: #f2f2f2;
+  --row-even-bg: #f9f9f9;
+  --stats-bg: #f8f9fa;
+  --stats-border: #e0e0e0;
+  --stats-value: #4285f4;
+  --stats-label: #666;
+  --slow-bg: #ffdddd;
+  --medium-bg: #ffffdd;
+  --fast-bg: #ddffdd;
+  --error-bg: #ffcccc;
+  --primary-btn: #4285f4;
+  --primary-btn-hover: #3367d6;
+  --danger-btn: #f44336;
+  --shadow-color: rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+  --bg-color: #1e1e1e;
+  --text-color: #e0e0e0;
+  --border-color: #444;
+  --header-bg: #2d2d2d;
+  --row-even-bg: #2a2a2a;
+  --stats-bg: #2d2d2d;
+  --stats-border: #444;
+  --stats-value: #5c9aff;
+  --stats-label: #aaa;
+  --slow-bg: #5a3232;
+  --medium-bg: #5a5a32;
+  --fast-bg: #325a32;
+  --error-bg: #5a2828;
+  --primary-btn: #5c9aff;
+  --primary-btn-hover: #4285f4;
+  --danger-btn: #f44336;
+  --shadow-color: rgba(0,0,0,0.3);
+}
+
+/* Base styles for the entire application */
+body {
+  font-family: Arial, sans-serif;
+  width: 800px;
+  min-height: 400px;
+  margin: 0;
+  padding: 10px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+/* Theme toggle related styles */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: var(--primary-btn);
+  color: white;
+  margin-right: 5px;
+}
+
+/* Updated theme toggle styles to match minimalist design */
+.theme-toggle-minimal {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+  margin-right: 8px;
+}
+
+.theme-toggle-minimal:hover {
+  background-color: var(--stats-bg);
+  border-color: var(--primary-btn);
+}
+
+.theme-toggle-minimal svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--text-color);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Moon icon specific styling */
+#moonIcon {
+  fill: none;
+  stroke: var(--text-color);
+}
+
+[data-theme="dark"] #moonIcon {
+  stroke: var(--text-color);
+}
+
+/* Sun icon specific styling */
+#sunIcon {
+  fill: none;
+  stroke: var(--text-color);
+}
+
+[data-theme="light"] #sunIcon {
+  fill: var(--primary-btn);
+  stroke: var(--primary-btn);
+  opacity: 0.8;
+}
+
+[data-theme="light"] [id^="sunRay"] {
+  stroke: var(--primary-btn);
+  opacity: 0.8;
+}
+
+.theme-toggle-minimal.dark-mode #moonIcon {
+  fill: var(--primary-btn);
+  opacity: 0.8;
+}
+
+.theme-toggle-minimal:hover svg {
+  stroke: var(--primary-btn);
+}
+
+.theme-toggle-minimal .tooltip {
+  visibility: hidden;
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--header-bg);
+  color: var(--text-color);
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 1;
+  box-shadow: 0 2px 5px var(--shadow-color);
+  opacity: 0;
+  transition: opacity 0.3s;
+  border: 1px solid var(--border-color);
+}
+
+.theme-toggle-minimal:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+[data-theme="dark"] .theme-toggle-minimal svg {
+  stroke: var(--text-color);
+}
+
+[data-theme="dark"] .theme-toggle-minimal:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}

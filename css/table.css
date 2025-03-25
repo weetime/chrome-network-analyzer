@@ -1,0 +1,168 @@
+/* Table and data display styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1px solid var(--border-color);
+  padding: 6px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+th {
+  background-color: var(--header-bg);
+  position: sticky;
+  top: 0;
+  cursor: pointer;
+  position: relative;
+  padding: 6px 4px;
+  font-size: 11px;
+  z-index: 10;
+  box-shadow: 0 1px 0 var(--border-color);
+}
+
+th:hover {
+  background-color: var(--stats-bg);
+}
+
+th[title] {
+  text-decoration: underline dotted 1px;
+}
+
+.sort-icon {
+  font-size: 8px;
+  margin-left: 2px;
+  display: inline-block;
+  vertical-align: middle;
+  opacity: 0.3;
+  position: relative;
+  top: -1px;
+}
+
+th.sort-asc .sort-icon {
+  content: "▲";
+  opacity: 1;
+  color: var(--primary-btn);
+}
+
+th.sort-desc .sort-icon {
+  content: "▼";
+  opacity: 1;
+  color: var(--primary-btn);
+}
+
+#requestsTableBody tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background-color: var(--bg-color);
+}
+
+#requestsTableBody tr:hover {
+  background-color: var(--stats-bg);
+}
+
+#requestsTableBody tr.selected {
+  background-color: rgba(66, 133, 244, 0.15);
+  border-left: 3px solid var(--primary-btn);
+  box-shadow: 0 0 2px var(--shadow-color);
+}
+
+[data-theme="dark"] #requestsTableBody tr.selected {
+  background-color: rgba(92, 154, 255, 0.2);
+  box-shadow: 0 0 3px var(--shadow-color);
+}
+
+.url-cell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 30%;
+}
+
+.table-container {
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: var(--stats-label);
+}
+
+/* 优化表格列宽 */
+#requestsTable th:nth-child(1) { width: 30%; } /* URL */
+#requestsTable th:nth-child(2) { width: 8%; }  /* Type */
+#requestsTable th:nth-child(3) { width: 7%; }  /* Method */
+#requestsTable th:nth-child(4) { width: 7%; }  /* Status */
+#requestsTable th:nth-child(5) { width: 12%; } /* Time */
+#requestsTable th:nth-child(6) { width: 10%; } /* TTFB */
+#requestsTable th:nth-child(7) { width: 10%; } /* Visits */
+#requestsTable th:nth-child(8) { width: 16%; } /* P99 */
+
+/* Row status colors */
+.slow {
+  background-color: var(--slow-bg);
+}
+
+.medium {
+  background-color: var(--medium-bg);
+}
+
+.fast {
+  background-color: var(--fast-bg);
+}
+
+.error {
+  background-color: var(--error-bg);
+}
+
+/* P99梯度变色 */
+.p99-very-slow {
+  background-color: rgba(255, 87, 34, 0.3);
+  color: #ff5722;
+}
+.p99-slow {
+  background-color: rgba(255, 152, 0, 0.3);
+  color: #ff9800;
+}
+.p99-medium {
+  background-color: rgba(255, 235, 59, 0.3);
+  color: #ffc107;
+}
+.p99-fast {
+  background-color: rgba(76, 175, 80, 0.3);
+  color: #81c784;
+}
+
+/* 深色模式下的P99梯度变色 */
+[data-theme="dark"] .p99-very-slow {
+  background-color: rgba(255, 0, 0, 0.3);
+  color: #ff6e6e;
+}
+[data-theme="dark"] .p99-slow {
+  background-color: rgba(255, 152, 0, 0.3);
+  color: #ffb74d;
+}
+[data-theme="dark"] .p99-medium {
+  background-color: rgba(255, 235, 59, 0.3);
+  color: #fff176;
+}
+[data-theme="dark"] .p99-fast {
+  background-color: rgba(76, 175, 80, 0.3);
+  color: #81c784;
+}

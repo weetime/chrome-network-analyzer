@@ -39,6 +39,8 @@
     domainRemoveSuccess: '已移除域名 "{domain}" 的授权',
     domainRemoveConfirm: '确定要移除域名 "{domain}" 的授权吗？',
     domainRemoveFailed: '移除域名 "{domain}" 授权失败',
+    domainName: '域名',
+    actions: '操作',
     
     // AI设置
     aiSettings: 'AI 分析设置',

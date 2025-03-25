@@ -39,6 +39,8 @@
     domainRemoveSuccess: 'Authorization for domain "{domain}" has been removed',
     domainRemoveConfirm: 'Are you sure you want to remove authorization for domain "{domain}"?',
     domainRemoveFailed: 'Failed to remove authorization for domain "{domain}"',
+    domainName: 'Domain',
+    actions: 'Actions',
     
     // AI Settings
     aiSettings: 'AI Analysis Settings',

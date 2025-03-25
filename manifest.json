@@ -4,7 +4,11 @@
   "version": "1.0",
   "description": "Analyzes the timing of all network requests on the current page",
   "permissions": ["webRequest", "tabs", "storage"],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "<all_urls>",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*"
+  ],
 
   "action": {
     "default_popup": "popup.html",
@@ -22,5 +26,6 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
-  ]
+  ],
+  "options_page": "options.html"
 }

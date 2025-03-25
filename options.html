@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Network Analyzer 配置</title>
+  <meta charset="UTF-8">
+  <style>
+    :root {
+      /* Light theme (default) */
+      --bg-color: #ffffff;
+      --text-color: #333333;
+      --border-color: #ddd;
+      --header-bg: #f2f2f2;
+      --stats-bg: #f8f9fa;
+      --stats-border: #e0e0e0;
+      --stats-value: #4285f4;
+      --stats-label: #666;
+      --primary-btn: #4285f4;
+      --primary-btn-hover: #3367d6;
+      --danger-btn: #f44336;
+      --shadow-color: rgba(0,0,0,0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1e1e1e;
+      --text-color: #e0e0e0;
+      --border-color: #444;
+      --header-bg: #2d2d2d;
+      --stats-bg: #2d2d2d;
+      --stats-border: #444;
+      --stats-value: #5c9aff;
+      --stats-label: #aaa;
+      --primary-btn: #5c9aff;
+      --primary-btn-hover: #4285f4;
+      --danger-btn: #f44336;
+      --shadow-color: rgba(0,0,0,0.3);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .settings-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .setting-card {
+      background-color: var(--stats-bg);
+      border: 1px solid var(--stats-border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px var(--shadow-color);
+    }
+
+    .setting-card h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: var(--stats-value);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-size: 14px;
+    }
+
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 8px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+    }
+
+    button {
+      background-color: var(--primary-btn);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-btn-hover);
+    }
+
+    .status-message {
+      margin-top: 8px;
+      font-size: 14px;
+      transition: opacity 0.5s;
+    }
+
+    .success {
+      color: #4caf50;
+    }
+
+    .error {
+      color: #f44336;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .theme-label {
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--primary-btn);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(26px);
+    }
+    
+    /* 域授权列表样式 */
+    .domain-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .domain-item:hover {
+      background-color: var(--stats-bg);
+    }
+    
+    .domain-item .domain-name {
+      font-weight: 500;
+    }
+    
+    .domain-item .remove-btn {
+      background-color: var(--danger-btn);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .domain-item .remove-btn:hover {
+      opacity: 0.9;
+    }
+    
+    #statusMessage.domain {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle">
+    <span class="theme-label">深色模式</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="themeToggle">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <h1>Network Analyzer 配置</h1>
+
+  <div class="settings-container">
+    <div class="setting-card">
+      <h2>AI 分析设置</h2>
+      <div class="form-group">
+        <label for="aiProvider">AI 服务提供商</label>
+        <select id="aiProvider">
+          <option value="openai">OpenAI (GPT-4/3.5)</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="aiModel">AI 模型</label>
+        <select id="aiModel">
+          <!-- 将动态填充 -->
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="apiKey">API 密钥</label>
+        <input type="password" id="apiKey" placeholder="输入您的 API 密钥">
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="saveApiKey">
+          安全保存 API 密钥到本地存储
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="showAiAnalysis">
+          默认显示 AI 分析面板
+        </label>
+      </div>
+      
+      <button id="saveSettings">保存设置</button>
+      <div id="statusMessage" class="status-message" style="opacity: 0;"></div>
+    </div>
+    
+    <div class="setting-card">
+      <h2>显示设置</h2>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="darkThemeDefault">
+          默认使用深色主题
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label for="defaultRowCount">默认显示行数</label>
+        <select id="defaultRowCount">
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+          <option value="500">500</option>
+          <option value="1000">1000</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="setting-card">
+      <h2>域授权管理</h2>
+      <p>在下方管理已授权的域名，这些域名将允许收集网络请求数据。</p>
+      
+      <div class="authorized-domains-list" style="margin-top: 16px; margin-bottom: 16px;">
+        <div id="noDomains" style="display: none; font-style: italic; color: var(--stats-label);">
+          暂无已授权的域名
+        </div>
+        <ul id="authorizedDomainsList" style="padding-left: 0; list-style-type: none;">
+          <!-- 已授权的域名会显示在这里 -->
+        </ul>
+      </div>
+      
+      <div class="form-group">
+        <label for="newDomain">添加新域名</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newDomain" placeholder="example.com" style="flex: 1;">
+          <button id="addDomainBtn">添加</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="setting-card">
+      <h2>扩展操作</h2>
+      <p>点击下方按钮访问扩展分析页面。</p>
+      <button id="openExtension" style="margin-top: 10px;">打开扩展</button>
+    </div>
+  </div>
+
+  <script src="ai-connector.js"></script>
+  <script src="options.js"></script>
+</body>
+</html> 

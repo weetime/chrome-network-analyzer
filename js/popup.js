@@ -36,6 +36,11 @@ function setupMessageListeners() {
         // 更新统计信息
         if (window.StatsManager) {
           window.StatsManager.updateStatistics();
+          
+          // 确保国际化更新
+          if (window.I18n) {
+            window.I18n.updatePageText();
+          }
         }
       }
     }
@@ -54,6 +59,11 @@ function setupMessageListeners() {
         // 更新统计信息
         if (window.StatsManager) {
           window.StatsManager.updateStatistics();
+          
+          // 确保国际化更新
+          if (window.I18n) {
+            window.I18n.updatePageText();
+          }
         }
       }
     }
@@ -82,6 +92,11 @@ function requestNetworkData() {
         // Update statistics if StatsManager is available
         if (window.StatsManager) {
           window.StatsManager.updateStatistics();
+          
+          // 确保国际化更新
+          if (window.I18n) {
+            window.I18n.updatePageText();
+          }
         }
       }
     }

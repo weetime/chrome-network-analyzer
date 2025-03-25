@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Network Request Analyzer",
+    "description": "The name of the extension"
+  },
+  "appDesc": {
+    "message": "Analyzes the timing of all network requests on the current page",
+    "description": "The description of the extension"
+  }
+} 

@@ -13,12 +13,27 @@ const defaultRowCount = document.getElementById('defaultRowCount');
 const saveSettings = document.getElementById('saveSettings');
 const statusMessage = document.getElementById('statusMessage');
 const themeToggle = document.getElementById('themeToggle');
+const languageSelector = document.getElementById('languageSelector');
 
 // 域授权相关元素
 const authorizedDomainsList = document.getElementById('authorizedDomainsList');
 const noDomains = document.getElementById('noDomains');
 const newDomain = document.getElementById('newDomain');
 const addDomainBtn = document.getElementById('addDomainBtn');
+
+// 初始化多语言支持
+function initI18n() {
+  if (window.I18n) {
+    // 初始化语言选择器
+    const currentLang = window.I18n.getCurrentLanguage();
+    if (languageSelector) {
+      languageSelector.value = currentLang;
+    }
+    
+    // 更新页面文本
+    window.I18n.updatePageText();
+  }
+}
 
 // 加载保存的设置
 function loadSavedSettings() {
@@ -29,7 +44,8 @@ function loadSavedSettings() {
     'saveApiKey', 
     'showAiAnalysis',
     'darkThemeDefault',
-    'defaultRowCount'
+    'defaultRowCount',
+    'language'
   ], (result) => {
     // AI Provider 设置
     if (result.aiProvider) {
@@ -65,6 +81,17 @@ function loadSavedSettings() {
     if (result.defaultRowCount) {
       defaultRowCount.value = result.defaultRowCount;
     }
+    
+    // 应用语言设置
+    if (result.language && window.I18n) {
+      window.I18n.setLanguage(result.language);
+      if (languageSelector) {
+        languageSelector.value = result.language;
+      }
+    }
+    
+    // 初始化i18n
+    initI18n();
   });
   
   // 加载已授权域名
@@ -115,7 +142,7 @@ function saveUserSettings() {
   
   // 保存设置到 Chrome 存储
   chrome.storage.local.set(settings, () => {
-    showStatusMessage('设置已保存', 'success');
+    showStatusMessage(window.I18n ? window.I18n.getText('settingsSaved') : '设置已保存', 'success');
   });
 }
 
@@ -176,7 +203,7 @@ function displayAuthorizedDomains(domains) {
     
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-btn';
-    removeBtn.textContent = '移除';
+    removeBtn.textContent = window.I18n ? window.I18n.getText('remove') : '移除';
     removeBtn.addEventListener('click', () => removeDomainAuthorization(domain));
     
     li.appendChild(domainName);
@@ -187,21 +214,38 @@ function displayAuthorizedDomains(domains) {
 
 // 移除域授权
 function removeDomainAuthorization(domain) {
+  const confirmMessage = window.I18n 
+    ? window.I18n.getText('domainRemoveConfirm', { domain }) 
+    : `确定要移除域名 "${domain}" 的授权吗？`;
+    
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+  
   chrome.runtime.sendMessage(
     { action: "removeDomainAuthorization", domain },
     (response) => {
       if (chrome.runtime.lastError) {
         console.error("移除域授权时出错:", chrome.runtime.lastError);
-        showStatusMessage(`移除域名 "${domain}" 授权失败`, 'error', 'domain');
+        const errorMsg = window.I18n 
+          ? window.I18n.getText('domainRemoveFailed', { domain }) 
+          : `移除域名 "${domain}" 授权失败`;
+        showStatusMessage(errorMsg, 'error', 'domain');
         return;
       }
       
       if (response && response.success) {
         // 重新加载授权域名列表
         loadAuthorizedDomains();
-        showStatusMessage(`已移除域名 "${domain}" 的授权`, 'success', 'domain');
+        const successMsg = window.I18n 
+          ? window.I18n.getText('domainRemoveSuccess', { domain }) 
+          : `已移除域名 "${domain}" 的授权`;
+        showStatusMessage(successMsg, 'success', 'domain');
       } else {
-        showStatusMessage(`移除域名 "${domain}" 授权失败`, 'error', 'domain');
+        const errorMsg = window.I18n 
+          ? window.I18n.getText('domainRemoveFailed', { domain }) 
+          : `移除域名 "${domain}" 授权失败`;
+        showStatusMessage(errorMsg, 'error', 'domain');
       }
     }
   );
@@ -210,14 +254,16 @@ function removeDomainAuthorization(domain) {
 // 添加新域名授权
 function addDomainAuthorization(domain) {
   if (!domain) {
-    showStatusMessage('请输入有效的域名', 'error', 'domain');
+    const errorMsg = window.I18n ? window.I18n.getText('invalidDomain') : '请输入有效的域名';
+    showStatusMessage(errorMsg, 'error', 'domain');
     return;
   }
   
   // 简单的域名格式验证
   const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/;
   if (!domainRegex.test(domain)) {
-    showStatusMessage('请输入有效的域名格式 (例如: example.com)', 'error', 'domain');
+    const errorMsg = window.I18n ? window.I18n.getText('invalidDomainFormat') : '请输入有效的域名格式 (例如: example.com)';
+    showStatusMessage(errorMsg, 'error', 'domain');
     return;
   }
   
@@ -226,7 +272,10 @@ function addDomainAuthorization(domain) {
     (response) => {
       if (chrome.runtime.lastError) {
         console.error("添加域授权时出错:", chrome.runtime.lastError);
-        showStatusMessage(`添加域名 "${domain}" 授权失败`, 'error', 'domain');
+        const errorMsg = window.I18n 
+          ? window.I18n.getText('domainAddFailed', { domain }) 
+          : `添加域名 "${domain}" 授权失败`;
+        showStatusMessage(errorMsg, 'error', 'domain');
         return;
       }
       
@@ -236,12 +285,32 @@ function addDomainAuthorization(domain) {
         
         // 重新加载授权域名列表
         loadAuthorizedDomains();
-        showStatusMessage(`已添加域名 "${domain}" 的授权`, 'success', 'domain');
+        const successMsg = window.I18n 
+          ? window.I18n.getText('domainAddSuccess', { domain }) 
+          : `已添加域名 "${domain}" 的授权`;
+        showStatusMessage(successMsg, 'success', 'domain');
       } else {
-        showStatusMessage(`添加域名 "${domain}" 授权失败`, 'error', 'domain');
+        const errorMsg = window.I18n 
+          ? window.I18n.getText('domainAddFailed', { domain }) 
+          : `添加域名 "${domain}" 授权失败`;
+        showStatusMessage(errorMsg, 'error', 'domain');
       }
     }
   );
+}
+
+// 切换语言
+function changeLanguage(lang) {
+  if (window.I18n && window.I18n.setLanguage(lang)) {
+    // 更新页面文本
+    window.I18n.updatePageText();
+    
+    // 保存语言设置
+    chrome.storage.local.set({ language: lang });
+    
+    // 更新域名列表中的按钮文本
+    loadAuthorizedDomains();
+  }
 }
 
 // 事件监听器
@@ -285,4 +354,11 @@ newDomain.addEventListener('keyup', (event) => {
   if (event.key === 'Enter') {
     addDomainAuthorization(newDomain.value.trim());
   }
-}); 
+});
+
+// 语言选择器变更
+if (languageSelector) {
+  languageSelector.addEventListener('change', () => {
+    changeLanguage(languageSelector.value);
+  });
+} 

@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "网络请求分析器",
+    "description": "扩展的名称"
+  },
+  "appDesc": {
+    "message": "分析当前页面上所有网络请求的时间",
+    "description": "扩展的描述"
+  }
+} 

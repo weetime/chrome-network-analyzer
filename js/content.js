@@ -1,5 +1,6 @@
-// This content script can be used to inject performance monitoring code
-// or communicate with the background script
+/**
+ * Content Script - Injects into web pages to collect performance data
+ */
 
 // Listen for messages from the popup or background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

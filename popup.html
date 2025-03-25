@@ -3,7 +3,7 @@
 <head>
   <title>Network Request Analyzer</title>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <div class="header-container">
@@ -27,14 +27,6 @@
         管理授权
       </a>
     </div>
-  </div>
-  
-  <div id="unauthorizedContent" class="unauthorized-box">
-    <p class="unauthorized-text">访问此网站的网络请求数据需要授权</p>
-    <button id="quickAuthButton" class="quick-auth-btn">授权此域名</button>
-    <a href="#" id="unauthorizedOpenSettings" class="unauthorized-settings-link">
-      前往设置页面管理授权
-    </a>
   </div>
   
   <div id="authorizedContent">
@@ -138,14 +130,14 @@
         </svg>
         Run Analysis
       </button>
-    </div>
-    
+        </div>
+        
     <div class="ai-options">
       <a href="#" id="openOptionsPage">
         配置 AI 设置
       </a>
     </div>
-
+    
     <div id="aiAnalysisContent" class="ai-content">
       <div id="aiAnalysisStatus" class="ai-status">
         <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -170,7 +162,15 @@
   </div>
 </div>
 
-<script src="ai-connector.js"></script>
-<script src="popup.js"></script>
+<script src="js/ai-connector.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/domain-manager.js"></script>
+<script src="js/network-tracker.js"></script>
+<script src="js/table-manager.js"></script>
+<script src="js/stats-manager.js"></script>
+<script src="js/request-details-manager.js"></script>
+<script src="js/ai-analysis-manager.js"></script>
+<script src="js/domain-auth-ui.js"></script>
+<script src="js/popup.js"></script>
 </body>
 </html>

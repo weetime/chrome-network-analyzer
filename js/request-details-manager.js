@@ -30,30 +30,55 @@ function showRequestDetails(request) {
   const detailHeader = document.createElement('div');
   detailHeader.className = 'detail-header';
   
+  const detailTitle = document.createElement('h3');
+  detailTitle.className = 'request-detail-title';
+  detailTitle.textContent = 'Request Details';
+  detailHeader.appendChild(detailTitle);
+  
   const detailUrl = document.createElement('div');
   detailUrl.className = 'detail-url-container';
   
   try {
     const url = new URL(request.url);
+    const urlStr = url.toString();
     
-    // Create hostname element
-    const hostname = document.createElement('span');
-    hostname.className = 'detail-hostname';
-    hostname.textContent = url.hostname;
-    detailUrl.appendChild(hostname);
+    // Create URL item
+    const urlItem = document.createElement('div');
+    urlItem.className = 'detail-item';
     
-    // Create path element
-    const path = document.createElement('span');
-    path.className = 'detail-path';
-    path.textContent = url.pathname + url.search;
-    detailUrl.appendChild(path);
+    const urlLabel = document.createElement('div');
+    urlLabel.className = 'detail-label';
+    urlLabel.textContent = 'URL';
+    
+    const urlValue = document.createElement('div');
+    urlValue.className = 'detail-value';
+    urlValue.textContent = urlStr;
+    urlValue.title = urlStr;
+    
+    urlItem.appendChild(urlLabel);
+    urlItem.appendChild(urlValue);
+    detailUrl.appendChild(urlItem);
+    
   } catch (e) {
-    detailUrl.textContent = request.url || 'Unknown URL';
+    const urlItem = document.createElement('div');
+    urlItem.className = 'detail-item';
+    
+    const urlLabel = document.createElement('div');
+    urlLabel.className = 'detail-label';
+    urlLabel.textContent = 'URL';
+    
+    const urlValue = document.createElement('div');
+    urlValue.className = 'detail-value';
+    urlValue.textContent = request.url || 'Unknown URL';
+    
+    urlItem.appendChild(urlLabel);
+    urlItem.appendChild(urlValue);
+    detailUrl.appendChild(urlItem);
   }
   
   detailHeader.appendChild(detailUrl);
   
-  // Add close button - 改为SVG图标
+  // Add close button
   const closeButton = document.createElement('button');
   closeButton.className = 'close-button';
   closeButton.innerHTML = `
@@ -62,15 +87,14 @@ function showRequestDetails(request) {
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
   `;
+  
   // 使用I18n支持关闭按钮的title
   const closeTitle = window.I18n ? window.I18n.getText('close') : '关闭详情';
   closeButton.setAttribute('title', closeTitle);
-  closeButton.addEventListener('click', () => {
-    requestDetails.style.display = 'none';
-    document.querySelectorAll('#requestsTableBody tr').forEach(r => r.classList.remove('selected-row'));
-  });
   
-  // 将关闭按钮直接添加到requestDetails，而不是detailHeader
+  closeButton.addEventListener('click', closeRequestDetails);
+  
+  // 将关闭按钮直接添加到requestDetails
   requestDetails.appendChild(closeButton);
   requestDetails.appendChild(detailHeader);
   
@@ -82,113 +106,230 @@ function showRequestDetails(request) {
   const basicInfoSection = document.createElement('div');
   basicInfoSection.className = 'detail-section';
   
-  const basicInfoTitle = document.createElement('h3');
+  const basicInfoTitle = document.createElement('h4');
+  basicInfoTitle.className = 'detail-title';
   basicInfoTitle.textContent = 'Basic Information';
   basicInfoSection.appendChild(basicInfoTitle);
   
-  const basicInfoTable = document.createElement('table');
-  basicInfoTable.className = 'detail-table';
+  // Method
+  const methodItem = document.createElement('div');
+  methodItem.className = 'detail-item';
   
-  // Method & Status
-  const methodRow = document.createElement('tr');
-  methodRow.innerHTML = `<td>Method</td><td>${request.method || '-'}</td>`;
-  basicInfoTable.appendChild(methodRow);
+  const methodLabel = document.createElement('div');
+  methodLabel.className = 'detail-label';
+  methodLabel.textContent = 'Method';
   
-  const statusRow = document.createElement('tr');
+  const methodValue = document.createElement('div');
+  methodValue.className = 'detail-value';
+  methodValue.textContent = request.method || '-';
+  
+  methodItem.appendChild(methodLabel);
+  methodItem.appendChild(methodValue);
+  basicInfoSection.appendChild(methodItem);
+  
+  // Status
+  const statusItem = document.createElement('div');
+  statusItem.className = 'detail-item';
+  
+  const statusLabel = document.createElement('div');
+  statusLabel.className = 'detail-label';
+  statusLabel.textContent = 'Status';
+  
+  const statusValue = document.createElement('div');
+  statusValue.className = 'detail-value';
+  
   if (request.error) {
-    statusRow.innerHTML = `<td>Status</td><td class="error">Error: ${request.error}</td>`;
+    statusValue.className += ' status-error';
+    statusValue.textContent = `Error: ${request.error}`;
   } else {
-    const statusClass = request.status >= 400 ? 'error' : 
-                       request.status >= 300 ? 'redirect' : 'success';
-    statusRow.innerHTML = `<td>Status</td><td class="${statusClass}">${request.status || 'Pending'}</td>`;
+    if (request.status >= 400) {
+      statusValue.className += ' status-error';
+    } else if (request.status >= 300) {
+      statusValue.className += ' status-redirect';
+    } else {
+      statusValue.className += ' status-success';
+    }
+    statusValue.textContent = request.status || 'Pending';
   }
-  basicInfoTable.appendChild(statusRow);
+  
+  statusItem.appendChild(statusLabel);
+  statusItem.appendChild(statusValue);
+  basicInfoSection.appendChild(statusItem);
   
   // Type
-  const typeRow = document.createElement('tr');
-  typeRow.innerHTML = `<td>Resource Type</td><td>${request.type || '-'}</td>`;
-  basicInfoTable.appendChild(typeRow);
+  const typeItem = document.createElement('div');
+  typeItem.className = 'detail-item';
+  
+  const typeLabel = document.createElement('div');
+  typeLabel.className = 'detail-label';
+  typeLabel.textContent = 'Resource Type';
+  
+  const typeValue = document.createElement('div');
+  typeValue.className = 'detail-value';
+  typeValue.textContent = request.type || '-';
+  
+  typeItem.appendChild(typeLabel);
+  typeItem.appendChild(typeValue);
+  basicInfoSection.appendChild(typeItem);
   
   // Domain
-  const domainRow = document.createElement('tr');
-  domainRow.innerHTML = `<td>Domain</td><td>${request.domain || '-'}</td>`;
-  basicInfoTable.appendChild(domainRow);
+  const domainItem = document.createElement('div');
+  domainItem.className = 'detail-item';
   
-  basicInfoSection.appendChild(basicInfoTable);
+  const domainLabel = document.createElement('div');
+  domainLabel.className = 'detail-label';
+  domainLabel.textContent = 'Domain';
+  
+  const domainValue = document.createElement('div');
+  domainValue.className = 'detail-value';
+  domainValue.textContent = request.domain || '-';
+  
+  domainItem.appendChild(domainLabel);
+  domainItem.appendChild(domainValue);
+  basicInfoSection.appendChild(domainItem);
+  
   detailContent.appendChild(basicInfoSection);
   
   // Timing section
   const timingSection = document.createElement('div');
   timingSection.className = 'detail-section';
   
-  const timingTitle = document.createElement('h3');
+  const timingTitle = document.createElement('h4');
+  timingTitle.className = 'detail-title';
   timingTitle.textContent = 'Timing Information';
   timingSection.appendChild(timingTitle);
   
-  const timingTable = document.createElement('table');
-  timingTable.className = 'detail-table';
-  
   // Total Time
-  const totalTimeRow = document.createElement('tr');
-  const totalTimeClass = getLoadTimeClass(request.totalTime);
-  totalTimeRow.innerHTML = `<td>Total Time</td><td class="${totalTimeClass}">${formatTime(request.totalTime)}</td>`;
-  timingTable.appendChild(totalTimeRow);
+  const totalTimeItem = document.createElement('div');
+  totalTimeItem.className = 'detail-item';
+  
+  const totalTimeLabel = document.createElement('div');
+  totalTimeLabel.className = 'detail-label';
+  totalTimeLabel.textContent = 'Total Time';
+  
+  const totalTimeValue = document.createElement('div');
+  totalTimeValue.className = 'detail-value ' + getLoadTimeClass(request.totalTime);
+  totalTimeValue.textContent = formatTime(request.totalTime);
+  
+  totalTimeItem.appendChild(totalTimeLabel);
+  totalTimeItem.appendChild(totalTimeValue);
+  timingSection.appendChild(totalTimeItem);
   
   // TTFB
-  const ttfbRow = document.createElement('tr');
-  const ttfbClass = getLoadTimeClass(request.ttfb);
-  ttfbRow.innerHTML = `<td>Time to First Byte</td><td class="${ttfbClass}">${formatTime(request.ttfb)}</td>`;
-  timingTable.appendChild(ttfbRow);
+  const ttfbItem = document.createElement('div');
+  ttfbItem.className = 'detail-item';
+  
+  const ttfbLabel = document.createElement('div');
+  ttfbLabel.className = 'detail-label';
+  ttfbLabel.textContent = 'Time to First Byte';
+  
+  const ttfbValue = document.createElement('div');
+  ttfbValue.className = 'detail-value ' + getLoadTimeClass(request.ttfb);
+  ttfbValue.textContent = formatTime(request.ttfb);
+  
+  ttfbItem.appendChild(ttfbLabel);
+  ttfbItem.appendChild(ttfbValue);
+  timingSection.appendChild(ttfbItem);
   
   // Content Download Time
-  const contentTimeRow = document.createElement('tr');
-  const contentTimeClass = getLoadTimeClass(request.contentDownloadTime);
-  contentTimeRow.innerHTML = `<td>Content Download Time</td><td class="${contentTimeClass}">${formatTime(request.contentDownloadTime)}</td>`;
-  timingTable.appendChild(contentTimeRow);
+  const contentTimeItem = document.createElement('div');
+  contentTimeItem.className = 'detail-item';
+  
+  const contentTimeLabel = document.createElement('div');
+  contentTimeLabel.className = 'detail-label';
+  contentTimeLabel.textContent = 'Content Download Time';
+  
+  const contentTimeValue = document.createElement('div');
+  contentTimeValue.className = 'detail-value ' + getLoadTimeClass(request.contentDownloadTime);
+  contentTimeValue.textContent = formatTime(request.contentDownloadTime);
+  
+  contentTimeItem.appendChild(contentTimeLabel);
+  contentTimeItem.appendChild(contentTimeValue);
+  timingSection.appendChild(contentTimeItem);
   
   // Start Time
   if (request.startTime) {
-    const startTimeRow = document.createElement('tr');
+    const startTimeItem = document.createElement('div');
+    startTimeItem.className = 'detail-item';
+    
+    const startTimeLabel = document.createElement('div');
+    startTimeLabel.className = 'detail-label';
+    startTimeLabel.textContent = 'Start Time';
+    
     const startTime = new Date(request.startTime);
-    startTimeRow.innerHTML = `<td>Start Time</td><td>${startTime.toLocaleTimeString()}.${startTime.getMilliseconds()}</td>`;
-    timingTable.appendChild(startTimeRow);
+    const startTimeValue = document.createElement('div');
+    startTimeValue.className = 'detail-value';
+    startTimeValue.textContent = `${startTime.toLocaleTimeString()}.${startTime.getMilliseconds()}`;
+    
+    startTimeItem.appendChild(startTimeLabel);
+    startTimeItem.appendChild(startTimeValue);
+    timingSection.appendChild(startTimeItem);
   }
   
   // End Time
   if (request.endTime) {
-    const endTimeRow = document.createElement('tr');
+    const endTimeItem = document.createElement('div');
+    endTimeItem.className = 'detail-item';
+    
+    const endTimeLabel = document.createElement('div');
+    endTimeLabel.className = 'detail-label';
+    endTimeLabel.textContent = 'End Time';
+    
     const endTime = new Date(request.endTime);
-    endTimeRow.innerHTML = `<td>End Time</td><td>${endTime.toLocaleTimeString()}.${endTime.getMilliseconds()}</td>`;
-    timingTable.appendChild(endTimeRow);
+    const endTimeValue = document.createElement('div');
+    endTimeValue.className = 'detail-value';
+    endTimeValue.textContent = `${endTime.toLocaleTimeString()}.${endTime.getMilliseconds()}`;
+    
+    endTimeItem.appendChild(endTimeLabel);
+    endTimeItem.appendChild(endTimeValue);
+    timingSection.appendChild(endTimeItem);
   }
   
-  timingSection.appendChild(timingTable);
   detailContent.appendChild(timingSection);
   
   // Size section
   const sizeSection = document.createElement('div');
   sizeSection.className = 'detail-section';
   
-  const sizeTitle = document.createElement('h3');
+  const sizeTitle = document.createElement('h4');
+  sizeTitle.className = 'detail-title';
   sizeTitle.textContent = 'Size Information';
   sizeSection.appendChild(sizeTitle);
   
-  const sizeTable = document.createElement('table');
-  sizeTable.className = 'detail-table';
-  
   // Response Size
-  const responseSizeRow = document.createElement('tr');
-  responseSizeRow.innerHTML = `<td>Response Size</td><td>${formatSize(request.responseSize)}</td>`;
-  sizeTable.appendChild(responseSizeRow);
+  const responseSizeItem = document.createElement('div');
+  responseSizeItem.className = 'detail-item';
+  
+  const responseSizeLabel = document.createElement('div');
+  responseSizeLabel.className = 'detail-label';
+  responseSizeLabel.textContent = 'Response Size';
+  
+  const responseSizeValue = document.createElement('div');
+  responseSizeValue.className = 'detail-value';
+  responseSizeValue.textContent = formatSize(request.responseSize);
+  
+  responseSizeItem.appendChild(responseSizeLabel);
+  responseSizeItem.appendChild(responseSizeValue);
+  sizeSection.appendChild(responseSizeItem);
   
   // Headers Size
   if (request.responseHeadersSize) {
-    const headersSizeRow = document.createElement('tr');
-    headersSizeRow.innerHTML = `<td>Headers Size</td><td>${formatSize(request.responseHeadersSize)}</td>`;
-    sizeTable.appendChild(headersSizeRow);
+    const headersSizeItem = document.createElement('div');
+    headersSizeItem.className = 'detail-item';
+    
+    const headersSizeLabel = document.createElement('div');
+    headersSizeLabel.className = 'detail-label';
+    headersSizeLabel.textContent = 'Headers Size';
+    
+    const headersSizeValue = document.createElement('div');
+    headersSizeValue.className = 'detail-value';
+    headersSizeValue.textContent = formatSize(request.responseHeadersSize);
+    
+    headersSizeItem.appendChild(headersSizeLabel);
+    headersSizeItem.appendChild(headersSizeValue);
+    sizeSection.appendChild(headersSizeItem);
   }
   
-  sizeSection.appendChild(sizeTable);
   detailContent.appendChild(sizeSection);
   
   // Add copy details button
@@ -196,8 +337,8 @@ function showRequestDetails(request) {
   copyDetailsBtnContainer.className = 'detail-actions';
   
   const copyDetailsBtn = document.createElement('button');
-  copyDetailsBtn.textContent = 'Copy Details';
-  copyDetailsBtn.className = 'copy-details-btn';
+  copyDetailsBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg> Copy Details';
+  copyDetailsBtn.className = 'btn-copy-details';
   copyDetailsBtn.addEventListener('click', () => {
     copyRequestDetails(request);
   });
@@ -207,8 +348,92 @@ function showRequestDetails(request) {
   
   requestDetails.appendChild(detailContent);
   
-  // Show the details container
+  // Create modal backdrop if it doesn't exist
+  let modalBackdrop = document.getElementById('modalBackdrop');
+  if (!modalBackdrop) {
+    modalBackdrop = document.createElement('div');
+    modalBackdrop.id = 'modalBackdrop';
+    modalBackdrop.className = 'modal-backdrop';
+    modalBackdrop.addEventListener('click', closeRequestDetails);
+    document.body.appendChild(modalBackdrop);
+  }
+  
+  // 在显示之前先构建好所有内容
+  // 防止重复动画导致的抖动
+  requestDetails.style.animation = 'none';
+  modalBackdrop.style.animation = 'none';
+  requestDetails.style.transform = 'translate(-50%, -50%)';
+  
+  // Reset animations by forcing reflow
+  requestDetails.classList.remove('closing');
+  modalBackdrop.classList.remove('closing');
+  
+  // 先显示背景
+  modalBackdrop.style.display = 'block';
+  
+  // 强制回流
+  void modalBackdrop.offsetWidth;
+  
+  // 再显示弹窗 (分离显示操作以避免抖动)
   requestDetails.style.display = 'block';
+  
+  // 强制回流
+  void requestDetails.offsetWidth;
+  
+  // 重新启用动画（在下一个渲染周期）
+  requestAnimationFrame(() => {
+    requestDetails.style.animation = '';
+    modalBackdrop.style.animation = '';
+  });
+  
+  // Add keydown event listener for ESC key
+  document.addEventListener('keydown', handleEscKeyPress);
+}
+
+/**
+ * Close request details modal
+ */
+function closeRequestDetails() {
+  const requestDetails = document.getElementById('requestDetails');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  
+  if (!requestDetails) return;
+  
+  // 防止用户多次点击关闭按钮
+  document.removeEventListener('keydown', handleEscKeyPress);
+  
+  // 防止鼠标悬停引起的抖动
+  requestDetails.style.pointerEvents = 'none';
+  
+  // Add closing animation classes
+  requestDetails.classList.add('closing');
+  if (modalBackdrop) {
+    modalBackdrop.classList.add('closing');
+  }
+  
+  // Wait for animation to complete before hiding
+  setTimeout(() => {
+    requestDetails.style.display = 'none';
+    requestDetails.classList.remove('closing');
+    requestDetails.style.pointerEvents = '';
+    
+    if (modalBackdrop) {
+      modalBackdrop.style.display = 'none';
+      modalBackdrop.classList.remove('closing');
+    }
+    
+    // Deselect any selected row
+    document.querySelectorAll('#requestsTableBody tr').forEach(r => r.classList.remove('selected-row'));
+  }, 200); // Matches animation duration
+}
+
+/**
+ * Handle ESC key press to close modal
+ */
+function handleEscKeyPress(e) {
+  if (e.key === 'Escape') {
+    closeRequestDetails();
+  }
 }
 
 /**
@@ -275,30 +500,38 @@ function copyRequestDetails(request) {
  * Show a notification message
  */
 function showNotification(message, isError = false) {
-  // Check if notification container exists
-  let notificationContainer = document.getElementById('notificationContainer');
-  
-  // Create if it doesn't exist
-  if (!notificationContainer) {
-    notificationContainer = document.createElement('div');
-    notificationContainer.id = 'notificationContainer';
-    document.body.appendChild(notificationContainer);
-  }
-  
   // Create notification
   const notification = document.createElement('div');
-  notification.className = `notification ${isError ? 'error' : 'success'}`;
-  notification.textContent = message;
+  notification.className = `notification ${isError ? 'error' : ''}`;
   
-  // Add to container
-  notificationContainer.appendChild(notification);
+  // Add icon
+  const iconDiv = document.createElement('div');
+  iconDiv.className = 'notification-icon';
+  
+  if (isError) {
+    iconDiv.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+  } else {
+    iconDiv.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+  }
+  
+  notification.appendChild(iconDiv);
+  
+  // Add text
+  const textDiv = document.createElement('div');
+  textDiv.className = 'notification-text';
+  textDiv.textContent = message;
+  notification.appendChild(textDiv);
+  
+  // Add to body
+  document.body.appendChild(notification);
   
   // Remove after delay
   setTimeout(() => {
-    notification.classList.add('fade-out');
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100px)';
     setTimeout(() => {
-      if (notificationContainer.contains(notification)) {
-        notificationContainer.removeChild(notification);
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
       }
     }, 300);
   }, 3000);
@@ -308,6 +541,7 @@ function showNotification(message, isError = false) {
 (function(global) {
   global.RequestDetailsManager = {
     showRequestDetails,
+    closeRequestDetails,
     copyRequestDetails,
     showNotification
   };

@@ -18,7 +18,6 @@
   border-radius: var(--card-radius);
   background-color: var(--card-bg);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  animation: modal-fade-in 0.3s ease;
   will-change: transform, opacity;
   -webkit-perspective: 1000;
   -webkit-backface-visibility: hidden;
@@ -26,10 +25,18 @@
   transform-style: preserve-3d;
   pointer-events: auto;
   transform-origin: center center;
+  transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
   
   /* 优化滚动 */
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  
+  /* 添加额外防抖动设置 */
+  contain: layout style;
+  backface-visibility: hidden;
+  
+  /* 防止内容变化影响尺寸 */
+  box-sizing: border-box;
 }
 
 /* Modal backdrop */
@@ -42,8 +49,8 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
-  animation: backdrop-fade-in 0.3s ease;
   will-change: opacity;
+  transition: opacity 0.3s ease-out;
 }
 
 [data-theme="dark"] .modal-backdrop {
@@ -65,23 +72,31 @@
   box-shadow: var(--neon-glow), 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
+/* Fixed close button in top right corner */
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: fixed;
+  top: 15px;
+  right: 15px;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: none;
-  border: none;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--text-color);
-  z-index: 10;
-  transition: all 0.2s;
-  opacity: 0.7;
+  z-index: 10001; /* 确保在模态框上方 */
+  transition: all 0.2s cubic-bezier(0.215, 0.61, 0.355, 1);
+  opacity: 0.9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transform-origin: center center;
+  
+  /* 添加额外防抖动设置 */
+  contain: layout style;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 .close-button:hover {
@@ -106,53 +121,34 @@
 }
 
 /* Animations */
-@keyframes modal-fade-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+.request-details.show {
+  display: block;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
 }
 
-@keyframes backdrop-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modal-fade-out {
-  from {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.96);
-  }
-}
-
-@keyframes backdrop-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+.request-details.show-active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .request-details.closing {
-  animation: modal-fade-out 0.2s ease forwards;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
   pointer-events: none;
 }
 
+.modal-backdrop.show {
+  display: block;
+  opacity: 0;
+}
+
+.modal-backdrop.show-active {
+  opacity: 1;
+}
+
 .modal-backdrop.closing {
-  animation: backdrop-fade-out 0.2s ease forwards;
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -378,4 +374,127 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+/* Timeline styles */
+.timeline-section {
+  margin: 15px 0 20px 0;
+  padding: 15px;
+  background-color: var(--bg-color);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+}
+
+.timeline-container {
+  position: relative;
+  height: 40px;
+  margin: 15px 0;
+  width: 100%;
+}
+
+.timeline-bar {
+  position: absolute;
+  height: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 4px;
+  background-color: var(--stats-bg);
+  width: 100%;
+}
+
+.timeline-segment {
+  position: absolute;
+  height: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 4px;
+  transition: all 0.2s;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.timeline-segment:hover {
+  height: 12px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.timeline-segment-dns {
+  background-color: #4CAF50;
+  left: 0;
+}
+
+.timeline-segment-connect {
+  background-color: #2196F3;
+}
+
+.timeline-segment-tls {
+  background-color: #9C27B0;
+}
+
+.timeline-segment-wait {
+  background-color: #FFC107;
+}
+
+.timeline-segment-download {
+  background-color: #FF5722;
+}
+
+.timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--stats-label);
+}
+
+.timeline-tooltip {
+  position: absolute;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  color: var(--text-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 3;
+  white-space: nowrap;
+}
+
+.timeline-segment:hover .timeline-tooltip {
+  opacity: 1;
+  transform: translateY(-10px);
+}
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.timeline-legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-color);
+}
+
+.timeline-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 5px;
+}
+
+/* Dark theme enhancements for timeline */
+[data-theme="dark"] .timeline-tooltip {
+  box-shadow: var(--neon-glow), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .timeline-segment:hover {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
 }

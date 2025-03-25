@@ -53,16 +53,25 @@ function showRequestDetails(request) {
   
   detailHeader.appendChild(detailUrl);
   
-  // Add close button
+  // Add close button - 改为SVG图标
   const closeButton = document.createElement('button');
   closeButton.className = 'close-button';
-  closeButton.innerHTML = '&times;';
+  closeButton.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  `;
+  // 使用I18n支持关闭按钮的title
+  const closeTitle = window.I18n ? window.I18n.getText('close') : '关闭详情';
+  closeButton.setAttribute('title', closeTitle);
   closeButton.addEventListener('click', () => {
-    requestDetails.innerHTML = '';
+    requestDetails.style.display = 'none';
     document.querySelectorAll('#requestsTableBody tr').forEach(r => r.classList.remove('selected-row'));
   });
-  detailHeader.appendChild(closeButton);
   
+  // 将关闭按钮直接添加到requestDetails，而不是detailHeader
+  requestDetails.appendChild(closeButton);
   requestDetails.appendChild(detailHeader);
   
   // Create details content

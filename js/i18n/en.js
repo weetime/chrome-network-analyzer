@@ -19,12 +19,13 @@
     confirm: 'Confirm',
     enable: 'Enable',
     disable: 'Disable',
+    close: 'Close',
     
     // App name
     appName: 'Network Request Analyzer',
     
     // Domain Management
-    domainManagement: 'Domain Authorization Management',
+    domainManagement: 'Management',
     domainManagementDesc: 'Manage authorized domains below. These domains will be allowed to collect network request data.',
     noDomains: 'No authorized domains yet',
     addNewDomain: 'Add New Domain',

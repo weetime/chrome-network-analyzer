@@ -19,12 +19,13 @@
     confirm: '确认',
     enable: '启用',
     disable: '禁用',
+    close: '关闭',
     
     // 应用名称
     appName: '网络请求分析器',
     
     // 域名管理
-    domainManagement: '域名授权管理',
+    domainManagement: '设置',
     domainManagementDesc: '在下方管理已授权的域名，这些域名将允许收集网络请求数据。',
     noDomains: '暂无已授权的域名',
     addNewDomain: '添加新域名',

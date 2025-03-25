@@ -84,7 +84,11 @@ async function loadSavedSettings() {
     
     // 应用当前的主题设置
     themeToggle.checked = isDarkThemeDefault;
-    applyTheme(isDarkThemeDefault ? 'dark' : 'light');
+    const theme = isDarkThemeDefault ? 'dark' : 'light';
+    applyTheme(theme);
+    
+    // 同步更新 localStorage 以便 popup.html 可以使用相同的主题设置
+    localStorage.setItem('theme', theme);
     
     // 默认显示行数设置
     if (result.defaultRowCount) {
@@ -189,6 +193,15 @@ function showStatusMessage(message, type = 'success', className = '') {
 function toggleTheme() {
   const isDark = themeToggle.checked;
   applyTheme(isDark ? 'dark' : 'light', true);
+  
+  // 同步更新 localStorage
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  
+  // 同步更新 darkThemeDefault 复选框
+  darkThemeDefault.checked = isDark;
+  
+  // 更新存储设置
+  chrome.storage.local.set({ darkThemeDefault: isDark });
 }
 
 // 应用主题并添加过渡效果
@@ -596,6 +609,19 @@ themeToggle.addEventListener('change', toggleTheme);
 // 打开扩展按钮点击
 document.getElementById('openExtension').addEventListener('click', () => {
   chrome.action.openPopup();
+});
+
+// 默认主题设置变更
+darkThemeDefault.addEventListener('change', () => {
+  themeToggle.checked = darkThemeDefault.checked;
+  const newTheme = darkThemeDefault.checked ? 'dark' : 'light';
+  applyTheme(newTheme, true);
+  
+  // 同步更新 localStorage 以便 popup.html 可以使用相同的主题设置
+  localStorage.setItem('theme', newTheme);
+  
+  // 更新 Chrome Storage
+  chrome.storage.local.set({ darkThemeDefault: darkThemeDefault.checked });
 });
 
 // 添加域名按钮点击

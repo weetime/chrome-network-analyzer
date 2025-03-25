@@ -11,7 +11,7 @@ table {
 
 th, td {
   border: 1px solid var(--border-color);
-  padding: 8px 10px;
+  padding: 6px 8px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -24,8 +24,8 @@ th {
   top: 0;
   cursor: pointer;
   position: relative;
-  padding: 10px 8px;
-  font-size: 12px;
+  padding: 8px 6px;
+  font-size: 11px;
   font-weight: 600;
   z-index: 10;
   box-shadow: 0 1px 0 var(--border-color);
@@ -90,7 +90,7 @@ th.sort-desc .sort-icon {
 }
 
 .url-cell {
-  max-width: 300px;
+  max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -136,14 +136,14 @@ th.sort-desc .sort-icon {
 }
 
 /* 优化表格列宽 */
-#requestsTable th:nth-child(1) { width: 30%; } /* URL */
+#requestsTable th:nth-child(1) { width: 25%; } /* URL */
 #requestsTable th:nth-child(2) { width: 8%; }  /* Type */
 #requestsTable th:nth-child(3) { width: 7%; }  /* Method */
 #requestsTable th:nth-child(4) { width: 7%; }  /* Status */
-#requestsTable th:nth-child(5) { width: 12%; } /* Time */
+#requestsTable th:nth-child(5) { width: 11%; } /* Time */
 #requestsTable th:nth-child(6) { width: 10%; } /* TTFB */
-#requestsTable th:nth-child(7) { width: 10%; } /* Visits */
-#requestsTable th:nth-child(8) { width: 16%; } /* P99 */
+#requestsTable th:nth-child(7) { width: 8%; } /* Visits */
+#requestsTable th:nth-child(8) { width: 12%; } /* P99 */
 
 /* Row status colors */
 .slow {

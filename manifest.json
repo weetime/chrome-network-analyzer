@@ -28,5 +28,11 @@
       "js": ["js/content.js"]
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["ai-analysis.html", "css/*", "js/*", "images/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "options_page": "options.html"
 }

@@ -152,10 +152,10 @@ function setupControlButtons() {
   const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
   if (aiAnalysisToggleBtn) {
     aiAnalysisToggleBtn.addEventListener('click', () => {
-      const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
-      if (aiAnalysisContainer) {
-        aiAnalysisContainer.classList.toggle('visible');
-      }
+      // 打开独立的AI分析页面，并传递当前的tabId参数
+      chrome.tabs.create({
+        url: chrome.runtime.getURL(`ai-analysis.html?tabId=${currentTabId}`)
+      });
     });
   }
 }

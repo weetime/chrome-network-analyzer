@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title data-i18n="aiAnalysisTitle">网络请求 AI 分析</title>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/ai-analysis.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="tech-bg">
+  <div class="header-container">
+    <h1 class="page-title" data-i18n="aiAnalysisTitle">网络请求 AI 分析</h1>
+    <a href="#" id="backToMain" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span data-i18n="backToMain">返回主页</span>
+    </a>
+  </div>
+
+  <!-- 网络请求性能指标 -->
+  <div id="statsContainer" class="stats-container">
+    <!-- Statistics will be inserted here -->
+  </div>
+  
+  <!-- AI分析主要内容 -->
+  <div class="ai-container card terminal-card">
+    <div class="ai-header">
+      <h3 data-i18n="aiAnalysis">网络请求 AI 性能分析</h3>
+      <div class="ai-header-actions">
+        <button id="runAiAnalysisBtn" class="ai-run-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span data-i18n="runAnalysis">运行分析</span>
+        </button>
+        <a href="#" id="openOptionsPage" class="ai-options-link" data-i18n="aiSettings">配置 AI 设置</a>
+      </div>
+    </div>
+    
+    <div id="aiAnalysisContent" class="ai-content">
+      <div id="analysisLoading" class="ai-loading">
+        <svg class="spinner" width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="42" stroke-dashoffset="12"></circle>
+        </svg>
+        <p class="ai-status-text" data-i18n="processing">处理中，请稍候...</p>
+      </div>
+      
+      <div id="analysisContent" class="ai-result-container">
+        <div id="analysisText" class="ai-result code-block">
+          <!-- AI analysis results will appear here -->
+        </div>
+        
+        <div id="analysisError" class="ai-error">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <p id="analysisErrorText">无法执行 AI 分析。请检查 API 设置。</p>
+        </div>
+      </div>
+      
+      <div class="ai-footer">
+        <div class="ai-info">
+          <span data-i18n="aiModelInfo">分析提供: </span>
+          <span id="analysisProvider" class="ai-provider">OpenAI</span>
+          <span>/</span>
+          <span id="analysisModel" class="ai-model">GPT-4</span>
+        </div>
+        <button id="copyAnalysisBtn" class="ai-copy-btn btn-glow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span data-i18n="copy">复制</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 使用提示区域 -->
+  <div class="tips-container card">
+    <h3 class="tips-title" data-i18n="aiTips">AI 分析使用提示</h3>
+    <ul class="tips-list">
+      <li data-i18n="aiTip1">AI分析能够识别网络性能瓶颈，并提供优化建议</li>
+      <li data-i18n="aiTip2">分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本</li>
+      <li data-i18n="aiTip3">您可以在扩展设置中配置偏好的AI提供商和API密钥</li>
+      <li data-i18n="aiTip4">分析过程视请求量和响应而定，可能需要几秒钟时间</li>
+    </ul>
+  </div>
+
+<script src="js/i18n.js"></script>
+<script src="js/i18n/zh.js"></script>
+<script src="js/i18n/en.js"></script>
+<script src="js/ai-connector.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/stats-manager.js"></script>
+<script src="js/request-details-manager.js"></script>
+<script src="js/ai-analysis-manager.js"></script>
+<script src="js/ai-page.js"></script>
+</body>
+</html>

@@ -109,6 +109,29 @@
     copy: 'Copy',
     
     // Table Info
-    noDataMessage: 'No network requests captured yet. Browse a website to see data.'
+    noDataMessage: 'No network requests captured yet. Browse a website to see data.',
+    
+    // Statistics
+    noData: 'No Data',
+    totalRequests: 'Total Requests',
+    totalLoadTime: 'Total Load Time',
+    slowestRequest: 'Slowest Request',
+    avgResponse: 'Avg Response',
+    p50Response: 'P50 Response',
+    p95Response: 'P95 Response',
+    type_document: 'Document',
+    type_stylesheet: 'CSS',
+    type_script: 'Script',
+    type_image: 'Image',
+    type_xmlhttprequest: 'XHR/Fetch',
+    type_fetch: 'Fetch',
+    type_font: 'Font',
+    type_media: 'Media',
+    type_websocket: 'WebSocket',
+    type_manifest: 'Manifest',
+    type_other: 'Other',
+    status_2xx: 'Success',
+    status_4xx: 'Client Error',
+    status_5xx: 'Server Error'
   };
 })(typeof window !== 'undefined' ? window : self); 

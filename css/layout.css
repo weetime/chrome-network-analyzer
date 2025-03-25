@@ -298,8 +298,9 @@
 
 /* Statistics container */
 .stats-container {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
   margin-bottom: 20px;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
@@ -325,18 +326,17 @@
 
 .stat-item {
   text-align: center;
-  flex: 1;
-  padding: 0 8px;
-  border-right: 1px solid var(--stats-border);
-  transition: transform 0.2s;
+  padding: 12px 10px;
+  background-color: var(--stats-tile-bg);
+  border-radius: 8px;
+  border: 1px solid var(--stats-tile-border);
+  transition: all 0.2s ease;
 }
 
 .stat-item:hover {
   transform: translateY(-2px);
-}
-
-.stat-item:last-child {
-  border-right: none;
+  border-color: var(--accent-color);
+  box-shadow: var(--stats-tile-hover-shadow);
 }
 
 .stat-value {
@@ -344,12 +344,15 @@
   font-weight: bold;
   color: var(--stats-value);
   text-shadow: var(--neon-glow);
+  margin-bottom: 5px;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--stats-label);
-  margin-top: 5px;
   font-weight: 500;
   letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -31,6 +31,11 @@
   --neon-glow: 0 0 5px var(--glow-color);
   --card-radius: 8px;
   --hover-effect: rgba(63, 106, 216, 0.1);
+  
+  /* Stats tile variables */
+  --stats-tile-bg: #f0f5ff;
+  --stats-tile-border: #dcdfe6;
+  --stats-tile-hover-shadow: 0 4px 10px rgba(63, 106, 216, 0.2);
 }
 
 [data-theme="dark"] {
@@ -64,6 +69,11 @@
   --neon-glow: 0 0 8px var(--glow-color);
   --card-radius: 8px;
   --hover-effect: rgba(92, 174, 239, 0.15);
+  
+  /* Stats tile dark theme variables */
+  --stats-tile-bg: #1e2229;
+  --stats-tile-border: #384860;
+  --stats-tile-hover-shadow: 0 0 12px rgba(92, 174, 239, 0.25);
 }
 
 /* Base styles for the entire application */

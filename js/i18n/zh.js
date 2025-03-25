@@ -109,6 +109,29 @@
     copy: '复制',
     
     // 表格信息
-    noDataMessage: '尚未捕获任何网络请求。浏览网站以查看数据。'
+    noDataMessage: '尚未捕获任何网络请求。浏览网站以查看数据。',
+    
+    // 统计信息
+    noData: '暂无数据',
+    totalRequests: '总请求数',
+    totalLoadTime: '总加载时间',
+    slowestRequest: '最慢请求',
+    avgResponse: '平均响应时间',
+    p50Response: 'P50响应时间',
+    p95Response: 'P95响应时间',
+    type_document: '文档',
+    type_stylesheet: 'CSS样式',
+    type_script: '脚本',
+    type_image: '图片',
+    type_xmlhttprequest: 'XHR/Fetch',
+    type_fetch: 'Fetch请求',
+    type_font: '字体',
+    type_media: '媒体文件',
+    type_websocket: 'WebSocket',
+    type_manifest: '清单文件',
+    type_other: '其他',
+    status_2xx: '成功请求',
+    status_4xx: '客户端错误',
+    status_5xx: '服务器错误'
   };
 })(typeof window !== 'undefined' ? window : self); 

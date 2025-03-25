@@ -47,121 +47,88 @@ function updateStatistics() {
   if (requests.length === 0) {
     const noDataElement = document.createElement('div');
     noDataElement.className = 'stat-item';
-    noDataElement.textContent = 'No requests data available';
+    noDataElement.innerHTML = `
+      <div class="stat-value">-</div>
+      <div class="stat-label" data-i18n="noData">No Data</div>
+    `;
     statsContainer.appendChild(noDataElement);
+    
+    // 应用国际化
+    if (window.I18n && window.I18n.updatePageText) {
+      window.I18n.updatePageText();
+    }
     return;
   }
   
-  // Calculate statistics
+  // 仅展示固定的5个指标
+  const stats = [
+    // 总请求数
+    {
+      value: requests.length,
+      label: 'Total Requests',
+      i18n: 'totalRequests'
+    },
+    // 最慢请求
+    {
+      value: formatTime(Math.max(...requests.map(req => req.totalTime || 0))),
+      label: 'Slowest Request',
+      i18n: 'slowestRequest',
+      raw: false
+    },
+    // 平均响应时间
+    {
+      value: formatTime(requests.reduce((sum, req) => sum + (req.totalTime || 0), 0) / (requests.length || 1)),
+      label: 'Avg Response',
+      i18n: 'avgResponse',
+      raw: false
+    },
+    // P50响应时间
+    {
+      value: formatTime(calculatePercentile(requests.map(req => req.totalTime).filter(time => time), 50)),
+      label: 'P50 Response',
+      i18n: 'p50Response',
+      raw: false
+    },
+    // P95响应时间
+    {
+      value: formatTime(calculatePercentile(requests.map(req => req.totalTime).filter(time => time), 95)),
+      label: 'P95 Response',
+      i18n: 'p95Response',
+      raw: false
+    }
+  ];
   
-  // Total requests
-  const totalRequestsElement = document.createElement('div');
-  totalRequestsElement.className = 'stat-item';
-  totalRequestsElement.innerHTML = `
-    <div class="stat-value">${requests.length}</div>
-    <div class="stat-label">Total Requests</div>
-  `;
-  statsContainer.appendChild(totalRequestsElement);
-  
-  // Resources by type
-  const resourceTypes = {};
-  requests.forEach(req => {
-    const type = req.type || 'other';
-    resourceTypes[type] = (resourceTypes[type] || 0) + 1;
-  });
-  
-  // Show top 3 resource types
-  const topTypes = Object.entries(resourceTypes)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
-  
-  topTypes.forEach(([type, count]) => {
-    const typeElement = document.createElement('div');
-    typeElement.className = 'stat-item';
-    typeElement.innerHTML = `
-      <div class="stat-value">${count}</div>
-      <div class="stat-label">${type}</div>
-    `;
-    statsContainer.appendChild(typeElement);
-  });
-  
-  // Total time
-  const totalTime = requests.reduce((sum, req) => sum + (req.totalTime || 0), 0);
-  const formattedTotalTime = formatTime(totalTime);
-  
-  const totalTimeElement = document.createElement('div');
-  totalTimeElement.className = 'stat-item';
-  totalTimeElement.innerHTML = `
-    <div class="stat-value">${formattedTotalTime}</div>
-    <div class="stat-label">Total Load Time</div>
-  `;
-  statsContainer.appendChild(totalTimeElement);
-  
-  // Percentiles
-  const times = requests.map(req => req.totalTime).filter(time => time);
-  
-  // P50
-  const p50 = calculatePercentile(times, 50);
-  const p50Element = document.createElement('div');
-  p50Element.className = 'stat-item';
-  p50Element.innerHTML = `
-    <div class="stat-value">${formatTime(p50)}</div>
-    <div class="stat-label">P50 Response</div>
-  `;
-  statsContainer.appendChild(p50Element);
-  
-  // P95
-  const p95 = calculatePercentile(times, 95);
-  const p95Element = document.createElement('div');
-  p95Element.className = 'stat-item';
-  p95Element.innerHTML = `
-    <div class="stat-value">${formatTime(p95)}</div>
-    <div class="stat-label">P95 Response</div>
-  `;
-  statsContainer.appendChild(p95Element);
-  
-  // P99
-  const p99 = calculatePercentile(times, 99);
-  const p99Element = document.createElement('div');
-  p99Element.className = 'stat-item';
-  p99Element.innerHTML = `
-    <div class="stat-value">${formatTime(p99)}</div>
-    <div class="stat-label">P99 Response</div>
-  `;
-  statsContainer.appendChild(p99Element);
-  
-  // Status codes
-  const statusGroups = {
-    '2xx': 0,
-    '3xx': 0,
-    '4xx': 0,
-    '5xx': 0,
-    'Error': 0
-  };
-  
-  requests.forEach(req => {
-    if (req.error) {
-      statusGroups['Error']++;
-    } else if (req.status) {
-      const group = Math.floor(req.status / 100);
-      if (group >= 2 && group <= 5) {
-        statusGroups[`${group}xx`]++;
+  // Create stat elements
+  stats.forEach(stat => {
+    const statElement = document.createElement('div');
+    statElement.className = 'stat-item';
+    
+    // 使用I18n获取翻译，如果不存在则使用默认标签
+    let label = stat.label;
+    let hasI18n = false;
+    
+    if (window.I18n && window.I18n.getText && stat.i18n) {
+      const translated = window.I18n.getText(stat.i18n);
+      // 只有当翻译不等于键名时才使用翻译（避免未翻译的情况）
+      if (translated && translated !== stat.i18n) {
+        label = translated;
+        hasI18n = true;
       }
     }
+    
+    statElement.innerHTML = `
+      <div class="stat-value">${stat.raw === false ? stat.value : stat.value}</div>
+      <div class="stat-label" ${hasI18n ? `data-i18n="${stat.i18n}"` : ''}>${label}</div>
+    `;
+    statsContainer.appendChild(statElement);
   });
   
-  // Only show non-zero status groups
-  Object.entries(statusGroups).forEach(([group, count]) => {
-    if (count > 0) {
-      const statusElement = document.createElement('div');
-      statusElement.className = 'stat-item';
-      statusElement.innerHTML = `
-        <div class="stat-value">${count}</div>
-        <div class="stat-label">${group} Responses</div>
-      `;
-      statsContainer.appendChild(statusElement);
-    }
-  });
+  // 应用国际化
+  if (window.I18n && window.I18n.updatePageText) {
+    setTimeout(() => {
+      window.I18n.updatePageText();
+    }, 0);
+  }
 }
 
 /**

@@ -8,6 +8,9 @@ const SUPPORTED_LANGUAGES = ['zh', 'en'];
 // 默认语言
 const DEFAULT_LANGUAGE = 'zh';
 
+// 声明 MutationObserver 变量
+let i18nObserver = null;
+
 // 获取当前语言
 function getCurrentLanguage() {
   return localStorage.getItem('language') || DEFAULT_LANGUAGE;
@@ -63,6 +66,56 @@ function updatePageText() {
   });
 }
 
+// 设置 DOM 观察器来监听变化
+function setupObserver() {
+  // 如果已经有观察器，则先断开连接
+  if (i18nObserver) {
+    i18nObserver.disconnect();
+  }
+  
+  // 创建新的 MutationObserver
+  i18nObserver = new MutationObserver((mutations) => {
+    let shouldUpdate = false;
+    
+    // 检查是否有新增的需要本地化的元素
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === 1) { // 元素节点
+            // 检查元素本身是否有 data-i18n 属性
+            if (node.hasAttribute && (
+                node.hasAttribute('data-i18n') || 
+                node.hasAttribute('data-i18n-placeholder') || 
+                node.hasAttribute('data-i18n-title')
+            )) {
+              shouldUpdate = true;
+            }
+            
+            // 检查子元素是否有 data-i18n 属性
+            if (node.querySelectorAll) {
+              const i18nNodes = node.querySelectorAll('[data-i18n], [data-i18n-placeholder], [data-i18n-title]');
+              if (i18nNodes.length > 0) {
+                shouldUpdate = true;
+              }
+            }
+          }
+        });
+      }
+    });
+    
+    // 只有在检测到需要本地化的元素时才更新
+    if (shouldUpdate) {
+      updatePageText();
+    }
+  });
+  
+  // 开始观察整个文档
+  i18nObserver.observe(document.body, { 
+    childList: true, 
+    subtree: true 
+  });
+}
+
 // 加载语言包
 function loadLanguagePacks() {
   return new Promise((resolve, reject) => {
@@ -111,6 +164,9 @@ async function init() {
     await loadLanguagePacks();
     console.log('All language packs loaded.');
     updatePageText();
+    
+    // 设置 DOM 观察器
+    setupObserver();
   } catch (error) {
     console.error('Failed to initialize i18n module:', error);
   }

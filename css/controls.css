@@ -4,7 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 15px;
+  padding: 12px 12px;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
   border: 1px solid var(--border-color);
@@ -30,14 +30,14 @@
 
 .filter-container {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
 }
 
 .button-group {
   display: flex;
   align-items: center;
-  gap: 10px; /* Consistent spacing between all buttons */
+  gap: 8px; /* 减小按钮间距 */
 }
 
 /* Reset individual button margins */
@@ -138,7 +138,7 @@
 }
 
 .search-input, .type-filter, .status-filter {
-  padding: 8px 12px;
+  padding: 8px 10px;
   background-color: var(--bg-color);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -157,7 +157,7 @@
 }
 
 .search-input {
-  width: 220px;
+  width: 200px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e7985' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: 8px center;
@@ -168,8 +168,8 @@
   cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e7985' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: calc(100% - 8px) center;
-  padding-right: 30px;
+  background-position: calc(100% - 6px) center;
+  padding-right: 24px;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;

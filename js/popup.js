@@ -6,6 +6,19 @@
 let currentTabId = null;
 let updateInterval = null; // 用于存储更新定时器的ID
 
+// 初始化国际化
+async function initI18n() {
+  if (window.I18n) {
+    try {
+      // 初始化I18n并加载语言包
+      await window.I18n.init();
+      console.log('I18n initialized with language:', window.I18n.getCurrentLanguage());
+    } catch (error) {
+      console.error('Failed to initialize I18n:', error);
+    }
+  }
+}
+
 // 处理新的网络请求消息
 function setupMessageListeners() {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -109,7 +122,7 @@ function setupControlButtons() {
   }
   
   // Analyze button
-  const analyzeButton = document.getElementById('analyzeButton');
+  const analyzeButton = document.getElementById('runAiAnalysisBtn');
   if (analyzeButton) {
     if (window.AiAnalysisManager && window.AiAnalysisManager.runAnalysis) {
       // Use the module if available
@@ -137,7 +150,8 @@ function exportData() {
   const requestData = window.TableManager ? window.TableManager.getRequestData() : {};
   
   if (Object.keys(requestData).length === 0) {
-    alert('No data to export.');
+    const noDataMsg = window.I18n ? window.I18n.getText('noDataMessage') : 'No data to export.';
+    alert(noDataMsg);
     return;
   }
   
@@ -170,7 +184,9 @@ function exportData() {
 
 // Clear network data
 function clearData() {
-  if (confirm('Are you sure you want to clear all network data for this tab?')) {
+  const confirmMsg = window.I18n ? window.I18n.getText('confirm') : 'Are you sure you want to clear all network data for this tab?';
+  
+  if (confirm(confirmMsg)) {
     chrome.runtime.sendMessage(
       { action: "clearRequestData", tabId: currentTabId },
       (response) => {
@@ -213,6 +229,9 @@ async function initPopup() {
   console.log('Initializing popup...');
   
   try {
+    // 初始化多语言支持
+    await initI18n();
+    
     // 设置消息监听，用于接收实时网络请求更新
     setupMessageListeners();
     
@@ -316,7 +335,7 @@ function checkDomainAndLoadData(domain) {
           headerAuthorizationSwitch.checked = true;
         }
         if (headerAuthStatus) {
-          headerAuthStatus.textContent = '启用';
+          headerAuthStatus.textContent = window.I18n ? window.I18n.getText('enable') : '启用';
           headerAuthStatus.className = 'auth-status enabled';
         }
         
@@ -337,7 +356,7 @@ function checkDomainAndLoadData(domain) {
           headerAuthorizationSwitch.checked = false;
         }
         if (headerAuthStatus) {
-          headerAuthStatus.textContent = '禁用';
+          headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
           headerAuthStatus.className = 'auth-status disabled';
         }
       }
@@ -346,4 +365,13 @@ function checkDomainAndLoadData(domain) {
 }
 
 // Initialize the popup when DOM is loaded
-document.addEventListener('DOMContentLoaded', initPopup);
+document.addEventListener('DOMContentLoaded', () => {
+  // 使用IIFE包装async函数调用
+  (async () => {
+    try {
+      await initPopup();
+    } catch (error) {
+      console.error('Error in popup initialization:', error);
+    }
+  })();
+});

@@ -22,21 +22,30 @@ const newDomain = document.getElementById('newDomain');
 const addDomainBtn = document.getElementById('addDomainBtn');
 
 // 初始化多语言支持
-function initI18n() {
+async function initI18n() {
   if (window.I18n) {
-    // 初始化语言选择器
-    const currentLang = window.I18n.getCurrentLanguage();
-    if (languageSelector) {
-      languageSelector.value = currentLang;
+    try {
+      // 初始化I18n并加载语言包
+      await window.I18n.init();
+      
+      // 初始化语言选择器
+      const currentLang = window.I18n.getCurrentLanguage();
+      if (languageSelector) {
+        languageSelector.value = currentLang;
+      }
+      
+      console.log('I18n initialized with language:', currentLang);
+    } catch (error) {
+      console.error('Failed to initialize I18n:', error);
     }
-    
-    // 更新页面文本
-    window.I18n.updatePageText();
   }
 }
 
 // 加载保存的设置
-function loadSavedSettings() {
+async function loadSavedSettings() {
+  // 首先初始化I18n
+  await initI18n();
+  
   chrome.storage.local.get([
     'aiApiKey', 
     'aiProvider', 
@@ -89,9 +98,6 @@ function loadSavedSettings() {
         languageSelector.value = result.language;
       }
     }
-    
-    // 初始化i18n
-    initI18n();
   });
   
   // 加载已授权域名
@@ -314,7 +320,16 @@ function changeLanguage(lang) {
 }
 
 // 事件监听器
-document.addEventListener('DOMContentLoaded', loadSavedSettings);
+document.addEventListener('DOMContentLoaded', () => {
+  // 使用IIFE包装async函数调用
+  (async () => {
+    try {
+      await loadSavedSettings();
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  })();
+});
 
 // AI Provider 变更
 aiProvider.addEventListener('change', () => {

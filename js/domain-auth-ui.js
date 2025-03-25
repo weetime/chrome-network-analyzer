@@ -39,7 +39,7 @@ function setupDomainSwitchListener() {
               if (response && response.success) {
                 // Update UI
                 if (headerAuthStatus) {
-                  headerAuthStatus.textContent = '启用';
+                  headerAuthStatus.textContent = window.I18n ? window.I18n.getText('enable') : '启用';
                   headerAuthStatus.className = 'auth-status enabled';
                 }
                 
@@ -71,7 +71,7 @@ function setupDomainSwitchListener() {
               if (response && response.success !== false) {
                 // Update UI
                 if (headerAuthStatus) {
-                  headerAuthStatus.textContent = '禁用';
+                  headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
                   headerAuthStatus.className = 'auth-status disabled';
                 }
                 
@@ -193,7 +193,7 @@ function removeDomainAuthorization(domain) {
             headerAuthorizationSwitch.checked = false;
           }
           if (headerAuthStatus) {
-            headerAuthStatus.textContent = '禁用';
+            headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
             headerAuthStatus.className = 'auth-status disabled';
           }
           
@@ -259,10 +259,10 @@ async function setCurrentDomain(domain) {
   
   if (headerAuthStatus) {
     if (isAuthorized) {
-      headerAuthStatus.textContent = '启用';
+      headerAuthStatus.textContent = window.I18n ? window.I18n.getText('enable') : '启用';
       headerAuthStatus.className = 'auth-status enabled';
     } else {
-      headerAuthStatus.textContent = '禁用';
+      headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
       headerAuthStatus.className = 'auth-status disabled';
     }
   }

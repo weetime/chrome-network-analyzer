@@ -22,10 +22,6 @@ const themeTooltip = document.getElementById('themeTooltip');
 const moonIcon = document.getElementById('moonIcon');
 const sunIcon = document.getElementById('sunIcon');
 const sunRays = document.querySelectorAll('[id^="sunRay"]');
-const domainAuthContainer = document.getElementById('domainAuthContainer');
-const currentDomainSpan = document.getElementById('currentDomain');
-const authorizeDomainSwitch = document.getElementById('authorizeDomainSwitch');
-const authStatus = document.getElementById('authStatus');
 // Header domain elements
 const headerDomainsList = document.getElementById('headerDomainsList');
 const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
@@ -84,8 +80,89 @@ if (themeToggle) {
 // Get current tab and load request data
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    console.log('DOMContentLoaded - 开始初始化');
+    
     // Default hide authorized content area
     document.getElementById('authorizedContent').style.display = 'none';
+    
+    // 检查并添加所有事件监听器
+    console.log('检查DOM元素...');
+    
+    // 添加域名管理链接的点击事件处理
+    const openDomainSettings = document.getElementById('openDomainSettings');
+    console.log('openDomainSettings元素存在?', !!openDomainSettings);
+    if (openDomainSettings) {
+      console.log('绑定openDomainSettings点击事件');
+      openDomainSettings.addEventListener('click', (e) => {
+        console.log('openDomainSettings点击事件触发');
+        e.preventDefault();
+        console.log('打开配置页面');
+        chrome.runtime.openOptionsPage();
+      });
+    } else {
+      console.error('未找到openDomainSettings元素');
+    }
+    
+    // 添加未授权页面的设置链接点击事件
+    const unauthorizedOpenSettings = document.getElementById('unauthorizedOpenSettings');
+    if (unauthorizedOpenSettings) {
+      unauthorizedOpenSettings.addEventListener('click', (e) => {
+        e.preventDefault();
+        chrome.runtime.openOptionsPage();
+      });
+    }
+    
+    // 添加快速授权按钮点击事件
+    const quickAuthButton = document.getElementById('quickAuthButton');
+    if (quickAuthButton) {
+      quickAuthButton.addEventListener('click', () => {
+        chrome.runtime.sendMessage(
+          { action: "authorizeDomain", domain: currentDomain },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.error("Error authorizing domain:", chrome.runtime.lastError);
+              return;
+            }
+            
+            if (response && response.success) {
+              // 显示已授权内容
+              document.getElementById('unauthorizedContent').style.display = 'none';
+              document.getElementById('authorizedContent').style.display = 'block';
+              
+              // 显示header中的域信息
+              const domainInfoElement = document.querySelector('.domain-info');
+              if (domainInfoElement) {
+                domainInfoElement.style.display = 'flex';
+              }
+              
+              // 设置header中的开关状态
+              if (headerAuthorizationSwitch) {
+                headerAuthorizationSwitch.checked = true;
+              }
+              if (headerAuthStatus) {
+                headerAuthStatus.textContent = '启用';
+                headerAuthStatus.className = 'auth-status enabled';
+              }
+              
+              // 请求网络数据
+              requestNetworkData();
+              
+              // 更新已授权域名列表
+              loadAuthorizedDomains();
+            }
+          }
+        );
+      });
+    }
+    
+    // 添加AI配置页面链接的点击事件
+    const openOptionsPage = document.getElementById('openOptionsPage');
+    if (openOptionsPage) {
+      openOptionsPage.addEventListener('click', (e) => {
+        e.preventDefault();
+        chrome.runtime.openOptionsPage();
+      });
+    }
     
     // Load authorized domains list
     loadAuthorizedDomains();
@@ -121,13 +198,13 @@ document.addEventListener('DOMContentLoaded', async () => {
               
               // Update header authorization switch
               headerAuthorizationSwitch.checked = true;
-              headerAuthStatus.textContent = 'Enabled';
+              headerAuthStatus.textContent = '启用';
               headerAuthStatus.className = 'auth-status enabled';
               
               requestNetworkData();
             } else {
               // Domain is not authorized, show authorization UI
-              showDomainAuthorizationUI();
+              showUnauthorizedContent();
               
               // Hide domain info in header
               document.querySelector('.domain-info').style.display = 'none';
@@ -165,24 +242,15 @@ function requestNetworkData() {
   );
 }
 
-// Function to show domain authorization UI
-function showDomainAuthorizationUI() {
-  if (!domainAuthContainer || !currentDomainSpan) return;
+// Function to show unauthorized content
+function showUnauthorizedContent() {
+  document.getElementById('unauthorizedContent').style.display = 'block';
+  document.getElementById('authorizedContent').style.display = 'none';
   
-  domainAuthContainer.style.display = 'block';
-  currentDomainSpan.textContent = currentDomain;
-  
-  // Set switch to unchecked state
-  if (authorizeDomainSwitch && authStatus) {
-    authorizeDomainSwitch.checked = false;
-    authStatus.textContent = 'Disabled';
-    authStatus.className = 'auth-status disabled';
-  }
-  
-  // Hide authorized content area
-  const authorizedContentElement = document.getElementById('authorizedContent');
-  if (authorizedContentElement) {
-    authorizedContentElement.style.display = 'none';
+  // Hide AI analysis panel
+  const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
+  if (aiAnalysisContainer) {
+    aiAnalysisContainer.style.display = 'none';
   }
 }
 
@@ -233,103 +301,6 @@ clearBtn.addEventListener('click', () => {
   });
 });
 
-// Add event listener for header authorization switch
-if (headerAuthorizationSwitch) {
-  headerAuthorizationSwitch.addEventListener('change', () => {
-    if (headerAuthorizationSwitch.checked) {
-      // Switch opened, authorize domain if not already authorized
-      headerAuthStatus.textContent = 'Enabled';
-      headerAuthStatus.className = 'auth-status enabled';
-      
-      // If domain is not already authorized, authorize it
-      if (document.getElementById('authorizedContent').style.display !== 'block') {
-        chrome.runtime.sendMessage(
-          { action: "authorizeDomain", domain: currentDomain },
-          (response) => {
-            if (chrome.runtime.lastError || !response || !response.success) {
-              console.error("Error authorizing domain:", chrome.runtime.lastError);
-              // Authorization failed, restore switch state
-              headerAuthorizationSwitch.checked = false;
-              headerAuthStatus.textContent = 'Disabled';
-              headerAuthStatus.className = 'auth-status disabled';
-              return;
-            }
-            
-            // Domain authorized, show authorized content
-            document.getElementById('authorizedContent').style.display = 'block';
-            domainAuthContainer.style.display = 'none';
-            requestNetworkData();
-          }
-        );
-      }
-    } else {
-      // Switch closed, cancel authorization
-      headerAuthStatus.textContent = 'Disabled';
-      headerAuthStatus.className = 'auth-status disabled';
-      
-      // Cancel authorization
-      removeDomainAuthorization(currentDomain);
-    }
-  });
-}
-
-// Add event listener for domain authorization switch
-if (authorizeDomainSwitch) {
-  authorizeDomainSwitch.addEventListener('change', () => {
-    if (authorizeDomainSwitch.checked) {
-      // Switch opened, authorize domain
-      authStatus.textContent = 'Enabled';
-      authStatus.className = 'auth-status enabled';
-      
-      chrome.runtime.sendMessage(
-        { action: "authorizeDomain", domain: currentDomain },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.error("Error authorizing domain:", chrome.runtime.lastError);
-            // Authorization failed, restore switch state
-            authorizeDomainSwitch.checked = false;
-            authStatus.textContent = 'Disabled';
-            authStatus.className = 'auth-status disabled';
-            return;
-          }
-          
-          if (response && response.success) {
-            // Domain authorized, hide UI and request data
-            domainAuthContainer.style.display = 'none';
-            
-            // Show authorized content area
-            document.getElementById('authorizedContent').style.display = 'block';
-            
-            // Show domain info in header and update its state
-            document.querySelector('.domain-info').style.display = 'flex';
-            headerAuthorizationSwitch.checked = true;
-            headerAuthStatus.textContent = 'Enabled';
-            headerAuthStatus.className = 'auth-status enabled';
-            
-            requestNetworkData();
-            // Update the authorized domains list
-            loadAuthorizedDomains();
-          } else {
-            // Authorization failed, restore switch state
-            authorizeDomainSwitch.checked = false;
-            authStatus.textContent = 'Disabled';
-            authStatus.className = 'auth-status disabled';
-          }
-        }
-      );
-    } else {
-      // Switch closed, cancel authorization
-      authStatus.textContent = 'Disabled';
-      authStatus.className = 'auth-status disabled';
-      
-      // If already authorized, then cancel authorization
-      if (document.getElementById('authorizedContent').style.display === 'block') {
-        removeDomainAuthorization(currentDomain);
-      }
-    }
-  });
-}
-
 // Listen for new request data from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   try {
@@ -365,6 +336,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   
   return true; // Required for async response
+});
+
+// Add header authorization switch event listener
+headerAuthorizationSwitch.addEventListener('change', () => {
+  if (headerAuthorizationSwitch.checked) {
+    // 开关打开，授权当前域名
+    headerAuthStatus.textContent = '启用';
+    headerAuthStatus.className = 'auth-status enabled';
+    
+    // 如果当前域名未授权，则授权
+    if (document.getElementById('authorizedContent').style.display !== 'block') {
+      chrome.runtime.sendMessage(
+        { action: "authorizeDomain", domain: currentDomain },
+        (response) => {
+          if (chrome.runtime.lastError || !response || !response.success) {
+            console.error("Error authorizing domain:", chrome.runtime.lastError);
+            // 授权失败，恢复开关状态
+            headerAuthorizationSwitch.checked = false;
+            headerAuthStatus.textContent = '未启用';
+            headerAuthStatus.className = 'auth-status disabled';
+            return;
+          }
+          
+          // 域名已授权，显示授权内容
+          document.getElementById('unauthorizedContent').style.display = 'none';
+          document.getElementById('authorizedContent').style.display = 'block';
+          requestNetworkData();
+        }
+      );
+    }
+  } else {
+    // 开关关闭，取消授权
+    headerAuthStatus.textContent = '未启用';
+    headerAuthStatus.className = 'auth-status disabled';
+    
+    // 取消授权
+    removeDomainAuthorization(currentDomain);
+  }
 });
 
 // Calculate percentile value
@@ -1082,7 +1091,7 @@ function displayAuthorizedDomains(domains) {
   // Only show current domain if it's authorized
   if (!currentDomain || !domains.includes(currentDomain)) {
     const noDomainsElement = document.createElement('p');
-    noDomainsElement.textContent = 'Not authorized';
+    noDomainsElement.textContent = '未授权';
     noDomainsElement.style.fontStyle = 'italic';
     noDomainsElement.style.color = 'var(--stats-label)';
     noDomainsElement.style.margin = '0';
@@ -1093,7 +1102,7 @@ function displayAuthorizedDomains(domains) {
       headerAuthorizationSwitch.checked = false;
     }
     if (headerAuthStatus) {
-      headerAuthStatus.textContent = 'Disabled';
+      headerAuthStatus.textContent = '未启用';
       headerAuthStatus.className = 'auth-status disabled';
     }
     
@@ -1102,6 +1111,9 @@ function displayAuthorizedDomains(domains) {
     if (domainInfoElement) {
       domainInfoElement.style.display = 'none';
     }
+    
+    // Show unauthorized content
+    showUnauthorizedContent();
     return;
   }
   
@@ -1120,7 +1132,7 @@ function displayAuthorizedDomains(domains) {
     headerAuthorizationSwitch.checked = true;
   }
   if (headerAuthStatus) {
-    headerAuthStatus.textContent = 'Enabled';
+    headerAuthStatus.textContent = '启用';
     headerAuthStatus.className = 'auth-status enabled';
   }
   
@@ -1129,6 +1141,10 @@ function displayAuthorizedDomains(domains) {
   if (domainInfoElement) {
     domainInfoElement.style.display = 'flex';
   }
+  
+  // Show authorized content
+  document.getElementById('unauthorizedContent').style.display = 'none';
+  document.getElementById('authorizedContent').style.display = 'block';
 }
 
 // Function to remove domain authorization
@@ -1163,7 +1179,7 @@ function removeDomainAuthorization(domain) {
         // Reload authorized domains list
         loadAuthorizedDomains();
         
-        // If the removed domain is the current domain, show authorization UI
+        // If the removed domain is the current domain, show unauthorized content
         if (domain === currentDomain) {
           // Hide domain info in header
           const domainInfoElement = document.querySelector('.domain-info');
@@ -1171,13 +1187,8 @@ function removeDomainAuthorization(domain) {
             domainInfoElement.style.display = 'none';
           }
           
-          // Hide authorized content area
-          const authorizedContentElement = document.getElementById('authorizedContent');
-          if (authorizedContentElement) {
-            authorizedContentElement.style.display = 'none';
-          }
-          
-          showDomainAuthorizationUI();
+          // Show unauthorized content
+          showUnauthorizedContent();
         }
       }
     }
@@ -1223,40 +1234,146 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Add toggle authorization switch event processing in authorized page
-headerAuthorizationSwitch.addEventListener('change', () => {
-  if (headerAuthorizationSwitch.checked) {
-    // Switch opened, authorize domain if not already authorized
-    headerAuthStatus.textContent = 'Enabled';
-    headerAuthStatus.className = 'auth-status enabled';
-    
-    // If domain is not already authorized, authorize it
-    if (document.getElementById('authorizedContent').style.display !== 'block') {
-      chrome.runtime.sendMessage(
-        { action: "authorizeDomain", domain: currentDomain },
-        (response) => {
-          if (chrome.runtime.lastError || !response || !response.success) {
-            console.error("Error authorizing domain:", chrome.runtime.lastError);
-            // Authorization failed, restore switch state
-            headerAuthorizationSwitch.checked = false;
-            headerAuthStatus.textContent = 'Disabled';
-            headerAuthStatus.className = 'auth-status disabled';
-            return;
-          }
-          
-          // Domain authorized, show authorized content
-          document.getElementById('authorizedContent').style.display = 'block';
-          domainAuthContainer.style.display = 'none';
-          requestNetworkData();
-        }
-      );
+// AI Analysis elements
+const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
+const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
+const runAiAnalysisBtn = document.getElementById('runAiAnalysisBtn');
+const aiAnalysisContent = document.getElementById('aiAnalysisContent');
+const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
+const aiAnalysisResult = document.getElementById('aiAnalysisResult');
+const aiModelInfo = document.getElementById('aiModelInfo');
+const copyAiResultBtn = document.getElementById('copyAiResultBtn');
+const openOptionsPage = document.getElementById('openOptionsPage');
+
+// Initial hide AI analysis container
+aiAnalysisContainer.style.display = 'none';
+
+// Load settings from storage
+chrome.storage.local.get(['showAiAnalysis'], (result) => {
+  // If show AI analysis panel is set and page is authorized
+  if (result.showAiAnalysis && document.getElementById('authorizedContent').style.display === 'block') {
+    aiAnalysisContainer.style.display = 'block';
+  }
+});
+
+// Toggle AI analysis panel visibility
+aiAnalysisToggleBtn.addEventListener('click', () => {
+  const isVisible = aiAnalysisContainer.style.display === 'block';
+  aiAnalysisContainer.style.display = isVisible ? 'none' : 'block';
+  
+  // Save display state
+  chrome.storage.local.set({ showAiAnalysis: !isVisible });
+});
+
+// Open options page
+openOptionsPage.addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.runtime.openOptionsPage();
+});
+
+// Run AI analysis
+runAiAnalysisBtn.addEventListener('click', async () => {
+  // First get AI configuration from storage
+  chrome.storage.local.get(['aiApiKey', 'aiProvider', 'aiModel'], async (result) => {
+    if (!result.aiApiKey) {
+      aiAnalysisResult.textContent = '请先在配置页面设置API密钥';
+      aiAnalysisContent.style.display = 'block';
+      aiAnalysisStatus.style.display = 'none';
+      return;
     }
-  } else {
-    // Switch closed, cancel authorization
-    headerAuthStatus.textContent = 'Disabled';
-    headerAuthStatus.className = 'auth-status disabled';
-    
-    // Cancel authorization
-    removeDomainAuthorization(currentDomain);
+
+    try {
+      aiAnalysisContent.style.display = 'block';
+      aiAnalysisStatus.style.display = 'flex';
+      aiAnalysisResult.textContent = '正在准备分析数据...';
+
+      // Copy network request data
+      const requestsDataCopy = Object.assign({}, allRequestsData);
+      
+      // Prepare statistics data
+      const statistics = {
+        totalRequests: Object.keys(requestsDataCopy).length,
+        totalSize: 0,
+        totalTime: 0,
+        slowestRequest: null,
+        slowestTime: 0,
+        statusCodes: {},
+        contentTypes: {},
+        domains: {}
+      };
+      
+      // Calculate statistics data
+      for (const reqId in requestsDataCopy) {
+        const req = requestsDataCopy[reqId];
+        
+        // Total volume
+        if (req.size) {
+          statistics.totalSize += req.size;
+        }
+        
+        // Total time
+        if (req.totalTime) {
+          statistics.totalTime += req.totalTime;
+          
+          // Slowest request
+          if (req.totalTime > statistics.slowestTime) {
+            statistics.slowestTime = req.totalTime;
+            statistics.slowestRequest = req.url;
+          }
+        }
+        
+        // Status code distribution
+        if (req.status) {
+          const statusCode = req.status.toString();
+          statistics.statusCodes[statusCode] = (statistics.statusCodes[statusCode] || 0) + 1;
+        }
+        
+        // Content type distribution
+        if (req.type) {
+          statistics.contentTypes[req.type] = (statistics.contentTypes[req.type] || 0) + 1;
+        }
+        
+        // Domain distribution
+        if (req.domain) {
+          statistics.domains[req.domain] = (statistics.domains[req.domain] || 0) + 1;
+        }
+      }
+      
+      // Prepare data
+      const formattedData = AiConnector.formatNetworkDataForAI(requestsDataCopy, statistics);
+      
+      aiAnalysisResult.textContent = '正在发送数据到AI进行分析...';
+      
+      // Call AI analysis
+      const analysisResult = await AiConnector.sendToAI(
+        formattedData,
+        result.aiProvider || 'openai',
+        result.aiApiKey,
+        result.aiModel || 'gpt-4-turbo'
+      );
+      
+      // Display result
+      aiAnalysisStatus.style.display = 'none';
+      aiAnalysisResult.textContent = analysisResult.analysis;
+      
+      // Update model information
+      aiModelInfo.textContent = `使用 ${analysisResult.model} (${analysisResult.provider}) 分析`;
+    } catch (error) {
+      aiAnalysisStatus.style.display = 'none';
+      aiAnalysisResult.textContent = `错误: ${error.message}`;
+    }
+  });
+});
+
+// Copy AI analysis result
+copyAiResultBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(aiAnalysisResult.textContent);
+    copyAiResultBtn.textContent = '已复制!';
+    setTimeout(() => {
+      copyAiResultBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copy';
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy AI analysis result:', err);
   }
 });

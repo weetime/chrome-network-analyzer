@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Network Request Analyzer</title>
+  <title data-i18n="appName">Network Request Analyzer</title>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
   <div class="header-container">
-    <h1 class="page-title">Network Request Analyzer</h1>
+    <h1 class="page-title" data-i18n="appName">Network Request Analyzer</h1>
     <div class="domain-info">
-      <h3>当前域名:</h3>
+      <h3 data-i18n="currentDomain">当前域名:</h3>
       <div id="headerDomainsList" class="domain-header-list">
         <!-- Current domain authorization status will be shown here -->
       </div>
@@ -18,13 +18,13 @@
           <input type="checkbox" id="headerAuthorizationSwitch">
           <span class="slider"></span>
         </label>
-        <span id="headerAuthStatus" class="auth-status enabled domain-auth-status">启用</span>
+        <span id="headerAuthStatus" class="auth-status enabled domain-auth-status" data-i18n="enable">启用</span>
       </div>
       <a href="#" id="openDomainSettings" class="settings-link">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
         </svg>
-        管理授权
+        <span data-i18n="domainManagement">管理授权</span>
       </a>
     </div>
   </div>
@@ -36,24 +36,24 @@
     
     <div class="controls">
       <div class="filter-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="Search URL...">
+        <input type="text" id="searchInput" class="search-input" data-i18n-placeholder="searchUrl" placeholder="Search URL...">
         <select id="typeFilter" class="type-filter">
-          <option value="all">All Types</option>
-          <option value="document">Document</option>
-          <option value="stylesheet">CSS</option>
-          <option value="script">JavaScript</option>
-          <option value="image">Image</option>
-          <option value="xmlhttprequest">XHR/Fetch</option>
-          <option value="font">Font</option>
-          <option value="other">Other</option>
+          <option value="all" data-i18n="allTypes">All Types</option>
+          <option value="document" data-i18n="document">Document</option>
+          <option value="stylesheet" data-i18n="stylesheet">CSS</option>
+          <option value="script" data-i18n="script">JavaScript</option>
+          <option value="image" data-i18n="image">Image</option>
+          <option value="xmlhttprequest" data-i18n="xhr">XHR/Fetch</option>
+          <option value="font" data-i18n="font">Font</option>
+          <option value="other" data-i18n="other">Other</option>
         </select>
         <select id="statusFilter" class="status-filter">
-          <option value="all">All Status</option>
-          <option value="success">Success (2xx)</option>
-          <option value="redirect">Redirect (3xx)</option>
-          <option value="client-error">Client Error (4xx)</option>
-          <option value="server-error">Server Error (5xx)</option>
-          <option value="error">Network Error</option>
+          <option value="all" data-i18n="allStatus">All Status</option>
+          <option value="success" data-i18n="success">Success (2xx)</option>
+          <option value="redirect" data-i18n="redirect">Redirect (3xx)</option>
+          <option value="client-error" data-i18n="clientError">Client Error (4xx)</option>
+          <option value="server-error" data-i18n="serverError">Server Error (5xx)</option>
+          <option value="error" data-i18n="networkError">Network Error</option>
         </select>
       </div>
       <div class="button-group">
@@ -70,26 +70,26 @@
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" id="sunRay7"></line>
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" id="sunRay8"></line>
           </svg>
-          <span class="tooltip" id="themeTooltip">Toggle Dark Mode</span>
+          <span class="tooltip" id="themeTooltip" data-i18n="toggleDarkMode">Toggle Dark Mode</span>
         </button>
         <button id="clearBtn" class="btn-minimal danger">
           <svg viewBox="0 0 24 24">
             <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
           </svg>
-          <span class="tooltip">Clear Data</span>
+          <span class="tooltip" data-i18n="clearData">Clear Data</span>
         </button>
         <button id="exportBtn" class="btn-minimal">
           <svg viewBox="0 0 24 24">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
           </svg>
-          <span class="tooltip">Export CSV</span>
+          <span class="tooltip" data-i18n="exportData">Export CSV</span>
         </button>
         <button id="aiAnalysisToggleBtn" class="btn-minimal">
           <svg viewBox="0 0 24 24">
             <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" fill="none" stroke="currentColor" stroke-width="2" />
             <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          <span class="tooltip">AI Analysis</span>
+          <span class="tooltip" data-i18n="aiAnalysis">AI Analysis</span>
         </button>
       </div>
     </div>
@@ -98,21 +98,21 @@
       <table id="requestsTable">
         <thead>
           <tr>
-            <th data-sort="url" title="URL of the network request">URL <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="type" title="Resource type">Type <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="method" title="HTTP method">Method <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="status" title="HTTP status code">Status <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="totalTime" title="Total response time in milliseconds">Time <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="ttfb" title="Time to First Byte in milliseconds">TTFB <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="visitCount" title="Number of times this URL was requested">Visits <span class="sort-icon">&#x25BC;</span></th>
-            <th data-sort="p99" title="99th percentile response time in milliseconds">P99 <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="url" title="URL of the network request" data-i18n="url">URL <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="type" title="Resource type" data-i18n="type">Type <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="method" title="HTTP method" data-i18n="method">Method <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="status" title="HTTP status code" data-i18n="status">Status <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="totalTime" title="Total response time in milliseconds" data-i18n="time">Time <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="ttfb" title="Time to First Byte in milliseconds" data-i18n="ttfb">TTFB <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="visitCount" title="Number of times this URL was requested" data-i18n="visits">Visits <span class="sort-icon">&#x25BC;</span></th>
+            <th data-sort="p99" title="99th percentile response time in milliseconds" data-i18n="p99">P99 <span class="sort-icon">&#x25BC;</span></th>
           </tr>
         </thead>
         <tbody id="requestsTableBody">
           <!-- Request data will be inserted here -->
         </tbody>
       </table>
-      <div id="noDataMessage" class="no-data">No network requests captured yet. Browse a website to see data.</div>
+      <div id="noDataMessage" class="no-data" data-i18n="noDataMessage">No network requests captured yet. Browse a website to see data.</div>
     </div>
     
     <div id="requestDetails" class="request-details">
@@ -123,17 +123,17 @@
   <!-- AI Analysis Section -->
   <div id="aiAnalysisContainer" class="ai-analysis-container">
     <div class="ai-header">
-      <span>AI Performance Analysis</span>
+      <span data-i18n="aiAnalysis">AI Performance Analysis</span>
       <button id="runAiAnalysisBtn" class="btn-minimal ai-run-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
-        Run Analysis
+        <span data-i18n="runAnalysis">Run Analysis</span>
       </button>
         </div>
         
     <div class="ai-options">
-      <a href="#" id="openOptionsPage">
+      <a href="#" id="openOptionsPage" data-i18n="aiSettings">
         配置 AI 设置
       </a>
     </div>
@@ -143,7 +143,7 @@
         <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="42" stroke-dashoffset="12"></circle>
         </svg>
-        <span class="ai-status-text">Processing...</span>
+        <span class="ai-status-text" data-i18n="processing">Processing...</span>
       </div>
       <div id="aiAnalysisResult" class="ai-result">
         <!-- AI analysis results will appear here -->
@@ -155,13 +155,14 @@
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          Copy
+          <span data-i18n="copy">Copy</span>
         </button>
       </div>
     </div>
   </div>
 </div>
 
+<script src="js/i18n.js"></script>
 <script src="js/ai-connector.js"></script>
 <script src="js/theme-manager.js"></script>
 <script src="js/domain-manager.js"></script>

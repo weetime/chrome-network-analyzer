@@ -124,11 +124,11 @@ function hideAuthorizedContent() {
     aiAnalysisContainer.classList.remove('visible');
   }
   
-  // Hide domain info in header
-  const domainInfoElement = document.querySelector('.domain-info');
-  if (domainInfoElement) {
-    domainInfoElement.style.display = 'none';
-  }
+  // 不再隐藏domain-info，确保用户可以看到域名信息并重新授权
+  // const domainInfoElement = document.querySelector('.domain-info');
+  // if (domainInfoElement) {
+  //   domainInfoElement.style.display = 'none';
+  // }
 }
 
 /**
@@ -240,6 +240,12 @@ function checkDomainAuthorization(domain) {
 async function setCurrentDomain(domain) {
   currentDomain = domain;
   
+  // 无论授权状态如何，都显示域名信息区域
+  const domainInfoElement = document.querySelector('.domain-info');
+  if (domainInfoElement) {
+    domainInfoElement.style.display = 'flex';
+  }
+  
   // Check if domain is authorized
   const isAuthorized = await checkDomainAuthorization(domain);
   
@@ -264,12 +270,6 @@ async function setCurrentDomain(domain) {
   // Show appropriate content
   if (isAuthorized) {
     document.getElementById('authorizedContent').style.display = 'block';
-    
-    // Show domain info in header
-    const domainInfoElement = document.querySelector('.domain-info');
-    if (domainInfoElement) {
-      domainInfoElement.style.display = 'flex';
-    }
     
     // Request network data if function available
     if (typeof requestNetworkData === 'function') {

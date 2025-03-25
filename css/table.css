@@ -2,13 +2,16 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 13px;
   table-layout: fixed;
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  overflow: hidden;
 }
 
 th, td {
   border: 1px solid var(--border-color);
-  padding: 6px;
+  padding: 8px 10px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -21,14 +24,18 @@ th {
   top: 0;
   cursor: pointer;
   position: relative;
-  padding: 6px 4px;
-  font-size: 11px;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 600;
   z-index: 10;
   box-shadow: 0 1px 0 var(--border-color);
+  letter-spacing: 0.3px;
+  transition: background-color 0.2s;
+  text-transform: uppercase;
 }
 
 th:hover {
-  background-color: var(--stats-bg);
+  background-color: var(--hover-effect);
 }
 
 th[title] {
@@ -37,45 +44,49 @@ th[title] {
 
 .sort-icon {
   font-size: 8px;
-  margin-left: 2px;
+  margin-left: 3px;
   display: inline-block;
   vertical-align: middle;
-  opacity: 0.3;
+  opacity: 0.5;
   position: relative;
   top: -1px;
+  transition: transform 0.2s;
 }
 
 th.sort-asc .sort-icon {
   content: "▲";
   opacity: 1;
-  color: var(--primary-btn);
+  color: var(--accent-color);
+  transform: translateY(-1px);
 }
 
 th.sort-desc .sort-icon {
   content: "▼";
   opacity: 1;
-  color: var(--primary-btn);
+  color: var(--accent-color);
+  transform: translateY(1px);
 }
 
 #requestsTableBody tr {
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   background-color: var(--bg-color);
+  border-left: 3px solid transparent;
 }
 
 #requestsTableBody tr:hover {
-  background-color: var(--stats-bg);
+  background-color: var(--hover-effect);
 }
 
 #requestsTableBody tr.selected {
-  background-color: rgba(66, 133, 244, 0.15);
-  border-left: 3px solid var(--primary-btn);
-  box-shadow: 0 0 2px var(--shadow-color);
+  background-color: rgba(63, 106, 216, 0.08);
+  border-left: 3px solid var(--accent-color);
+  box-shadow: 0 0 4px var(--shadow-color);
 }
 
 [data-theme="dark"] #requestsTableBody tr.selected {
-  background-color: rgba(92, 154, 255, 0.2);
-  box-shadow: 0 0 3px var(--shadow-color);
+  background-color: rgba(92, 174, 239, 0.12);
+  box-shadow: var(--neon-glow);
 }
 
 .url-cell {
@@ -84,24 +95,44 @@ th.sort-desc .sort-icon {
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 30%;
+  font-family: 'SF Mono', 'Roboto Mono', monospace;
+  font-size: 12px;
 }
 
 .table-container {
-  max-height: 250px;
+  max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  margin-bottom: 15px;
+  border-radius: var(--card-radius);
+  margin-bottom: 20px;
   position: relative;
   z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background-color: var(--card-bg);
+}
+
+.table-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-btn), var(--accent-color));
+  z-index: 10;
+}
+
+[data-theme="dark"] .table-container {
+  box-shadow: var(--neon-glow);
 }
 
 .no-data {
   text-align: center;
-  padding: 20px;
+  padding: 30px;
   color: var(--stats-label);
+  font-style: italic;
 }
 
 /* 优化表格列宽 */
@@ -117,52 +148,71 @@ th.sort-desc .sort-icon {
 /* Row status colors */
 .slow {
   background-color: var(--slow-bg);
+  border-left-color: rgba(255, 87, 34, 0.7) !important;
 }
 
 .medium {
   background-color: var(--medium-bg);
+  border-left-color: rgba(255, 191, 0, 0.7) !important;
 }
 
 .fast {
   background-color: var(--fast-bg);
+  border-left-color: rgba(76, 175, 80, 0.7) !important;
 }
 
 .error {
   background-color: var(--error-bg);
+  border-left-color: var(--danger-btn) !important;
 }
 
 /* P99梯度变色 */
 .p99-very-slow {
-  background-color: rgba(255, 87, 34, 0.3);
+  background-color: rgba(255, 87, 34, 0.15);
   color: #ff5722;
+  font-weight: bold;
+  text-shadow: 0 0 1px rgba(255, 87, 34, 0.3);
 }
 .p99-slow {
-  background-color: rgba(255, 152, 0, 0.3);
+  background-color: rgba(255, 152, 0, 0.15);
   color: #ff9800;
+  font-weight: bold;
 }
 .p99-medium {
-  background-color: rgba(255, 235, 59, 0.3);
+  background-color: rgba(255, 235, 59, 0.15);
   color: #ffc107;
 }
 .p99-fast {
-  background-color: rgba(76, 175, 80, 0.3);
+  background-color: rgba(76, 175, 80, 0.15);
   color: #81c784;
 }
 
 /* 深色模式下的P99梯度变色 */
 [data-theme="dark"] .p99-very-slow {
-  background-color: rgba(255, 0, 0, 0.3);
-  color: #ff6e6e;
+  background-color: rgba(255, 87, 34, 0.18);
+  color: #ff7043;
+  text-shadow: 0 0 4px rgba(255, 87, 34, 0.3);
 }
 [data-theme="dark"] .p99-slow {
-  background-color: rgba(255, 152, 0, 0.3);
+  background-color: rgba(255, 152, 0, 0.18);
   color: #ffb74d;
 }
 [data-theme="dark"] .p99-medium {
-  background-color: rgba(255, 235, 59, 0.3);
+  background-color: rgba(255, 235, 59, 0.18);
   color: #fff176;
 }
 [data-theme="dark"] .p99-fast {
-  background-color: rgba(76, 175, 80, 0.3);
+  background-color: rgba(76, 175, 80, 0.18);
   color: #81c784;
+  text-shadow: 0 0 4px rgba(76, 175, 80, 0.3);
+}
+
+/* 闪烁动画效果 */
+@keyframes highlight {
+  0% { background-color: rgba(92, 174, 239, 0.2); }
+  100% { background-color: transparent; }
+}
+
+.highlight-row {
+  animation: highlight 1.5s ease-out;
 }

@@ -84,7 +84,7 @@ async function loadSavedSettings() {
     
     // 应用当前的主题设置
     themeToggle.checked = isDarkThemeDefault;
-    document.body.setAttribute('data-theme', isDarkThemeDefault ? 'dark' : 'light');
+    applyTheme(isDarkThemeDefault ? 'dark' : 'light');
     
     // 默认显示行数设置
     if (result.defaultRowCount) {
@@ -146,10 +146,27 @@ function saveUserSettings() {
     chrome.storage.local.remove(['aiApiKey']);
   }
   
+  // 应用动画效果
+  addSaveAnimation(saveSettings);
+  
   // 保存设置到 Chrome 存储
   chrome.storage.local.set(settings, () => {
     showStatusMessage(window.I18n ? window.I18n.getText('settingsSaved') : '设置已保存', 'success');
   });
+}
+
+// 添加保存按钮动画
+function addSaveAnimation(button) {
+  button.classList.add('saving');
+  
+  setTimeout(() => {
+    button.classList.remove('saving');
+    button.classList.add('saved');
+    
+    setTimeout(() => {
+      button.classList.remove('saved');
+    }, 1500);
+  }, 700);
 }
 
 // 显示状态消息
@@ -158,8 +175,12 @@ function showStatusMessage(message, type = 'success', className = '') {
   statusMessage.className = `status-message ${type} ${className}`;
   statusMessage.style.opacity = '1';
   
+  // 添加弹出动画
+  statusMessage.classList.add('popup-animation');
+  
   // 3秒后隐藏消息
   setTimeout(() => {
+    statusMessage.classList.remove('popup-animation');
     statusMessage.style.opacity = '0';
   }, 3000);
 }
@@ -167,7 +188,38 @@ function showStatusMessage(message, type = 'success', className = '') {
 // 切换主题
 function toggleTheme() {
   const isDark = themeToggle.checked;
-  document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  applyTheme(isDark ? 'dark' : 'light', true);
+}
+
+// 应用主题并添加过渡效果
+function applyTheme(theme, animate = false) {
+  if (animate) {
+    document.body.classList.add('theme-transition');
+    
+    // 添加闪光效果
+    const flash = document.createElement('div');
+    flash.className = 'theme-flash';
+    document.body.appendChild(flash);
+    
+    setTimeout(() => {
+      flash.classList.add('active');
+    }, 10);
+    
+    setTimeout(() => {
+      document.documentElement.setAttribute('data-theme', theme);
+      
+      setTimeout(() => {
+        flash.classList.remove('active');
+        
+        setTimeout(() => {
+          document.body.removeChild(flash);
+          document.body.classList.remove('theme-transition');
+        }, 300);
+      }, 500);
+    }, 100);
+  } else {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
 }
 
 // 加载已授权域名
@@ -199,21 +251,34 @@ function displayAuthorizedDomains(domains) {
   noDomains.style.display = 'none';
   
   // 按字母顺序排序域名
-  domains.sort().forEach(domain => {
+  domains.sort().forEach((domain, index) => {
     const li = document.createElement('li');
     li.className = 'domain-item';
+    
+    // 添加延迟动画效果
+    li.style.animation = `fadeIn 0.3s ease forwards ${index * 0.05}s`;
+    li.style.opacity = '0';
     
     const domainName = document.createElement('span');
     domainName.className = 'domain-name';
     domainName.textContent = domain;
+    
+    // 创建操作单元格
+    const actionCell = document.createElement('div');
+    actionCell.className = 'action-cell';
     
     const removeBtn = document.createElement('button');
     removeBtn.className = 'remove-btn';
     removeBtn.textContent = window.I18n ? window.I18n.getText('remove') : '移除';
     removeBtn.addEventListener('click', () => removeDomainAuthorization(domain));
     
+    // 将按钮添加到操作单元格
+    actionCell.appendChild(removeBtn);
+    
+    // 添加域名和操作单元格到表格行
     li.appendChild(domainName);
-    li.appendChild(removeBtn);
+    li.appendChild(actionCell);
+    
     authorizedDomainsList.appendChild(li);
   });
 }
@@ -228,11 +293,26 @@ function removeDomainAuthorization(domain) {
     return;
   }
   
+  // 找到对应的 li 元素
+  const domainItems = Array.from(authorizedDomainsList.querySelectorAll('.domain-item'));
+  const targetItem = domainItems.find(item => item.querySelector('.domain-name').textContent === domain);
+  
+  if (targetItem) {
+    // 添加移除动画
+    targetItem.classList.add('removing');
+  }
+  
   chrome.runtime.sendMessage(
     { action: "removeDomainAuthorization", domain },
     (response) => {
       if (chrome.runtime.lastError) {
         console.error("移除域授权时出错:", chrome.runtime.lastError);
+        
+        // 移除动画类
+        if (targetItem) {
+          targetItem.classList.remove('removing');
+        }
+        
         const errorMsg = window.I18n 
           ? window.I18n.getText('domainRemoveFailed', { domain }) 
           : `移除域名 "${domain}" 授权失败`;
@@ -248,6 +328,11 @@ function removeDomainAuthorization(domain) {
           : `已移除域名 "${domain}" 的授权`;
         showStatusMessage(successMsg, 'success', 'domain');
       } else {
+        // 移除动画类
+        if (targetItem) {
+          targetItem.classList.remove('removing');
+        }
+        
         const errorMsg = window.I18n 
           ? window.I18n.getText('domainRemoveFailed', { domain }) 
           : `移除域名 "${domain}" 授权失败`;
@@ -262,6 +347,13 @@ function addDomainAuthorization(domain) {
   if (!domain) {
     const errorMsg = window.I18n ? window.I18n.getText('invalidDomain') : '请输入有效的域名';
     showStatusMessage(errorMsg, 'error', 'domain');
+    
+    // 添加输入框晃动效果
+    newDomain.classList.add('shake');
+    setTimeout(() => {
+      newDomain.classList.remove('shake');
+    }, 500);
+    
     return;
   }
   
@@ -270,12 +362,25 @@ function addDomainAuthorization(domain) {
   if (!domainRegex.test(domain)) {
     const errorMsg = window.I18n ? window.I18n.getText('invalidDomainFormat') : '请输入有效的域名格式 (例如: example.com)';
     showStatusMessage(errorMsg, 'error', 'domain');
+    
+    // 添加输入框晃动效果
+    newDomain.classList.add('shake');
+    setTimeout(() => {
+      newDomain.classList.remove('shake');
+    }, 500);
+    
     return;
   }
+  
+  // 添加加载动画到按钮
+  addDomainBtn.classList.add('loading');
   
   chrome.runtime.sendMessage(
     { action: "authorizeDomain", domain },
     (response) => {
+      // 移除加载动画
+      addDomainBtn.classList.remove('loading');
+      
       if (chrome.runtime.lastError) {
         console.error("添加域授权时出错:", chrome.runtime.lastError);
         const errorMsg = window.I18n 
@@ -308,19 +413,32 @@ function addDomainAuthorization(domain) {
 // 切换语言
 function changeLanguage(lang) {
   if (window.I18n && window.I18n.setLanguage(lang)) {
-    // 更新页面文本
-    window.I18n.updatePageText();
+    // 添加页面过渡效果
+    document.body.classList.add('language-transition');
     
-    // 保存语言设置
-    chrome.storage.local.set({ language: lang });
-    
-    // 更新域名列表中的按钮文本
-    loadAuthorizedDomains();
+    setTimeout(() => {
+      // 更新页面文本
+      window.I18n.updatePageText();
+      
+      // 保存语言设置
+      chrome.storage.local.set({ language: lang });
+      
+      // 更新域名列表中的按钮文本
+      loadAuthorizedDomains();
+      
+      // 移除过渡效果
+      setTimeout(() => {
+        document.body.classList.remove('language-transition');
+      }, 300);
+    }, 150);
   }
 }
 
 // 事件监听器
 document.addEventListener('DOMContentLoaded', () => {
+  // 添加自定义CSS
+  addCustomStyles();
+  
   // 使用IIFE包装async函数调用
   (async () => {
     try {
@@ -330,6 +448,127 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   })();
 });
+
+// 添加自定义CSS
+function addCustomStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    /* 主题过渡效果 */
+    .theme-transition * {
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s !important;
+    }
+    
+    .theme-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0);
+      pointer-events: none;
+      z-index: 9999;
+      transition: background-color 0.5s ease;
+    }
+    
+    .theme-flash.active {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* 域名项动画 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .domain-item.removing {
+      animation: slideOut 0.3s ease forwards;
+    }
+    
+    @keyframes slideOut {
+      to { opacity: 0; transform: translateX(30px); }
+    }
+    
+    /* 保存按钮动画 */
+    .saving {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .saving::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--accent-color), transparent);
+      animation: loading 1s infinite linear;
+      width: 100%;
+    }
+    
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .saved {
+      background-color: var(--terminal-green) !important;
+    }
+    
+    /* 状态消息动画 */
+    .status-message.popup-animation {
+      animation: popupMessage 0.3s ease forwards;
+    }
+    
+    @keyframes popupMessage {
+      0% { transform: translateY(10px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* 输入框晃动动画 */
+    .shake {
+      animation: shakeEffect 0.4s ease;
+    }
+    
+    @keyframes shakeEffect {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    /* 加载动画 */
+    .loading {
+      position: relative;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    
+    .loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      margin: -6px 0 0 -6px;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 语言过渡效果 */
+    .language-transition {
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 // AI Provider 变更
 aiProvider.addEventListener('change', () => {

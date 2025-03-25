@@ -3,9 +3,13 @@
 <head>
   <title data-i18n="appName">Network Request Analyzer</title>
   <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
+<body class="tech-bg">
   <div class="header-container">
     <h1 class="page-title" data-i18n="appName">Network Request Analyzer</h1>
     <div class="domain-info">
@@ -57,7 +61,7 @@
         </select>
       </div>
       <div class="button-group">
-        <button id="themeToggle" class="theme-toggle-minimal">
+        <button id="themeToggle" class="theme-toggle-minimal btn-glow">
           <svg viewBox="0 0 24 24" id="themeIcon">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" id="moonIcon"></path>
             <circle cx="12" cy="12" r="5" id="sunIcon"></circle>
@@ -72,19 +76,19 @@
           </svg>
           <span class="tooltip" id="themeTooltip" data-i18n="toggleDarkMode">Toggle Dark Mode</span>
         </button>
-        <button id="clearBtn" class="btn-minimal danger">
+        <button id="clearBtn" class="btn-minimal danger btn-glow">
           <svg viewBox="0 0 24 24">
             <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
           </svg>
           <span class="tooltip" data-i18n="clearData">Clear Data</span>
         </button>
-        <button id="exportBtn" class="btn-minimal">
+        <button id="exportBtn" class="btn-minimal btn-glow">
           <svg viewBox="0 0 24 24">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
           </svg>
           <span class="tooltip" data-i18n="exportData">Export CSV</span>
         </button>
-        <button id="aiAnalysisToggleBtn" class="btn-minimal">
+        <button id="aiAnalysisToggleBtn" class="btn-minimal btn-glow">
           <svg viewBox="0 0 24 24">
             <path d="M12 2a10 10 0 100 20 10 10 0 000-20z" fill="none" stroke="currentColor" stroke-width="2" />
             <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -94,7 +98,7 @@
       </div>
     </div>
     
-    <div class="table-container">
+    <div class="table-container card">
       <table id="requestsTable">
         <thead>
           <tr>
@@ -115,16 +119,16 @@
       <div id="noDataMessage" class="no-data" data-i18n="noDataMessage">No network requests captured yet. Browse a website to see data.</div>
     </div>
     
-    <div id="requestDetails" class="request-details">
+    <div id="requestDetails" class="request-details card">
       <!-- Detailed request info will be shown here -->
     </div>
   </div>
   
   <!-- AI Analysis Section -->
-  <div id="aiAnalysisContainer" class="ai-analysis-container">
+  <div id="aiAnalysisContainer" class="ai-analysis-container card terminal-card">
     <div class="ai-header">
-      <span data-i18n="aiAnalysis">AI Performance Analysis</span>
-      <button id="runAiAnalysisBtn" class="btn-minimal ai-run-btn">
+      <h3 data-i18n="aiAnalysis">AI Performance Analysis</h3>
+      <button id="runAiAnalysisBtn" class="ai-run-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="5 3 19 12 5 21 5 3"></polygon>
         </svg>
@@ -145,12 +149,12 @@
         </svg>
         <span class="ai-status-text" data-i18n="processing">Processing...</span>
       </div>
-      <div id="aiAnalysisResult" class="ai-result">
+      <div id="aiAnalysisResult" class="ai-result code-block">
         <!-- AI analysis results will appear here -->
       </div>
       <div class="ai-footer">
         <span id="aiModelInfo" class="ai-model-info">Analyzed with GPT-4</span>
-        <button id="copyAiResultBtn" class="btn-minimal ai-copy-btn">
+        <button id="copyAiResultBtn" class="ai-copy-btn btn-glow">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>

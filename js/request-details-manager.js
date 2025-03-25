@@ -2,6 +2,16 @@
  * Request Details Manager - Handles displaying and copying request details
  */
 
+// 全局定义关闭按钮位置调整函数
+let positionCloseButton = () => {};
+
+// 处理ESC键按下事件的函数
+function handleEscKeyPress(e) {
+  if (e.key === 'Escape') {
+    closeRequestDetails();
+  }
+}
+
 /**
  * Show details for a selected request
  */
@@ -9,6 +19,9 @@ function showRequestDetails(request) {
   const requestDetails = document.getElementById('requestDetails');
   
   if (!requestDetails) return;
+  
+  // 确保requestDetails有正确的class
+  requestDetails.classList.add('request-details');
   
   // Check if we have TableManager for formatting
   const formatTime = window.TableManager && window.TableManager.formatTime ? 
@@ -94,9 +107,28 @@ function showRequestDetails(request) {
   
   closeButton.addEventListener('click', closeRequestDetails);
   
-  // 将关闭按钮直接添加到requestDetails
-  requestDetails.appendChild(closeButton);
+  // 获取弹窗的位置和尺寸以正确定位关闭按钮
+  positionCloseButton = () => {
+    const rect = requestDetails.getBoundingClientRect();
+    
+    // 计算位置 - 固定在弹窗右上角
+    const top = Math.max(rect.top, 10); // 确保不会超出视口顶部
+    const right = Math.max(window.innerWidth - rect.right, 10); // 确保不会超出视口右侧
+    
+    closeButton.style.top = `${top + 15}px`;
+    closeButton.style.right = `${right + 15}px`;
+  };
+  
+  // 添加滚动事件监听器以保持关闭按钮位置
+  requestDetails.addEventListener('scroll', positionCloseButton);
+  window.addEventListener('resize', positionCloseButton);
+  
+  // 将关闭按钮直接添加到body而不是requestDetails中以固定位置
+  document.body.appendChild(closeButton);
   requestDetails.appendChild(detailHeader);
+  
+  // 添加ESC键事件监听器
+  document.addEventListener('keydown', handleEscKeyPress);
   
   // Create details content
   const detailContent = document.createElement('div');
@@ -189,6 +221,180 @@ function showRequestDetails(request) {
   basicInfoSection.appendChild(domainItem);
   
   detailContent.appendChild(basicInfoSection);
+  
+  // Timeline section - 添加请求时间线
+  const timelineSection = document.createElement('div');
+  timelineSection.className = 'timeline-section';
+  
+  const timelineTitle = document.createElement('h4');
+  timelineTitle.className = 'detail-title';
+  timelineTitle.textContent = 'Request Timeline';
+  timelineSection.appendChild(timelineTitle);
+  
+  // 处理时间数据 - 计算各阶段耗时
+  const timingData = {
+    dns: request.dnsTime || 0,
+    connect: request.connectTime || 0,
+    tls: request.tlsTime || 0,
+    wait: request.ttfb - (request.dnsTime || 0) - (request.connectTime || 0) - (request.tlsTime || 0) || 0,
+    download: request.contentDownloadTime || 0
+  };
+  
+  // 确保所有值都是非负的
+  Object.keys(timingData).forEach(key => {
+    timingData[key] = Math.max(0, timingData[key]);
+  });
+  
+  // 计算总时间用于百分比显示
+  const totalTime = request.totalTime || 
+    Object.values(timingData).reduce((sum, time) => sum + time, 0) || 1; // 防止除以0
+  
+  // 创建timeline容器
+  const timelineContainer = document.createElement('div');
+  timelineContainer.className = 'timeline-container';
+  
+  // 创建基础时间轴
+  const timelineBar = document.createElement('div');
+  timelineBar.className = 'timeline-bar';
+  timelineContainer.appendChild(timelineBar);
+  
+  // 计算各阶段开始位置（百分比）
+  let currentPos = 0;
+  
+  // DNS查询阶段
+  if (timingData.dns > 0) {
+    const dnsSegment = document.createElement('div');
+    dnsSegment.className = 'timeline-segment timeline-segment-dns';
+    const dnsWidth = (timingData.dns / totalTime) * 100;
+    dnsSegment.style.width = `${dnsWidth}%`;
+    dnsSegment.style.left = `${currentPos}%`;
+    
+    // 添加tooltip
+    const dnsTooltip = document.createElement('div');
+    dnsTooltip.className = 'timeline-tooltip';
+    dnsTooltip.textContent = `DNS Lookup: ${formatTime(timingData.dns)}`;
+    dnsSegment.appendChild(dnsTooltip);
+    
+    timelineContainer.appendChild(dnsSegment);
+    currentPos += dnsWidth;
+  }
+  
+  // 连接建立阶段
+  if (timingData.connect > 0) {
+    const connectSegment = document.createElement('div');
+    connectSegment.className = 'timeline-segment timeline-segment-connect';
+    const connectWidth = (timingData.connect / totalTime) * 100;
+    connectSegment.style.width = `${connectWidth}%`;
+    connectSegment.style.left = `${currentPos}%`;
+    
+    // 添加tooltip
+    const connectTooltip = document.createElement('div');
+    connectTooltip.className = 'timeline-tooltip';
+    connectTooltip.textContent = `TCP Connection: ${formatTime(timingData.connect)}`;
+    connectSegment.appendChild(connectTooltip);
+    
+    timelineContainer.appendChild(connectSegment);
+    currentPos += connectWidth;
+  }
+  
+  // TLS建立阶段
+  if (timingData.tls > 0) {
+    const tlsSegment = document.createElement('div');
+    tlsSegment.className = 'timeline-segment timeline-segment-tls';
+    const tlsWidth = (timingData.tls / totalTime) * 100;
+    tlsSegment.style.width = `${tlsWidth}%`;
+    tlsSegment.style.left = `${currentPos}%`;
+    
+    // 添加tooltip
+    const tlsTooltip = document.createElement('div');
+    tlsTooltip.className = 'timeline-tooltip';
+    tlsTooltip.textContent = `TLS Setup: ${formatTime(timingData.tls)}`;
+    tlsSegment.appendChild(tlsTooltip);
+    
+    timelineContainer.appendChild(tlsSegment);
+    currentPos += tlsWidth;
+  }
+  
+  // 等待响应阶段
+  if (timingData.wait > 0) {
+    const waitSegment = document.createElement('div');
+    waitSegment.className = 'timeline-segment timeline-segment-wait';
+    const waitWidth = (timingData.wait / totalTime) * 100;
+    waitSegment.style.width = `${waitWidth}%`;
+    waitSegment.style.left = `${currentPos}%`;
+    
+    // 添加tooltip
+    const waitTooltip = document.createElement('div');
+    waitTooltip.className = 'timeline-tooltip';
+    waitTooltip.textContent = `Waiting (TTFB): ${formatTime(timingData.wait)}`;
+    waitSegment.appendChild(waitTooltip);
+    
+    timelineContainer.appendChild(waitSegment);
+    currentPos += waitWidth;
+  }
+  
+  // 下载内容阶段
+  if (timingData.download > 0) {
+    const downloadSegment = document.createElement('div');
+    downloadSegment.className = 'timeline-segment timeline-segment-download';
+    const downloadWidth = (timingData.download / totalTime) * 100;
+    downloadSegment.style.width = `${downloadWidth}%`;
+    downloadSegment.style.left = `${currentPos}%`;
+    
+    // 添加tooltip
+    const downloadTooltip = document.createElement('div');
+    downloadTooltip.className = 'timeline-tooltip';
+    downloadTooltip.textContent = `Content Download: ${formatTime(timingData.download)}`;
+    downloadSegment.appendChild(downloadTooltip);
+    
+    timelineContainer.appendChild(downloadSegment);
+  }
+  
+  // 时间标签
+  const timelineLabels = document.createElement('div');
+  timelineLabels.className = 'timeline-labels';
+  
+  const startLabel = document.createElement('div');
+  startLabel.textContent = '0ms';
+  timelineLabels.appendChild(startLabel);
+  
+  const endLabel = document.createElement('div');
+  endLabel.textContent = formatTime(totalTime);
+  timelineLabels.appendChild(endLabel);
+  
+  // 添加图例
+  const timelineLegend = document.createElement('div');
+  timelineLegend.className = 'timeline-legend';
+  
+  const legendItems = [
+    { color: '#4CAF50', label: 'DNS Lookup' },
+    { color: '#2196F3', label: 'TCP Connection' },
+    { color: '#9C27B0', label: 'TLS Setup' },
+    { color: '#FFC107', label: 'Waiting (TTFB)' },
+    { color: '#FF5722', label: 'Content Download' }
+  ];
+  
+  legendItems.forEach(item => {
+    const legendItem = document.createElement('div');
+    legendItem.className = 'timeline-legend-item';
+    
+    const colorBox = document.createElement('div');
+    colorBox.className = 'timeline-legend-color';
+    colorBox.style.backgroundColor = item.color;
+    legendItem.appendChild(colorBox);
+    
+    const label = document.createElement('span');
+    label.textContent = item.label;
+    legendItem.appendChild(label);
+    
+    timelineLegend.appendChild(legendItem);
+  });
+  
+  timelineSection.appendChild(timelineContainer);
+  timelineSection.appendChild(timelineLabels);
+  timelineSection.appendChild(timelineLegend);
+  
+  detailContent.appendChild(timelineSection);
   
   // Timing section
   const timingSection = document.createElement('div');
@@ -354,86 +560,78 @@ function showRequestDetails(request) {
     modalBackdrop = document.createElement('div');
     modalBackdrop.id = 'modalBackdrop';
     modalBackdrop.className = 'modal-backdrop';
+    
+    // 点击背景关闭模态框
     modalBackdrop.addEventListener('click', closeRequestDetails);
+    
     document.body.appendChild(modalBackdrop);
   }
   
-  // 在显示之前先构建好所有内容
-  // 防止重复动画导致的抖动
-  requestDetails.style.animation = 'none';
-  modalBackdrop.style.animation = 'none';
-  requestDetails.style.transform = 'translate(-50%, -50%)';
+  // 先设置初始类，不使用动画属性
+  requestDetails.classList.add('show');
+  modalBackdrop.classList.add('show');
   
-  // Reset animations by forcing reflow
-  requestDetails.classList.remove('closing');
-  modalBackdrop.classList.remove('closing');
-  
-  // 先显示背景
+  // 确保元素可见
+  requestDetails.style.display = 'block';
   modalBackdrop.style.display = 'block';
   
-  // 强制回流
-  void modalBackdrop.offsetWidth;
-  
-  // 再显示弹窗 (分离显示操作以避免抖动)
-  requestDetails.style.display = 'block';
-  
-  // 强制回流
-  void requestDetails.offsetWidth;
-  
-  // 重新启用动画（在下一个渲染周期）
+  // 计算关闭按钮位置并触发过渡
   requestAnimationFrame(() => {
-    requestDetails.style.animation = '';
-    modalBackdrop.style.animation = '';
+    positionCloseButton();
+    
+    // 强制回流
+    void requestDetails.offsetWidth;
+    
+    // 应用激活类触发过渡
+    requestDetails.classList.add('show-active');
+    modalBackdrop.classList.add('show-active');
   });
-  
-  // Add keydown event listener for ESC key
-  document.addEventListener('keydown', handleEscKeyPress);
 }
 
 /**
- * Close request details modal
+ * Close the request details view
  */
 function closeRequestDetails() {
   const requestDetails = document.getElementById('requestDetails');
   const modalBackdrop = document.getElementById('modalBackdrop');
+  const closeButton = document.querySelector('.close-button');
   
-  if (!requestDetails) return;
+  if (!requestDetails || !modalBackdrop) return;
   
-  // 防止用户多次点击关闭按钮
+  // 移除事件监听器
   document.removeEventListener('keydown', handleEscKeyPress);
-  
-  // 防止鼠标悬停引起的抖动
-  requestDetails.style.pointerEvents = 'none';
-  
-  // Add closing animation classes
-  requestDetails.classList.add('closing');
-  if (modalBackdrop) {
-    modalBackdrop.classList.add('closing');
+  if (closeButton) {
+    closeButton.removeEventListener('click', closeRequestDetails);
+    window.removeEventListener('resize', positionCloseButton);
+    window.removeEventListener('scroll', positionCloseButton);
   }
   
-  // Wait for animation to complete before hiding
+  // 添加关闭类触发过渡
+  requestDetails.classList.remove('show-active');
+  modalBackdrop.classList.remove('show-active');
+  requestDetails.classList.add('closing');
+  modalBackdrop.classList.add('closing');
+  
+  // 等待动画完成后隐藏
   setTimeout(() => {
+    // 隐藏元素并移除所有类
     requestDetails.style.display = 'none';
-    requestDetails.classList.remove('closing');
-    requestDetails.style.pointerEvents = '';
+    modalBackdrop.style.display = 'none';
+    requestDetails.classList.remove('show', 'show-active', 'closing');
+    modalBackdrop.classList.remove('show', 'show-active', 'closing');
     
-    if (modalBackdrop) {
-      modalBackdrop.style.display = 'none';
-      modalBackdrop.classList.remove('closing');
+    // 从DOM中移除关闭按钮
+    if (closeButton) {
+      closeButton.remove();
     }
     
-    // Deselect any selected row
-    document.querySelectorAll('#requestsTableBody tr').forEach(r => r.classList.remove('selected-row'));
-  }, 200); // Matches animation duration
-}
-
-/**
- * Handle ESC key press to close modal
- */
-function handleEscKeyPress(e) {
-  if (e.key === 'Escape') {
-    closeRequestDetails();
-  }
+    // 取消选中任何选定的行
+    const selectedRow = document.querySelector('.request-table-row.selected, #requestsTableBody tr.selected-row');
+    if (selectedRow) {
+      selectedRow.classList.remove('selected');
+      selectedRow.classList.remove('selected-row');
+    }
+  }, 300); // 与CSS过渡持续时间相匹配
 }
 
 /**

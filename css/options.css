@@ -1,0 +1,500 @@
+/**
+ * Network Analyzer 配置页面样式
+ */
+
+/* 主题变量 - 浅色和深色主题 */
+:root {
+  /* Light theme (default) */
+  --bg-color: #f5f7fa;
+  --text-color: #282c34;
+  --border-color: #dee2e6;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --header-bg: #edf2f7;
+  --stats-bg: rgba(247, 250, 252, 0.8);
+  --stats-border: #e2e8f0;
+  --stats-value: #3182ce;
+  --stats-label: #4a5568;
+  --primary-btn: #4299e1;
+  --primary-btn-hover: #3182ce;
+  --danger-btn: #e53e3e;
+  --danger-btn-hover: #c53030;
+  --shadow-color: rgba(0,0,0,0.1);
+  --card-radius: 8px;
+  --accent-color: #00bcd4;
+  --grid-line: rgba(0, 0, 0, 0.05);
+  --hover-effect: rgba(0, 0, 0, 0.03);
+  --hover-effect-rgb: 0, 0, 0;
+  --neon-glow: 0 0 10px rgba(0, 188, 212, 0.3);
+  --terminal-green: #48bb78;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a1d21;
+  --text-color: #ecf0f1;
+  --border-color: #2d3748;
+  --card-bg: rgba(26, 32, 44, 0.8);
+  --header-bg: #2d3748;
+  --stats-bg: rgba(45, 55, 72, 0.8);
+  --stats-border: #4a5568;
+  --stats-value: #63b3ed;
+  --stats-label: #a0aec0;
+  --primary-btn: #4299e1;
+  --primary-btn-hover: #3182ce;
+  --danger-btn: #f56565;
+  --danger-btn-hover: #e53e3e;
+  --shadow-color: rgba(0,0,0,0.3);
+  --card-radius: 8px;
+  --accent-color: #00e5ff;
+  --grid-line: rgba(255, 255, 255, 0.05);
+  --hover-effect: rgba(255, 255, 255, 0.05);
+  --hover-effect-rgb: 255, 255, 255;
+  --neon-glow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 30px rgba(0, 229, 255, 0.2);
+  --terminal-green: #68d391;
+}
+
+/* 基础页面样式 */
+body {
+  font-family: 'Roboto Mono', monospace, 'SF Mono', 'Consolas', Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+  background-image: 
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -1px -1px;
+}
+
+/* 技术背景效果 */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(63, 106, 216, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 188, 212, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="dark"] body::after {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(92, 174, 239, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 50%);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--stats-value);
+}
+
+/* 标题和卡片样式 */
+h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(to right, var(--primary-btn), var(--accent-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.setting-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.setting-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-btn), var(--accent-color));
+}
+
+[data-theme="dark"] .setting-card {
+  box-shadow: var(--neon-glow);
+}
+
+.setting-card h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: var(--primary-btn);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setting-card h2::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(to bottom, var(--primary-btn), var(--accent-color));
+  border-radius: 2px;
+}
+
+/* 表单元素 */
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+select, input {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Roboto Mono', monospace;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+select:focus, 
+input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: var(--neon-glow);
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+}
+
+/* 按钮样式 */
+button {
+  background-color: var(--primary-btn);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: var(--card-radius);
+  cursor: pointer;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background-color: var(--primary-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] button {
+  box-shadow: var(--neon-glow);
+}
+
+/* 状态消息 */
+.status-message {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: var(--card-radius);
+  background-color: var(--stats-bg);
+  font-weight: 500;
+  text-align: center;
+  transition: opacity 0.5s;
+}
+
+.success {
+  background-color: rgba(72, 187, 120, 0.1);
+  color: var(--terminal-green);
+  border: 1px solid rgba(72, 187, 120, 0.2);
+}
+
+.error {
+  background-color: rgba(229, 62, 62, 0.1);
+  color: var(--danger-btn);
+  border: 1px solid rgba(229, 62, 62, 0.2);
+}
+
+/* 主题切换开关 */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.theme-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--primary-btn);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+}
+
+/* 语言选择器 */
+.language-selector {
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-selector select {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+}
+
+/* 域名列表样式 */
+.authorized-domains-list {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 0;
+  background-color: var(--bg-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+#statusMessage.domain {
+  margin-top: 15px;
+}
+
+/* 域名添加区域 */
+.domain-action-section {
+  display: flex;
+  gap: 8px;
+}
+
+#newDomain {
+  flex: 1;
+}
+
+#addDomainBtn {
+  white-space: nowrap;
+}
+
+/* 表格式域名列表 */
+.domain-table-container {
+  position: relative;
+  width: 100%;
+}
+
+.domains-header {
+  display: table;
+  width: 100%;
+  background-color: var(--bg-color);
+  border-top-left-radius: var(--card-radius);
+  border-top-right-radius: var(--card-radius);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.domains-header-row {
+  display: table-row;
+}
+
+.domains-header-cell {
+  display: table-cell;
+  padding: 10px 15px;
+}
+
+.domains-header-cell.domain-col {
+  width: 100%;
+}
+
+.domains-header-cell.action-col {
+  text-align: right;
+  white-space: nowrap;
+}
+
+#authorizedDomainsList {
+  padding-left: 0;
+  list-style-type: none;
+  margin: 0;
+  width: 100%;
+  border-collapse: collapse;
+  display: table;
+}
+
+#authorizedDomainsList .domain-item {
+  display: table-row;
+  border-bottom: 1px solid rgba(var(--hover-effect-rgb), 0.1);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+#authorizedDomainsList .domain-item:last-child {
+  border-bottom: none;
+}
+
+#authorizedDomainsList .domain-item:hover {
+  background-color: rgba(var(--hover-effect-rgb), 0.2);
+  transform: translateX(2px);
+}
+
+.domain-item .domain-name {
+  display: table-cell;
+  padding: 12px 15px;
+  font-weight: 500;
+  width: 100%;
+  color: var(--text-color);
+}
+
+.domain-item .action-cell {
+  display: table-cell;
+  padding: 8px 15px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.domain-item .remove-btn {
+  background-color: var(--danger-btn);
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.domain-item .remove-btn:hover {
+  background-color: var(--danger-btn-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 表行动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes removing {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+.domain-item.removing {
+  animation: removing 0.3s forwards;
+}
+
+/* 额外的辅助样式 */
+.full-width-btn {
+  margin-top: 10px; 
+  width: 100%;
+}
+
+.no-domains-message {
+  display: none; 
+  font-style: italic; 
+  color: var(--stats-label); 
+  padding: 10px 15px;
+}

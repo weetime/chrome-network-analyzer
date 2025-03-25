@@ -780,8 +780,8 @@ function showRequestDetails(request) {
   
   // Create detail HTML
   requestDetails.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h3 style="margin: 0;">Request Details</h3>
+    <div class="request-detail-header">
+      <h3 class="request-detail-title">Request Details</h3>
       <button id="closeDetails" class="close-button"></button>
     </div>
     <div class="detail-url-container">
@@ -804,15 +804,15 @@ function showRequestDetails(request) {
     <p><strong>Time to First Byte:</strong> ${ttfb}</p>
     <p><strong>Total Time:</strong> ${totalTime}</p>
     
-    <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-      <h4 style="margin-top: 0;">URL Statistics (${visitCount} visits)</h4>
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-        <p style="margin: 5px 0;"><strong>P99:</strong> <span class="${p99ColorClass}">${p99Display}</span></p>
-        <p style="margin: 5px 0;"><strong>P95:</strong> ${p95Display}</p>
-        <p style="margin: 5px 0;"><strong>P90:</strong> ${p90Display}</p>
-        <p style="margin: 5px 0;"><strong>P50:</strong> ${p50Display}</p>
-        <p style="margin: 5px 0;"><strong>Average Response Time:</strong> ${avg !== 'N/A' ? `${avg} ms` : avg}</p>
-        <p style="margin: 5px 0;"><strong>Visits:</strong> ${visitCount}</p>
+    <div class="request-details-section">
+      <h4 class="request-stats-title">URL Statistics (${visitCount} visits)</h4>
+      <div class="request-stats-grid">
+        <p class="request-stat-item"><strong>P99:</strong> <span class="${p99ColorClass}">${p99Display}</span></p>
+        <p class="request-stat-item"><strong>P95:</strong> ${p95Display}</p>
+        <p class="request-stat-item"><strong>P90:</strong> ${p90Display}</p>
+        <p class="request-stat-item"><strong>P50:</strong> ${p50Display}</p>
+        <p class="request-stat-item"><strong>Average Response Time:</strong> ${avg !== 'N/A' ? `${avg} ms` : avg}</p>
+        <p class="request-stat-item"><strong>Visits:</strong> ${visitCount}</p>
       </div>
     </div>
   `;
@@ -1245,13 +1245,11 @@ const aiModelInfo = document.getElementById('aiModelInfo');
 const copyAiResultBtn = document.getElementById('copyAiResultBtn');
 const openOptionsPage = document.getElementById('openOptionsPage');
 
-// Initial hide AI analysis container
-aiAnalysisContainer.style.display = 'none';
-
 // Load settings from storage
 chrome.storage.local.get(['showAiAnalysis'], (result) => {
   // If show AI analysis panel is set and page is authorized
   if (result.showAiAnalysis && document.getElementById('authorizedContent').style.display === 'block') {
+    aiAnalysisContainer.classList.add('visible');
     aiAnalysisContainer.style.display = 'block';
   }
 });

@@ -4,6 +4,51 @@
 
 // Global variables
 let currentTabId = null;
+let updateInterval = null; // 用于存储更新定时器的ID
+
+// 处理新的网络请求消息
+function setupMessageListeners() {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // 处理请求完成的消息
+    if (message.action === "requestCompleted" && message.tabId === currentTabId) {
+      // 获取当前数据
+      const currentData = window.TableManager ? window.TableManager.getRequestData() : {};
+      // 更新特定请求的数据
+      if (currentData) {
+        currentData[message.requestId] = message.requestData;
+        // 更新表格
+        if (window.TableManager) {
+          window.TableManager.updateTableData(currentData);
+        }
+        // 更新统计信息
+        if (window.StatsManager) {
+          window.StatsManager.updateStatistics();
+        }
+      }
+    }
+    
+    // 处理请求失败的消息
+    if (message.action === "requestFailed" && message.tabId === currentTabId) {
+      // 获取当前数据
+      const currentData = window.TableManager ? window.TableManager.getRequestData() : {};
+      // 更新特定请求的数据
+      if (currentData) {
+        currentData[message.requestId] = message.requestData;
+        // 更新表格
+        if (window.TableManager) {
+          window.TableManager.updateTableData(currentData);
+        }
+        // 更新统计信息
+        if (window.StatsManager) {
+          window.StatsManager.updateStatistics();
+        }
+      }
+    }
+    
+    // 需要返回true以保持消息通道开放
+    return true;
+  });
+}
 
 // Function to request network data from background script
 function requestNetworkData() {
@@ -30,6 +75,25 @@ function requestNetworkData() {
   );
 }
 
+// 开始实时更新
+function startRealTimeUpdates() {
+  // 清除之前的定时器（如果存在）
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
+  
+  // 设置新的定时器，每3秒更新一次数据
+  updateInterval = setInterval(requestNetworkData, 3000);
+}
+
+// 停止实时更新
+function stopRealTimeUpdates() {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+    updateInterval = null;
+  }
+}
+
 // Setup event handlers for control buttons
 function setupControlButtons() {
   // Export button
@@ -54,6 +118,17 @@ function setupControlButtons() {
       // Fallback to legacy function
       analyzeButton.addEventListener('click', runAiAnalysis);
     }
+  }
+  
+  // AI分析切换按钮
+  const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
+  if (aiAnalysisToggleBtn) {
+    aiAnalysisToggleBtn.addEventListener('click', () => {
+      const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
+      if (aiAnalysisContainer) {
+        aiAnalysisContainer.classList.toggle('visible');
+      }
+    });
   }
 }
 
@@ -138,6 +213,9 @@ async function initPopup() {
   console.log('Initializing popup...');
   
   try {
+    // 设置消息监听，用于接收实时网络请求更新
+    setupMessageListeners();
+    
     // Initialize theme manager if available
     if (window.ThemeManager) {
       window.ThemeManager.init();
@@ -184,6 +262,8 @@ async function initPopup() {
           if (isAuthorized) {
             // If domain is authorized, request network data
             requestNetworkData();
+            // 启动实时更新
+            startRealTimeUpdates();
           }
         } else {
           // Legacy flow
@@ -194,8 +274,14 @@ async function initPopup() {
         // If we can't extract domain, just try to get data
         document.getElementById('authorizedContent').style.display = 'block';
         requestNetworkData();
+        // 启动实时更新
+        startRealTimeUpdates();
       }
     }
+    
+    // 在页面关闭时停止实时更新
+    window.addEventListener('unload', stopRealTimeUpdates);
+    
   } catch (error) {
     console.error("Error initializing popup:", error);
   }
@@ -203,6 +289,12 @@ async function initPopup() {
 
 // Legacy function for domain checking
 function checkDomainAndLoadData(domain) {
+  // 无论域名是否授权，都显示域名信息区域
+  const domainInfo = document.querySelector('.domain-info');
+  if (domainInfo) {
+    domainInfo.style.display = 'flex';
+  }
+  
   chrome.runtime.sendMessage(
     { action: "checkDomainAuthorization", domain },
     (response) => {
@@ -215,12 +307,6 @@ function checkDomainAndLoadData(domain) {
         // Domain is authorized, request data
         // Show authorized content area
         document.getElementById('authorizedContent').style.display = 'block';
-        
-        // Show domain info in header
-        const domainInfo = document.querySelector('.domain-info');
-        if (domainInfo) {
-          domainInfo.style.display = 'flex';
-        }
         
         // Update header authorization switch
         const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
@@ -238,16 +324,21 @@ function checkDomainAndLoadData(domain) {
       } else {
         // Domain is not authorized, show authorization UI
         if (window.DomainAuthUi) {
-          window.DomainAuthUi.showUnauthorizedContent();
+          window.DomainAuthUi.hideAuthorizedContent();
         } else {
-          document.getElementById('unauthorizedContent').style.display = 'block';
           document.getElementById('authorizedContent').style.display = 'none';
         }
         
-        // Hide domain info in header
-        const domainInfo = document.querySelector('.domain-info');
-        if (domainInfo) {
-          domainInfo.style.display = 'none';
+        // Update header authorization switch
+        const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
+        const headerAuthStatus = document.getElementById('headerAuthStatus');
+        
+        if (headerAuthorizationSwitch) {
+          headerAuthorizationSwitch.checked = false;
+        }
+        if (headerAuthStatus) {
+          headerAuthStatus.textContent = '禁用';
+          headerAuthStatus.className = 'auth-status disabled';
         }
       }
     }

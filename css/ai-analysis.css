@@ -295,3 +295,47 @@
   font-family: 'Roboto Mono', monospace;
   font-size: 0.9em;
 }
+
+/* 居中布局优化样式 */
+body.tech-bg {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.header-container,
+.stats-container,
+.ai-container,
+.tips-container {
+  width: 100%;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 响应式设计优化 */
+@media (max-width: 1024px) {
+  body.tech-bg {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  body.tech-bg {
+    padding: 10px;
+  }
+  
+  .header-container,
+  .stats-container,
+  .ai-container,
+  .tips-container {
+    max-width: 100%;
+  }
+}

@@ -4,23 +4,15 @@
 
 // Theme management
 function loadTheme() {
-  // 首先检查 Chrome Storage 中保存的深色主题默认设置
+  // 从 Chrome Storage 中读取主题设置
   chrome.storage.local.get(['darkThemeDefault'], (result) => {
-    // 如果 Storage 中有设置值，优先使用它
+    // 如果 Storage 中有设置值，使用它
     if (result.hasOwnProperty('darkThemeDefault')) {
       const theme = result.darkThemeDefault ? 'dark' : 'light';
+      // 应用主题到页面
+      document.documentElement.setAttribute('data-theme', theme);
       // 确保 localStorage 和 Chrome Storage 同步
       localStorage.setItem('theme', theme);
-      document.documentElement.setAttribute('data-theme', theme);
-      
-      // 更新主题图标
-      updateThemeIcon(theme);
-      
-      // 更新工具提示文本
-      const themeTooltip = document.getElementById('themeTooltip');
-      if (themeTooltip) {
-        themeTooltip.textContent = theme === 'light' ? 'Toggle Dark Mode' : 'Toggle Light Mode';
-      }
     } else {
       // 如果 Storage 中没有设置，则使用 localStorage 中的设置
       const savedTheme = localStorage.getItem('theme') || 'light';
@@ -28,15 +20,6 @@ function loadTheme() {
       
       // 将设置同步到 Chrome Storage
       chrome.storage.local.set({ darkThemeDefault: savedTheme === 'dark' });
-      
-      // 更新主题图标
-      updateThemeIcon(savedTheme);
-      
-      // 更新工具提示文本
-      const themeTooltip = document.getElementById('themeTooltip');
-      if (themeTooltip) {
-        themeTooltip.textContent = savedTheme === 'light' ? 'Toggle Dark Mode' : 'Toggle Light Mode';
-      }
     }
   });
 }
@@ -89,7 +72,7 @@ function initThemeManager() {
   // Initialize theme
   loadTheme();
 
-  // Theme toggle event listener
+  // Theme toggle event listener - only attach if element exists
   const themeToggle = document.getElementById('themeToggle');
   if (themeToggle) {
     themeToggle.addEventListener('click', toggleTheme);

@@ -5,7 +5,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   padding: 12px 15px;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
@@ -301,7 +301,7 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
   padding: 15px 12px;

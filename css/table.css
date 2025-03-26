@@ -11,7 +11,7 @@ table {
 
 th, td {
   border: 1px solid var(--border-color);
-  padding: 6px 8px;
+  padding: 5px 8px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -24,7 +24,7 @@ th {
   top: 0;
   cursor: pointer;
   position: relative;
-  padding: 8px 6px;
+  padding: 7px 6px;
   font-size: 11px;
   font-weight: 600;
   z-index: 10;
@@ -100,13 +100,13 @@ th.sort-desc .sort-icon {
 }
 
 .table-container {
-  max-height: 300px;
+  max-height: 220px;
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
   border: 1px solid var(--border-color);
   border-radius: var(--card-radius);
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   position: relative;
   z-index: 1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);

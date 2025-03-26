@@ -13,6 +13,9 @@ async function initI18n() {
       // 初始化I18n并加载语言包
       await window.I18n.init();
       console.log('I18n initialized with language:', window.I18n.getCurrentLanguage());
+      
+      // 确保语言设置应用到页面
+      window.I18n.updatePageText();
     } catch (error) {
       console.error('Failed to initialize I18n:', error);
     }
@@ -156,6 +159,17 @@ function setupControlButtons() {
       chrome.tabs.create({
         url: chrome.runtime.getURL(`ai-analysis.html?tabId=${currentTabId}`)
       });
+    });
+  }
+  
+  // 打开设置页面
+  const openOptionsPage = document.getElementById('openOptionsPage');
+  if (openOptionsPage) {
+    openOptionsPage.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (chrome.runtime.openOptionsPage) {
+        chrome.runtime.openOptionsPage();
+      }
     });
   }
 }

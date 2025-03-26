@@ -13,13 +13,13 @@ let i18nObserver = null;
 
 // 获取当前语言
 function getCurrentLanguage() {
-  return localStorage.getItem('language') || DEFAULT_LANGUAGE;
+  return localStorage.getItem('networkAnalyzerLanguage') || DEFAULT_LANGUAGE;
 }
 
 // 设置当前语言
 function setLanguage(lang) {
   if (SUPPORTED_LANGUAGES.includes(lang)) {
-    localStorage.setItem('language', lang);
+    localStorage.setItem('networkAnalyzerLanguage', lang);
     return true;
   }
   return false;

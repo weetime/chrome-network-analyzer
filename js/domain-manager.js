@@ -16,9 +16,11 @@ function extractDomain(url) {
 // Function to check if a domain is authorized
 function isDomainAuthorized(domain) {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['authorizedDomains'], (result) => {
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], (result) => {
       const authorizedDomains = result.authorizedDomains || [];
-      resolve(authorizedDomains.includes(domain));
+      const headerDomains = result.headerDomainsList || [];
+      const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
+      resolve(allDomains.includes(domain));
     });
   });
 }
@@ -26,11 +28,27 @@ function isDomainAuthorized(domain) {
 // Function to authorize a domain
 function authorizeDomain(domain) {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['authorizedDomains'], (result) => {
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], (result) => {
       const authorizedDomains = result.authorizedDomains || [];
+      const headerDomains = result.headerDomainsList || [];
+      
+      let updated = false;
+      
       if (!authorizedDomains.includes(domain)) {
         authorizedDomains.push(domain);
-        chrome.storage.local.set({ authorizedDomains }, () => {
+        updated = true;
+      }
+      
+      if (!headerDomains.includes(domain)) {
+        headerDomains.push(domain);
+        updated = true;
+      }
+      
+      if (updated) {
+        chrome.storage.sync.set({ 
+          authorizedDomains,
+          headerDomainsList: headerDomains 
+        }, () => {
           resolve(true);
         });
       } else {
@@ -43,18 +61,60 @@ function authorizeDomain(domain) {
 // Function to remove domain authorization
 function removeDomainAuthorization(domain) {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['authorizedDomains'], (result) => {
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], (result) => {
       const authorizedDomains = result.authorizedDomains || [];
-      const index = authorizedDomains.indexOf(domain);
+      const headerDomains = result.headerDomainsList || [];
       
-      if (index !== -1) {
-        authorizedDomains.splice(index, 1);
-        chrome.storage.local.set({ authorizedDomains }, () => {
+      const authIndex = authorizedDomains.indexOf(domain);
+      if (authIndex !== -1) {
+        authorizedDomains.splice(authIndex, 1);
+      }
+      
+      const headerIndex = headerDomains.indexOf(domain);
+      if (headerIndex !== -1) {
+        headerDomains.splice(headerIndex, 1);
+      }
+      
+      if (authIndex !== -1 || headerIndex !== -1) {
+        chrome.storage.sync.set({ 
+          authorizedDomains, 
+          headerDomainsList: headerDomains 
+        }, () => {
           resolve(true);
         });
       } else {
         resolve(false);
       }
+    });
+  });
+}
+
+// 同步本地存储和sync存储中的域名列表
+function syncDomainLists() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], (syncResult) => {
+      chrome.storage.local.get(['authorizedDomains'], (localResult) => {
+        const syncAuthorizedDomains = syncResult.authorizedDomains || [];
+        const syncHeaderDomains = syncResult.headerDomainsList || [];
+        const localAuthorizedDomains = localResult.authorizedDomains || [];
+        
+        const allDomains = [...new Set([
+          ...syncAuthorizedDomains, 
+          ...syncHeaderDomains, 
+          ...localAuthorizedDomains
+        ])];
+        
+        chrome.storage.sync.set({
+          authorizedDomains: allDomains,
+          headerDomainsList: allDomains
+        }, () => {
+          chrome.storage.local.set({
+            authorizedDomains: allDomains
+          }, () => {
+            resolve(true);
+          });
+        });
+      });
     });
   });
 }
@@ -65,6 +125,11 @@ function removeDomainAuthorization(domain) {
     extractDomain,
     isDomainAuthorized,
     authorizeDomain,
-    removeDomainAuthorization
+    removeDomainAuthorization,
+    syncDomainLists
   };
+  
+  syncDomainLists().then(() => {
+    console.log("Domain lists synchronized");
+  });
 })(typeof window !== 'undefined' ? window : self);

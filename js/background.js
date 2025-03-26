@@ -22,9 +22,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true; // Required for async response
   } else if (message.action === "getAuthorizedDomains") {
-    chrome.storage.local.get(['authorizedDomains'], (result) => {
+    // 使用sync存储而非local存储，确保与options.js保持一致
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], (result) => {
       const authorizedDomains = result.authorizedDomains || [];
-      sendResponse({ authorizedDomains });
+      const headerDomains = result.headerDomainsList || [];
+      // 合并两个数组并去重
+      const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
+      sendResponse({ authorizedDomains: allDomains });
     });
     return true; // Required for async response
   } else if (message.action === "removeDomainAuthorization") {
@@ -66,6 +70,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // Initialize when extension is loaded
 console.log("Background script initializing...");
   
+// 同步域名列表
+if (DomainManager && DomainManager.syncDomainLists) {
+  DomainManager.syncDomainLists().then(() => {
+    console.log("Domain lists synchronized during initialization");
+  });
+} else {
+  console.error("DomainManager module not found or syncDomainLists not available");
+}
+
 // Initialize network tracker
 if (NetworkTracker) {
   NetworkTracker.init();

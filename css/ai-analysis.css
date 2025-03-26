@@ -26,12 +26,18 @@
 
 /* AI分析容器 */
 .ai-container {
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 25px;
+  margin-bottom: 25px;
   border-radius: var(--card-radius);
   background-color: var(--card-bg);
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.ai-container:hover {
+  transform: translateY(-2px);
 }
 
 .ai-container::before {
@@ -205,10 +211,16 @@
 
 /* 使用提示区域 */
 .tips-container {
-  padding: 20px;
+  padding: 25px;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.tips-container:hover {
+  transform: translateY(-2px);
 }
 
 .tips-title {
@@ -298,45 +310,115 @@
 
 /* 居中布局优化样式 */
 body.tech-bg {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: var(--bg-color);
+  background-image: linear-gradient(to bottom, rgba(0, 30, 60, 0.05), transparent);
 }
 
 .content-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
   width: 100%;
+  max-width: 1200px;
+  padding: 25px;
+  box-sizing: border-box;
+  min-height: 100vh;
 }
 
 .header-container,
-.stats-container,
 .ai-container,
 .tips-container {
   width: 100%;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 针对暗黑模式 */
+[data-theme="dark"] body.tech-bg {
+  background-image: linear-gradient(to bottom, rgba(0, 40, 80, 0.15), rgba(0, 0, 0, 0.1));
+}
+
+[data-theme="dark"] .header-container,
+[data-theme="dark"] .ai-container,
+[data-theme="dark"] .tips-container {
+  box-shadow: var(--neon-glow);
 }
 
 /* 响应式设计优化 */
 @media (max-width: 1024px) {
-  body.tech-bg {
-    padding: 15px;
+  .content-wrapper {
+    padding: 20px;
+  }
+  
+  .ai-container, 
+  .tips-container,
+  .header-container {
+    padding: 20px;
   }
 }
 
 @media (max-width: 768px) {
-  body.tech-bg {
+  .content-wrapper {
+    padding: 15px;
+  }
+  
+  .ai-container, 
+  .tips-container,
+  .header-container {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .ai-header h3 {
+    font-size: 16px;
+  }
+  
+  .tips-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
     padding: 10px;
   }
   
-  .header-container,
-  .stats-container,
-  .ai-container,
-  .tips-container {
-    max-width: 100%;
+  .ai-container, 
+  .tips-container,
+  .header-container {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .ai-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .ai-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .page-title {
+    font-size: 18px;
   }
 }
 
@@ -369,4 +451,11 @@ body.tech-bg {
 
 [data-theme="dark"] .optimization-list li::before {
   text-shadow: 0 0 3px var(--accent-color-glow);
+}
+
+/* 头部容器增强 */
+.header-container {
+  padding: 18px 25px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
 }

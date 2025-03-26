@@ -433,6 +433,9 @@ function changeLanguage(lang) {
       // 更新页面文本
       window.I18n.updatePageText();
       
+      // 设置html元素的lang属性，用于CSS选择器匹配
+      document.documentElement.lang = lang;
+      
       // 保存语言设置
       chrome.storage.local.set({ language: lang });
       

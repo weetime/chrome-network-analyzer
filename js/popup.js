@@ -16,6 +16,9 @@ async function initI18n() {
       
       // 确保语言设置应用到页面
       window.I18n.updatePageText();
+      
+      // 设置html元素的lang属性，用于CSS选择器匹配
+      document.documentElement.lang = window.I18n.getCurrentLanguage();
     } catch (error) {
       console.error('Failed to initialize I18n:', error);
     }

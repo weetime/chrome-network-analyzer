@@ -25,15 +25,16 @@
     appName: '网络请求分析器',
     
     // 域名管理
-    domainManagement: '设置',
-    domainManagementDesc: '在下方管理已授权的域名，这些域名将允许收集网络请求数据。',
-    noDomains: '暂无已授权的域名',
-    addNewDomain: '添加新域名',
+    domainManagement: '域名管理',
+    domainManagementDesc: '管理已授权的域名，这些域名将允许收集网络请求数据。',
+    noDomains: '暂无已授权的域名，扩展程序只会在授权域名上工作。',
+    addNewDomain: '输入域名（例如：example.com 或 *.example.com）',
     remove: '移除',
-    addDomain: '添加',
+    addDomain: '添加域名',
     currentDomain: '当前域名:',
     invalidDomain: '请输入有效的域名',
     invalidDomainFormat: '请输入有效的域名格式 (例如: example.com)',
+    domainExist: '域名已存在',
     domainAddSuccess: '已添加域名 "{domain}" 的授权',
     domainAddFailed: '添加域名 "{domain}" 授权失败',
     domainRemoveSuccess: '已移除域名 "{domain}" 的授权',
@@ -47,16 +48,17 @@
     aiSettingsDesc: '配置AI分析功能的相关设置',
     apiProvider: 'API 提供商',
     apiKey: 'API 密钥',
-    model: '模型',
+    model: 'AI 模型',
+    enterApiKey: '输入您的 OpenAI API 密钥',
     saveApiKey: '保存 API 密钥',
     apiKeyWarning: '注意：API密钥将保存在本地存储中。',
-    showAiAnalysis: '显示 AI 分析面板',
+    showAiAnalysis: '自动分析',
     configRequired: 'API 密钥未配置。请在设置页面配置 API 密钥。',
     
     // 界面设置
     interfaceSettings: '界面设置',
     interfaceSettingsDesc: '自定义界面外观和行为',
-    darkThemeDefault: '默认使用深色主题',
+    darkThemeDefault: '深色主题',
     defaultRowCount: '默认显示行数',
     
     // 扩展操作

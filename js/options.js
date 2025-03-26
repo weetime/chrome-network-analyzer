@@ -2,8 +2,14 @@
  * Network Analyzer 选项页面脚本
  */
 
+// 定义全局变量
+let authorizedDomainsList;
+
 // 当DOM加载完成后执行
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+  // 首先初始化I18n
+  await initI18n();
+  
   // 初始化主题
   initTheme();
   
@@ -25,6 +31,29 @@ document.addEventListener('DOMContentLoaded', function() {
   // 显示保存的AI设置
   loadAISettings();
 });
+
+/**
+ * 初始化国际化功能
+ */
+async function initI18n() {
+  if (window.I18n) {
+    try {
+      // 初始化I18n并加载语言包
+      await window.I18n.init();
+      
+      // 获取当前语言
+      const currentLang = window.I18n.getCurrentLanguage();
+      
+      // 设置语言选择器
+      const languageSelect = document.getElementById('languageSelect');
+      if (languageSelect) languageSelect.value = currentLang;
+      
+      console.log('I18n initialized with language:', currentLang);
+    } catch (error) {
+      console.error('Failed to initialize I18n:', error);
+    }
+  }
+}
 
 /**
  * 初始化主题切换功能
@@ -93,7 +122,7 @@ function initLanguage() {
  * 初始化域名管理功能
  */
 function initDomainManagement() {
-  const authorizedDomainsList = document.getElementById('authorizedDomainsList');
+  authorizedDomainsList = document.getElementById('authorizedDomainsList');
   const addDomainBtn = document.getElementById('addDomainBtn');
   const newDomainInput = document.getElementById('newDomain');
   const noDomainsMessage = document.querySelector('.no-domains-message');
@@ -120,13 +149,13 @@ function initDomainManagement() {
     const domain = newDomainInput.value.trim();
     
     if (domain === '') {
-      showStatusMessage('请输入域名', 'error', 'domain');
+      showStatusMessage('invalidDomain', 'error', 'domain');
       return;
     }
     
     // 验证域名格式
     if (!isValidDomain(domain)) {
-      showStatusMessage('域名格式无效', 'error', 'domain');
+      showStatusMessage('invalidDomainFormat', 'error', 'domain');
       return;
     }
     
@@ -137,7 +166,7 @@ function initDomainManagement() {
       const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
       
       if (allDomains.includes(domain)) {
-        showStatusMessage('域名已存在', 'error', 'domain');
+        showStatusMessage('domainExist', 'error', 'domain');
         return;
       }
       
@@ -157,7 +186,7 @@ function initDomainManagement() {
         
         // 更新域名列表
         addDomainToList(domain);
-        showStatusMessage('域名添加成功', 'success', 'domain');
+        showStatusMessage('domainAddSuccess', 'success', 'domain');
         
         // 隐藏"无域名"消息
         if (noDomainsMessage) noDomainsMessage.style.display = 'none';
@@ -200,29 +229,6 @@ function initDomainManagement() {
   }
   
   /**
-   * 添加域名到列表
-   */
-  function addDomainToList(domain) {
-    const li = document.createElement('li');
-    li.className = 'domain-item';
-    li.innerHTML = `
-      <div class="domain-name">${domain}</div>
-      <div class="action-cell">
-        <button class="remove-btn">删除</button>
-      </div>
-    `;
-    
-    // 删除按钮事件
-    const removeBtn = li.querySelector('.remove-btn');
-    removeBtn.addEventListener('click', function() {
-      removeDomain(domain, li);
-    });
-    
-    // 添加到列表
-    authorizedDomainsList.appendChild(li);
-  }
-  
-  /**
    * 删除域名
    */
   function removeDomain(domain, listItem) {
@@ -245,15 +251,15 @@ function initDomainManagement() {
         }, function() {
           // 从列表中移除
           listItem.remove();
-          showStatusMessage('域名已删除', 'success', 'domain');
+          showStatusMessage('domainRemoveSuccess', 'success', 'domain');
           
           // 如果没有域名，显示"无域名"消息
-          if (newAuthorizedDomains.length === 0 && noDomainsMessage) {
-            noDomainsMessage.style.display = 'block';
+          if (newAuthorizedDomains.length === 0 && document.querySelector('.no-domains-message')) {
+            document.querySelector('.no-domains-message').style.display = 'block';
           }
         });
       });
-    }, 300); // 等待动画完成
+    }, 300);
   }
   
   /**
@@ -272,6 +278,33 @@ function initDomainManagement() {
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
     return domainRegex.test(domain);
   }
+}
+
+/**
+ * 添加域名到列表
+ */
+function addDomainToList(domain) {
+  const li = document.createElement('li');
+  li.className = 'domain-item';
+  
+  // 使用i18n翻译"删除"按钮
+  const removeText = window.I18n ? window.I18n.getText('remove') : '删除';
+  
+  li.innerHTML = `
+    <div class="domain-name">${domain}</div>
+    <div class="action-cell">
+      <button class="remove-btn">${removeText}</button>
+    </div>
+  `;
+  
+  // 删除按钮事件
+  const removeBtn = li.querySelector('.remove-btn');
+  removeBtn.addEventListener('click', function() {
+    removeDomain(domain, li);
+  });
+  
+  // 添加到列表
+  authorizedDomainsList.appendChild(li);
 }
 
 /**
@@ -411,38 +444,62 @@ function initFormEvents() {
 
 /**
  * 显示状态消息
- * @param {string} message 消息内容
+ * @param {string} messageKey 消息键
  * @param {string} type 消息类型 ('success' 或 'error')
  * @param {string} id 消息ID，用于特定消息
  */
-function showStatusMessage(message, type, id = 'main') {
+function showStatusMessage(messageKey, type, id = 'main') {
+  // 定位或创建消息容器
   let container = document.querySelector(`.status-message[data-id="${id}"]`);
   
-  // 如果消息容器不存在，创建一个新的
   if (!container) {
     container = document.createElement('div');
     container.className = 'status-message';
     container.setAttribute('data-id', id);
     
-    // 根据ID决定添加到哪里
-    if (id === 'main') {
-      document.querySelector('.content-header').appendChild(container);
-    } else if (id === 'domain') {
-      document.querySelector('.domain-action-section').appendChild(container);
+    // 根据ID添加到不同位置
+    if (id === 'domain') {
+      const domainActionSection = document.querySelector('.domain-action-section');
+      if (domainActionSection) {
+        domainActionSection.after(container);
+      }
+    } else if (id === 'ai') {
+      const aiSettings = document.querySelector('#aiSettings .form-actions');
+      if (aiSettings) {
+        aiSettings.after(container);
+      }
     } else {
-      document.body.appendChild(container);
+      // 默认添加到主内容区域顶部
+      const mainContent = document.querySelector('.main-content');
+      if (mainContent) {
+        const contentHeader = mainContent.querySelector('.content-header');
+        if (contentHeader) {
+          contentHeader.after(container);
+        } else {
+          mainContent.prepend(container);
+        }
+      }
     }
   }
   
-  // 设置消息类型和内容
-  container.className = `status-message ${type}`;
-  container.textContent = message;
-  container.style.display = 'block';
+  // 尝试翻译消息，如果是i18n键
+  let displayMessage = messageKey;
+  if (window.I18n && window.I18n.getText) {
+    // 尝试将消息作为i18n键进行翻译
+    const translated = window.I18n.getText(messageKey);
+    // 如果翻译结果不等于键本身，说明找到了翻译
+    if (translated !== messageKey) {
+      displayMessage = translated;
+    }
+  }
   
-  // 添加动画效果
-  container.style.animation = 'none';
-  container.offsetHeight; // 触发重排
-  container.style.animation = 'fadeInOut 3s forwards';
+  // 设置消息内容和类型
+  container.textContent = displayMessage;
+  container.className = `status-message ${type}`;
+  container.setAttribute('data-id', id);
+  
+  // 显示消息
+  container.style.display = 'block';
   
   // 3秒后自动隐藏
   setTimeout(() => {

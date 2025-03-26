@@ -25,15 +25,16 @@
     appName: 'Network Request Analyzer',
     
     // Domain Management
-    domainManagement: 'Management',
-    domainManagementDesc: 'Manage authorized domains below. These domains will be allowed to collect network request data.',
-    noDomains: 'No authorized domains yet',
-    addNewDomain: 'Add New Domain',
+    domainManagement: 'Domain Management',
+    domainManagementDesc: 'Manage domains for which this extension is authorized to capture network requests.',
+    noDomains: 'No authorized domains yet. This extension will only work on authorized domains.',
+    addNewDomain: 'Enter domain (e.g. example.com or *.example.com)',
     remove: 'Remove',
-    addDomain: 'Add',
+    addDomain: 'Add Domain',
     currentDomain: 'Current Domain:',
     invalidDomain: 'Please enter a valid domain',
     invalidDomainFormat: 'Please enter a valid domain format (e.g., example.com)',
+    domainExist: 'Domain already exists',
     domainAddSuccess: 'Domain "{domain}" has been authorized',
     domainAddFailed: 'Failed to authorize domain "{domain}"',
     domainRemoveSuccess: 'Authorization for domain "{domain}" has been removed',
@@ -47,16 +48,17 @@
     aiSettingsDesc: 'Configure settings for AI analysis functionality',
     apiProvider: 'API Provider',
     apiKey: 'API Key',
-    model: 'Model',
+    model: 'AI Model',
+    enterApiKey: 'Enter your OpenAI API key',
     saveApiKey: 'Save API Key',
     apiKeyWarning: 'Note: API key will be saved in local storage.',
-    showAiAnalysis: 'Show AI Analysis Panel',
+    showAiAnalysis: 'Automatic Analysis',
     configRequired: 'API key not configured. Please configure API key in settings page.',
     
     // Interface Settings
     interfaceSettings: 'Interface Settings',
     interfaceSettingsDesc: 'Customize interface appearance and behavior',
-    darkThemeDefault: 'Use Dark Theme by Default',
+    darkThemeDefault: 'Dark Theme',
     defaultRowCount: 'Default Row Count',
     
     // Extension Actions

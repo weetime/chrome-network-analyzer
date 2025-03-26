@@ -24,12 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // 显示保存的AI设置
   loadAISettings();
-  
-  // 显示保存的接口设置
-  loadInterfaceSettings();
-  
-  // 显示清除数据按钮
-  initClearDataButton();
 });
 
 /**
@@ -60,6 +54,12 @@ function initLanguage() {
   
   // 设置已保存的语言
   languageSelect.value = storedLanguage;
+  
+  // 只允许中文和英文
+  if (storedLanguage !== 'en' && storedLanguage !== 'zh') {
+    languageSelect.value = 'en';
+    localStorage.setItem('networkAnalyzerLanguage', 'en');
+  }
   
   // 语言切换事件
   languageSelect.addEventListener('change', function() {
@@ -268,153 +268,43 @@ function initSettingsSave() {
   if (!saveButton) return;
   
   saveButton.addEventListener('click', function() {
-    // 保存AI分析设置
+    // 保存AI设置
     saveAISettings();
     
-    // 保存接口设置
-    saveInterfaceSettings();
-    
-    // 显示保存成功消息
-    showStatusMessage('Settings saved successfully', 'success');
-    
-    // 移除脉冲动画
-    saveButton.classList.remove('pulse');
+    showStatusMessage('设置已保存', 'success');
   });
 }
 
 /**
- * 保存AI分析设置
+ * 保存AI设置
  */
 function saveAISettings() {
-  const aiModelSelect = document.getElementById('aiModel');
-  const apiKeyInput = document.getElementById('openaiApiKey');
-  const autoAnalysisCheckbox = document.getElementById('autoAnalysis');
+  const aiModel = document.getElementById('aiModel').value;
+  const openaiApiKey = document.getElementById('openaiApiKey').value;
+  const autoAnalysis = document.getElementById('autoAnalysis').checked;
   
-  if (!aiModelSelect || !apiKeyInput || !autoAnalysisCheckbox) return;
-  
-  const settings = {
-    aiModel: aiModelSelect.value,
-    openaiApiKey: apiKeyInput.value.trim(),
-    autoAnalysis: autoAnalysisCheckbox.checked
-  };
-  
-  chrome.storage.sync.set({aiSettings: settings});
+  chrome.storage.sync.set({
+    aiModel: aiModel,
+    openaiApiKey: openaiApiKey,
+    autoAnalysis: autoAnalysis
+  });
 }
 
 /**
- * 加载AI分析设置
+ * 加载AI设置
  */
 function loadAISettings() {
-  const aiModelSelect = document.getElementById('aiModel');
-  const apiKeyInput = document.getElementById('openaiApiKey');
-  const autoAnalysisCheckbox = document.getElementById('autoAnalysis');
-  
-  if (!aiModelSelect || !apiKeyInput || !autoAnalysisCheckbox) return;
-  
-  chrome.storage.sync.get(['aiSettings'], function(result) {
-    const settings = result.aiSettings || {};
-    
-    if (settings.aiModel) aiModelSelect.value = settings.aiModel;
-    if (settings.openaiApiKey) apiKeyInput.value = settings.openaiApiKey;
-    autoAnalysisCheckbox.checked = settings.autoAnalysis || false;
-  });
-}
-
-/**
- * 保存接口设置
- */
-function saveInterfaceSettings() {
-  const showStatusbarCheckbox = document.getElementById('showStatusbar');
-  const darkModeStartCheckbox = document.getElementById('darkModeStart');
-  const dataRetentionSelect = document.getElementById('dataRetention');
-  
-  if (!showStatusbarCheckbox || !darkModeStartCheckbox || !dataRetentionSelect) return;
-  
-  const settings = {
-    showStatusbar: showStatusbarCheckbox.checked,
-    darkModeStart: darkModeStartCheckbox.checked,
-    dataRetention: dataRetentionSelect.value
-  };
-  
-  chrome.storage.sync.set({interfaceSettings: settings});
-}
-
-/**
- * 加载接口设置
- */
-function loadInterfaceSettings() {
-  const showStatusbarCheckbox = document.getElementById('showStatusbar');
-  const darkModeStartCheckbox = document.getElementById('darkModeStart');
-  const dataRetentionSelect = document.getElementById('dataRetention');
-  
-  if (!showStatusbarCheckbox || !darkModeStartCheckbox || !dataRetentionSelect) return;
-  
-  chrome.storage.sync.get(['interfaceSettings'], function(result) {
-    const settings = result.interfaceSettings || {};
-    
-    showStatusbarCheckbox.checked = settings.showStatusbar !== undefined ? settings.showStatusbar : true;
-    darkModeStartCheckbox.checked = settings.darkModeStart || false;
-    if (settings.dataRetention) dataRetentionSelect.value = settings.dataRetention;
-  });
-}
-
-/**
- * 初始化清除数据按钮
- */
-function initClearDataButton() {
-  const clearDataBtn = document.getElementById('clearDataBtn');
-  
-  if (!clearDataBtn) return;
-  
-  clearDataBtn.addEventListener('click', function() {
-    if (confirm('Are you sure you want to clear all stored network data?')) {
-      chrome.storage.local.remove(['networkRequests'], function() {
-        showStatusMessage('All stored network data has been cleared', 'success');
-      });
-    }
-  });
-}
-
-/**
- * 显示状态消息
- * @param {string} message 消息内容
- * @param {string} type 消息类型 ('success' 或 'error')
- * @param {string} id 消息ID，用于特定消息
- */
-function showStatusMessage(message, type, id = 'main') {
-  const statusMessageId = id === 'main' ? 'statusMessage' : `statusMessage-${id}`;
-  let statusMessage = document.getElementById(statusMessageId);
-  
-  // 如果元素不存在，创建一个
-  if (!statusMessage) {
-    statusMessage = document.createElement('div');
-    statusMessage.id = statusMessageId;
-    statusMessage.className = 'status-message';
-    
-    // 找到对应的添加位置
-    let container;
-    if (id === 'domain') {
-      container = document.querySelector('.domain-management');
-    } else {
-      container = document.querySelector('.settings-container');
+  chrome.storage.sync.get(['aiModel', 'openaiApiKey', 'autoAnalysis'], function(result) {
+    if (result.aiModel) {
+      document.getElementById('aiModel').value = result.aiModel;
     }
     
-    if (container) {
-      container.appendChild(statusMessage);
+    if (result.openaiApiKey) {
+      document.getElementById('openaiApiKey').value = result.openaiApiKey;
     }
-  }
-  
-  // 设置消息内容和类型
-  statusMessage.textContent = message;
-  statusMessage.className = `status-message ${type}`;
-  
-  // 显示消息
-  statusMessage.style.opacity = '1';
-  
-  // 3秒后隐藏消息
-  setTimeout(() => {
-    statusMessage.style.opacity = '0';
-  }, 3000);
+    
+    document.getElementById('autoAnalysis').checked = result.autoAnalysis || false;
+  });
 }
 
 /**
@@ -422,53 +312,51 @@ function showStatusMessage(message, type, id = 'main') {
  */
 function initSidebarNav() {
   const navItems = document.querySelectorAll('.nav-item');
-  const settingCards = document.querySelectorAll('.setting-card');
+  const contentCards = document.querySelectorAll('.setting-card');
   const contentTitle = document.querySelector('.content-title');
   
-  // 默认显示第一个选项卡
-  if (navItems.length > 0 && settingCards.length > 0) {
+  // 默认选中第一个导航项
+  if (navItems.length > 0) {
     navItems[0].classList.add('active');
-    settingCards[0].classList.add('active');
-    if (contentTitle) {
-      contentTitle.textContent = navItems[0].getAttribute('data-title') || 'Settings';
+    
+    // 显示对应的内容卡片
+    const targetId = navItems[0].getAttribute('data-target');
+    const targetCard = document.getElementById(targetId);
+    
+    if (targetCard) {
+      targetCard.classList.add('active');
+      
+      // 更新内容标题
+      const title = navItems[0].getAttribute('data-title');
+      if (contentTitle) contentTitle.textContent = title;
     }
   }
   
   // 为每个导航项添加点击事件
-  navItems.forEach(item => {
+  navItems.forEach(function(item) {
     item.addEventListener('click', function() {
-      // 切换激活状态
-      navItems.forEach(nav => nav.classList.remove('active'));
+      // 移除所有活动状态
+      navItems.forEach(i => i.classList.remove('active'));
+      contentCards.forEach(c => c.classList.remove('active'));
+      
+      // 添加活动状态
       this.classList.add('active');
       
-      // 获取目标选项卡ID
+      // 显示对应的内容卡片
       const targetId = this.getAttribute('data-target');
+      const targetCard = document.getElementById(targetId);
       
-      // 切换内容显示
-      settingCards.forEach(card => {
-        if (card.id === targetId) {
-          card.classList.add('active');
-        } else {
-          card.classList.remove('active');
-        }
-      });
-      
-      // 更新标题
-      if (contentTitle) {
-        contentTitle.textContent = this.getAttribute('data-title') || 'Settings';
-      }
-      
-      // 在移动视图下，点击后滚动到内容区
-      if (window.innerWidth <= 900) {
-        const mainContent = document.querySelector('.main-content');
-        if (mainContent) {
-          mainContent.scrollIntoView({ behavior: 'smooth' });
-        }
+      if (targetCard) {
+        targetCard.classList.add('active');
+        
+        // 更新内容标题
+        const title = this.getAttribute('data-title');
+        if (contentTitle) contentTitle.textContent = title;
       }
     });
   });
   
-  // 监听窗口大小变化
+  // 监听窗口大小变化，处理响应式布局
   window.addEventListener('resize', handleResponsiveLayout);
   handleResponsiveLayout();
 }
@@ -480,12 +368,12 @@ function handleResponsiveLayout() {
   const sidebar = document.querySelector('.sidebar');
   const mainContent = document.querySelector('.main-content');
   
-  if (window.innerWidth <= 900) {
-    if (sidebar) sidebar.style.position = 'relative';
-    if (mainContent) mainContent.style.marginLeft = '0';
+  if (window.innerWidth < 768) {
+    sidebar.classList.add('mobile');
+    mainContent.classList.add('mobile');
   } else {
-    if (sidebar) sidebar.style.position = 'fixed';
-    if (mainContent) mainContent.style.marginLeft = 'var(--sidebar-width)';
+    sidebar.classList.remove('mobile');
+    mainContent.classList.remove('mobile');
   }
 }
 
@@ -501,4 +389,45 @@ function initFormEvents() {
       if (saveButton) saveButton.classList.add('pulse');
     });
   });
+}
+
+/**
+ * 显示状态消息
+ * @param {string} message 消息内容
+ * @param {string} type 消息类型 ('success' 或 'error')
+ * @param {string} id 消息ID，用于特定消息
+ */
+function showStatusMessage(message, type, id = 'main') {
+  let container = document.querySelector(`.status-message[data-id="${id}"]`);
+  
+  // 如果消息容器不存在，创建一个新的
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'status-message';
+    container.setAttribute('data-id', id);
+    
+    // 根据ID决定添加到哪里
+    if (id === 'main') {
+      document.querySelector('.content-header').appendChild(container);
+    } else if (id === 'domain') {
+      document.querySelector('.domain-action-section').appendChild(container);
+    } else {
+      document.body.appendChild(container);
+    }
+  }
+  
+  // 设置消息类型和内容
+  container.className = `status-message ${type}`;
+  container.textContent = message;
+  container.style.display = 'block';
+  
+  // 添加动画效果
+  container.style.animation = 'none';
+  container.offsetHeight; // 触发重排
+  container.style.animation = 'fadeInOut 3s forwards';
+  
+  // 3秒后自动隐藏
+  setTimeout(() => {
+    container.style.display = 'none';
+  }, 3000);
 } 

@@ -70,12 +70,23 @@
   display: flex;
   align-items: center;
   margin-right: 8px;
-  max-width: 120px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: 'SF Mono', 'Roboto Mono', monospace;
   font-size: 12px;
   color: var(--code-color);
+}
+
+.header-domain-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.header-domain-item.current {
+  color: var(--accent-color);
 }
 
 .domain-switch-container {

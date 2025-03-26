@@ -134,6 +134,24 @@
     type_other: 'Other',
     status_2xx: 'Success',
     status_4xx: 'Client Error',
-    status_5xx: 'Server Error'
+    status_5xx: 'Server Error',
+    
+    // AI Analysis page
+    aiAnalysisTitle: 'Network Request AI Analysis',
+    backToMain: 'Back to Home',
+    aiTips: 'AI Analysis Tips',
+    aiTip1: 'AI analysis can identify network performance bottlenecks and provide optimization suggestions',
+    aiTip2: 'Analysis results are based on currently captured network request data, ensure you have sufficient request samples',
+    aiTip3: 'You can configure your preferred AI provider and API key in the extension settings',
+    aiTip4: 'Processing time depends on request volume and response, it may take a few seconds',
+    aiModelInfo: 'Analysis by: ',
+    
+    // Optimization Suggestions
+    optimizationTips: 'Optimization Suggestions',
+    optimizationTip1: 'Combine small resource files to reduce HTTP request count',
+    optimizationTip2: 'Enable image lazy loading to prioritize visible content',
+    optimizationTip3: 'Using HTTP/2 protocol allows parallel processing of multiple requests',
+    optimizationTip4: 'Set appropriate caching policies to reduce redundant requests',
+    optimizationTip5: 'Compress JS and CSS files to reduce transfer size'
   };
 })(typeof window !== 'undefined' ? window : self); 

@@ -339,3 +339,34 @@ body.tech-bg {
     max-width: 100%;
   }
 }
+
+/* 优化建议区域样式 */
+.optimization-title {
+  margin-top: 20px;
+  color: var(--accent-color);
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+}
+
+.optimization-list li {
+  position: relative;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+
+.optimization-list li::before {
+  content: '→';
+  position: absolute;
+  left: -15px;
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+/* 暗黑模式下的优化建议样式 */
+[data-theme="dark"] .optimization-title {
+  text-shadow: 0 0 5px var(--accent-color-glow);
+}
+
+[data-theme="dark"] .optimization-list li::before {
+  text-shadow: 0 0 3px var(--accent-color-glow);
+}

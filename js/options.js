@@ -275,18 +275,21 @@ function initDomainManagement() {
 }
 
 /**
- * 初始化设置保存功能
+ * 初始化设置保存
  */
 function initSettingsSave() {
-  const saveButton = document.querySelector('.save-button');
+  const saveAISettingsBtn = document.getElementById('saveAISettingsBtn');
   
-  if (!saveButton) return;
+  if (!saveAISettingsBtn) return;
   
-  saveButton.addEventListener('click', function() {
+  saveAISettingsBtn.addEventListener('click', function() {
     // 保存AI设置
     saveAISettings();
     
-    showStatusMessage('设置已保存', 'success');
+    showStatusMessage('AI设置已保存', 'success');
+    
+    // 移除脉冲效果
+    this.classList.remove('pulse');
   });
 }
 
@@ -396,11 +399,11 @@ function handleResponsiveLayout() {
  * 初始化所有选项卡的表单事件
  */
 function initFormEvents() {
-  // 监听所有表单元素的变化
-  document.querySelectorAll('input, select, textarea').forEach(element => {
+  // 监听AI设置表单元素的变化
+  document.querySelectorAll('#aiSettings input, #aiSettings select, #aiSettings textarea').forEach(element => {
     element.addEventListener('change', function() {
-      // 显示保存按钮
-      const saveButton = document.querySelector('.save-button');
+      // 显示保存按钮脉冲效果
+      const saveButton = document.getElementById('saveAISettingsBtn');
       if (saveButton) saveButton.classList.add('pulse');
     });
   });

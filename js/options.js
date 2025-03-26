@@ -31,17 +31,32 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initTheme() {
   const themeToggle = document.getElementById('themeToggle');
-  const storedTheme = localStorage.getItem('networkAnalyzerTheme') || 'light';
   
-  // 应用存储的主题
-  document.documentElement.setAttribute('data-theme', storedTheme);
-  themeToggle.checked = storedTheme === 'dark';
+  // 首先尝试从Chrome Storage获取主题设置
+  chrome.storage.local.get(['darkThemeDefault'], (result) => {
+    const storedTheme = result.hasOwnProperty('darkThemeDefault') 
+      ? (result.darkThemeDefault ? 'dark' : 'light') 
+      : (localStorage.getItem('networkAnalyzerTheme') || 'light');
+    
+    // 应用存储的主题
+    document.documentElement.setAttribute('data-theme', storedTheme);
+    themeToggle.checked = storedTheme === 'dark';
+    
+    // 确保localStorage和Chrome Storage同步
+    localStorage.setItem('networkAnalyzerTheme', storedTheme);
+    localStorage.setItem('theme', storedTheme); // 兼容popup.html
+    chrome.storage.local.set({ darkThemeDefault: storedTheme === 'dark' });
+  });
   
   // 主题切换事件
   themeToggle.addEventListener('change', function() {
     const theme = this.checked ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
+    
+    // 同步保存到两个存储位置
     localStorage.setItem('networkAnalyzerTheme', theme);
+    localStorage.setItem('theme', theme); // 兼容popup.html
+    chrome.storage.local.set({ darkThemeDefault: theme === 'dark' });
   });
 }
 

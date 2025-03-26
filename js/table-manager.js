@@ -264,7 +264,10 @@ function renderRequestsTable() {
       // Create domain element (path without filename)
       const domain = document.createElement('span');
       domain.className = 'domain';
-      domain.textContent = url.hostname + url.pathname.replace(pathname, '');
+      const pathnameWithoutFilename = url.pathname === '/' ? '/' : 
+        pathname === url.pathname ? '/' : 
+        url.pathname.substring(0, url.pathname.lastIndexOf('/') + 1);
+      domain.textContent = url.origin + pathnameWithoutFilename;
       urlContainer.appendChild(domain);
       
       // Set title for tooltip

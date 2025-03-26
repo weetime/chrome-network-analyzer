@@ -229,6 +229,35 @@ body::after {
   box-shadow: var(--neon-glow);
 }
 
+/* 主要按钮样式 */
+.primary-button {
+  background: linear-gradient(to right, var(--primary-btn), var(--accent-color));
+  padding: 10px 20px;
+  color: white;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neon-glow);
+}
+
+.primary-button.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* 表单操作按钮容器 */
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* 标题和卡片样式 */
 h1 {
   font-size: 24px;

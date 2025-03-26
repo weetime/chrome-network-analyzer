@@ -216,3 +216,30 @@ th.sort-desc .sort-icon {
 .highlight-row {
   animation: highlight 1.5s ease-out;
 }
+
+/* URL display styles */
+.url-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.filename {
+  font-weight: 600;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.domain {
+  font-size: 10px;
+  color: var(--stats-label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  opacity: 0.8;
+}

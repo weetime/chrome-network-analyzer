@@ -161,12 +161,34 @@ function displayAuthorizedDomains(domains) {
   // Clear list
   headerDomainsList.innerHTML = '';
   
-  // Set current domain if we have it
-  if (currentDomain) {
+  // 如果没有域名，显示当前域名
+  if (domains.length === 0 && currentDomain) {
     const currentDomainItem = document.createElement('div');
     currentDomainItem.className = 'header-domain-item current';
     currentDomainItem.textContent = currentDomain;
     headerDomainsList.appendChild(currentDomainItem);
+    return;
+  }
+  
+  // 如果有授权域名，显示所有域名列表
+  if (domains.length > 0) {
+    // 首先添加当前域名（如果存在）
+    if (currentDomain) {
+      const currentDomainItem = document.createElement('div');
+      currentDomainItem.className = 'header-domain-item current';
+      currentDomainItem.textContent = currentDomain;
+      headerDomainsList.appendChild(currentDomainItem);
+    }
+    
+    // 然后添加其他授权域名（除了当前域名）
+    domains.forEach(domain => {
+      if (domain !== currentDomain) {
+        const domainItem = document.createElement('div');
+        domainItem.className = 'header-domain-item';
+        domainItem.textContent = domain;
+        headerDomainsList.appendChild(domainItem);
+      }
+    });
   }
 }
 

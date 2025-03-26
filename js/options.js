@@ -105,34 +105,44 @@ function initDomainManagement() {
     const domain = newDomainInput.value.trim();
     
     if (domain === '') {
-      showStatusMessage('Please enter a domain', 'error', 'domain');
+      showStatusMessage('请输入域名', 'error', 'domain');
       return;
     }
     
     // 验证域名格式
     if (!isValidDomain(domain)) {
-      showStatusMessage('Invalid domain format', 'error', 'domain');
+      showStatusMessage('域名格式无效', 'error', 'domain');
       return;
     }
     
     // 检查域名是否已存在
-    chrome.storage.sync.get(['authorizedDomains'], function(result) {
-      const domains = result.authorizedDomains || [];
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
+      const authorizedDomains = result.authorizedDomains || [];
+      const headerDomains = result.headerDomainsList || [];
+      const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
       
-      if (domains.includes(domain)) {
-        showStatusMessage('Domain already exists', 'error', 'domain');
+      if (allDomains.includes(domain)) {
+        showStatusMessage('域名已存在', 'error', 'domain');
         return;
       }
       
-      // 添加新域名
-      domains.push(domain);
-      chrome.storage.sync.set({authorizedDomains: domains}, function() {
+      // 添加新域名到authorizedDomains
+      authorizedDomains.push(domain);
+      
+      // 同时更新headerDomainsList，确保两处保持同步
+      headerDomains.push(domain);
+      
+      // 保存数据
+      chrome.storage.sync.set({
+        authorizedDomains: authorizedDomains,
+        headerDomainsList: headerDomains
+      }, function() {
         // 清空输入框
         newDomainInput.value = '';
         
         // 更新域名列表
         addDomainToList(domain);
-        showStatusMessage('Domain added successfully', 'success', 'domain');
+        showStatusMessage('域名添加成功', 'success', 'domain');
         
         // 隐藏"无域名"消息
         if (noDomainsMessage) noDomainsMessage.style.display = 'none';
@@ -144,23 +154,33 @@ function initDomainManagement() {
    * 加载已授权的域名
    */
   function loadAuthorizedDomains() {
-    chrome.storage.sync.get(['authorizedDomains'], function(result) {
-      const domains = result.authorizedDomains || [];
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
+      const authorizedDomains = result.authorizedDomains || [];
+      const headerDomains = result.headerDomainsList || [];
+      
+      // 合并并去重domain列表
+      const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
       
       // 清空列表
       authorizedDomainsList.innerHTML = '';
       
-      if (domains.length === 0) {
+      if (allDomains.length === 0) {
         if (noDomainsMessage) noDomainsMessage.style.display = 'block';
         return;
       }
       
       // 添加域名到列表
-      domains.forEach(function(domain) {
+      allDomains.forEach(function(domain) {
         addDomainToList(domain);
       });
       
       if (noDomainsMessage) noDomainsMessage.style.display = 'none';
+      
+      // 同步两个存储，确保两处数据一致
+      chrome.storage.sync.set({
+        authorizedDomains: allDomains,
+        headerDomainsList: allDomains
+      });
     });
   }
   
@@ -195,17 +215,25 @@ function initDomainManagement() {
     listItem.classList.add('removing');
     
     setTimeout(() => {
-      chrome.storage.sync.get(['authorizedDomains'], function(result) {
-        const domains = result.authorizedDomains || [];
-        const newDomains = domains.filter(d => d !== domain);
+      chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
+        const authorizedDomains = result.authorizedDomains || [];
+        const headerDomains = result.headerDomainsList || [];
         
-        chrome.storage.sync.set({authorizedDomains: newDomains}, function() {
+        // 从两个列表中删除域名
+        const newAuthorizedDomains = authorizedDomains.filter(d => d !== domain);
+        const newHeaderDomains = headerDomains.filter(d => d !== domain);
+        
+        // 保存更新后的数据
+        chrome.storage.sync.set({
+          authorizedDomains: newAuthorizedDomains,
+          headerDomainsList: newHeaderDomains
+        }, function() {
           // 从列表中移除
           listItem.remove();
-          showStatusMessage('Domain removed', 'success', 'domain');
+          showStatusMessage('域名已删除', 'success', 'domain');
           
           // 如果没有域名，显示"无域名"消息
-          if (newDomains.length === 0 && noDomainsMessage) {
+          if (newAuthorizedDomains.length === 0 && noDomainsMessage) {
             noDomainsMessage.style.display = 'block';
           }
         });

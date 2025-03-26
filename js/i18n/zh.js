@@ -134,6 +134,24 @@
     type_other: '其他',
     status_2xx: '成功请求',
     status_4xx: '客户端错误',
-    status_5xx: '服务器错误'
+    status_5xx: '服务器错误',
+    
+    // AI分析页面
+    aiAnalysisTitle: '网络请求 AI 分析',
+    backToMain: '返回主页',
+    aiTips: 'AI 分析使用提示',
+    aiTip1: 'AI分析能够识别网络性能瓶颈，并提供优化建议',
+    aiTip2: '分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本',
+    aiTip3: '您可以在扩展设置中配置偏好的AI提供商和API密钥',
+    aiTip4: '分析过程视请求量和响应而定，可能需要几秒钟时间',
+    aiModelInfo: '分析提供: ',
+    
+    // 优化建议
+    optimizationTips: '优化建议',
+    optimizationTip1: '合并小型资源文件，减少HTTP请求次数',
+    optimizationTip2: '启用图片懒加载，优先加载可视区域内容',
+    optimizationTip3: '使用HTTP/2协议可以并行处理多个请求',
+    optimizationTip4: '设置合理的缓存策略，减少重复请求',
+    optimizationTip5: '压缩JS和CSS文件，减少传输体积'
   };
 })(typeof window !== 'undefined' ? window : self); 

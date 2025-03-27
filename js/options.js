@@ -6,8 +6,6 @@
 import { I18n } from './i18n.js';
 import './i18n/zh.js';
 import './i18n/en.js';
-import { ThemeManager } from './theme-manager.js';
-import { DomainManager } from './domain-manager.js';
 import { ToastManager } from './toast-manager.js';
 
 // 定义全局变量
@@ -115,10 +113,9 @@ function initLanguage() {
   languageSelect.addEventListener('change', function() {
     const language = this.value;
     localStorage.setItem('networkAnalyzerLanguage', language);
-    
     // 如果语言改变，需要刷新页面以应用新语言
-    const languageChangeMsg = I18n.getText('languageChangeMsg') || `正在切换到${language === 'zh' ? '中文' : 'English'}...`;
-    showStatusMessage(languageChangeMsg, 'success', 'language');
+    const languageChangeMsg = I18n.getText('languageChangeMsg');
+    ToastManager.show(languageChangeMsg, 'success');
     setTimeout(() => {
       location.reload();
     }, 1000);
@@ -156,13 +153,13 @@ function initDomainManagement() {
     const domain = newDomainInput.value.trim();
     
     if (domain === '') {
-      showStatusMessage('invalidDomain', 'error', 'domain');
+      ToastManager.error(I18n.getText('invalidDomain'));
       return;
     }
     
     // 验证域名格式
     if (!isValidDomain(domain)) {
-      showStatusMessage('invalidDomainFormat', 'error', 'domain');
+      ToastManager.error(I18n.getText('invalidDomainFormat'));
       return;
     }
     
@@ -173,7 +170,7 @@ function initDomainManagement() {
       const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
       
       if (allDomains.includes(domain)) {
-        showStatusMessage('domainExist', 'error', 'domain');
+        ToastManager.error(I18n.getText('domainExist'));
         return;
       }
       
@@ -194,8 +191,7 @@ function initDomainManagement() {
         // 更新域名列表
         addDomainToList(domain);
         // 使用域名替换成功消息中的占位符
-        const successMsg = I18n ? I18n.getText('domainAddSuccess', { domain }) : `已添加域名 "${domain}" 的授权`;
-        showStatusMessage(successMsg, 'success', 'domain');
+        ToastManager.success(I18n.getText('domainAddSuccess', { domain }) );
         
         // 隐藏"无域名"消息
         if (noDomainsMessage) noDomainsMessage.style.display = 'none';
@@ -241,14 +237,6 @@ function initDomainManagement() {
    * 验证域名格式
    */
   function isValidDomain(domain) {
-    // 简单域名验证，允许通配符
-    if (domain === '*') return true;
-    
-    // 通配符子域名格式 (*.example.com)
-    if (domain.startsWith('*.')) {
-      domain = domain.substring(2);
-    }
-    
     // 基本域名格式验证
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
     return domainRegex.test(domain);
@@ -280,8 +268,7 @@ function removeDomain(domain, listItem) {
         listItem.remove();
         
         // 使用域名替换成功消息中的占位符
-        const successMsg = I18n ? I18n.getText('domainRemoveSuccess', { domain }) : `已移除域名 "${domain}" 的授权`;
-        showStatusMessage(successMsg, 'success', 'domain');
+        ToastManager.success(I18n.getText('domainRemoveSuccess', { domain }) );
         
         // 如果没有域名，显示"无域名"消息
         if (newAuthorizedDomains.length === 0 && document.querySelector('.no-domains-message')) {
@@ -341,7 +328,7 @@ function initSettingsSave() {
     // 保存AI设置
     saveAISettings();
     
-    showStatusMessage('aiSettingsSaved', 'success', 'ai');
+    ToastManager.success(I18n.getText('aiSettingsSaved'));
     
     // 移除脉冲效果
     this.classList.remove('pulse');
@@ -464,42 +451,3 @@ function initFormEvents() {
   });
 }
 
-/**
- * 显示状态消息
- */
-function showStatusMessage(messageKey, type, context = '') {
-  // 如果messageKey包含特殊字符（比如包含空格、引号等），认为它是直接文本
-  // 否则尝试使用I18n查找相应翻译
-  const text = messageKey.includes(' ') || messageKey.includes('"') || messageKey.includes("'") ? 
-                messageKey : 
-                (I18n ? I18n.getText(messageKey) : messageKey);
-  
-  // 根据消息类型选择 toast 类型
-  let toastType = 'info';
-  switch (type) {
-    case 'success':
-      toastType = 'success';
-      break;
-    case 'error':
-      toastType = 'error';
-      break;
-    case 'warning':
-      toastType = 'warning';
-      break;
-    default:
-      toastType = 'info';
-  }
-  
-  // 计算标题
-  let title = '';
-  if (context === 'domain') {
-    title = I18n.getText('domainManagement');
-  } else if (context === 'ai') {
-    title = I18n.getText('aiSettings');
-  } else if (context === 'language') {
-    title = I18n.getText('language');
-  }
-  
-  // 使用 ToastManager 显示消息
-  return ToastManager.show(text, toastType, { title });
-} 

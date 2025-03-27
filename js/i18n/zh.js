@@ -151,7 +151,11 @@ if (typeof window !== 'undefined') {
     optimizationTip2: '启用图片懒加载，优先加载可视区域内容',
     optimizationTip3: '使用HTTP/2协议可以并行处理多个请求',
     optimizationTip4: '设置合理的缓存策略，减少重复请求',
-    optimizationTip5: '压缩JS和CSS文件，减少传输体积'
+    optimizationTip5: '压缩JS和CSS文件，减少传输体积',
+    
+    languageChangeMsg: '正在切换到中文...',
+
+    aiSettingsSaved: 'AI 分析设置已保存成功',
   };
 }
 

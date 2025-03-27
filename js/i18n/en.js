@@ -151,7 +151,11 @@ if (typeof window !== 'undefined') {
     optimizationTip2: 'Enable image lazy loading to prioritize visible content',
     optimizationTip3: 'Using HTTP/2 protocol allows parallel processing of multiple requests',
     optimizationTip4: 'Set appropriate caching policies to reduce redundant requests',
-    optimizationTip5: 'Compress JS and CSS files to reduce transfer size'
+    optimizationTip5: 'Compress JS and CSS files to reduce transfer size',
+
+    languageChangeMsg: 'Switching to English...',
+    
+    aiSettingsSaved: 'AI analysis settings saved successfully',
   };
 }
 

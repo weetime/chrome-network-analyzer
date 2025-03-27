@@ -116,49 +116,11 @@ function setupObserver() {
   });
 }
 
-// 加载语言包
-async function loadLanguagePacks() {
-  // 在ES6模块系统中，语言包会通过import导入，所以这里不需要动态加载脚本
-  // 只需要确保I18nMessages对象已经正确初始化
-  
-  if (typeof window !== 'undefined' && !window.I18nMessages) {
-    window.I18nMessages = {
-      zh: {
-        // ... existing translations ...
-        'confirmClear': '确定要清除所有网络请求数据吗？',
-        'cancel': '取消',
-        'confirm': '确认',
-        'languageChangeMsg': '正在切换到中文...',
-        'dataCleared': '数据已成功清除',
-        'aiSettingsSaved': 'AI 分析设置已保存成功',
-        'domainAddSuccess': '已成功添加域名 {domain}',
-        'domainRemoveSuccess': '已成功移除域名 {domain}'
-      },
-      en: {
-        // ... existing translations ...
-        'confirmClear': 'Are you sure you want to clear all network request data?',
-        'cancel': 'Cancel',
-        'confirm': 'Confirm',
-        'languageChangeMsg': 'Switching to English...',
-        'dataCleared': 'Data cleared successfully',
-        'aiSettingsSaved': 'AI analysis settings saved successfully',
-        'domainAddSuccess': 'Domain {domain} added successfully',
-        'domainRemoveSuccess': 'Domain {domain} removed successfully'
-      }
-    };
-  }
-  
-  console.log('Language packs loaded via ES6 imports');
-  return Promise.resolve();
-}
 
 // 初始化国际化模块
 async function init() {
   try {
-    await loadLanguagePacks();
-    console.log('All language packs loaded.');
     updatePageText();
-    
     // 设置 DOM 观察器
     setupObserver();
   } catch (error) {

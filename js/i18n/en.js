@@ -98,7 +98,6 @@ if (typeof window !== 'undefined') {
     redirect: 'Redirect (3xx)',
     clientError: 'Client Error (4xx)',
     serverError: 'Server Error (5xx)',
-    networkError: 'Network Error',
     
     // Action Buttons
     toggleDarkMode: 'Toggle Dark Mode',
@@ -156,6 +155,16 @@ if (typeof window !== 'undefined') {
     languageChangeMsg: 'Switching to English...',
     
     aiSettingsSaved: 'AI analysis settings saved successfully',
+    
+    // Extension Settings Tab
+    extensionSettings: 'Extension Settings',
+    extensionSettingsDesc: 'Customize the appearance and behavior of the extension.',
+    
+    // Theme Settings
+    themeSettings: 'Theme Settings',
+    lightTheme: 'Light Theme',
+    darkTheme: 'Dark Theme',
+    fireBlackTheme: 'Fire Black Theme',
   };
 }
 

@@ -98,7 +98,6 @@ if (typeof window !== 'undefined') {
     redirect: '重定向 (3xx)',
     clientError: '客户端错误 (4xx)',
     serverError: '服务器错误 (5xx)',
-    networkError: '网络错误',
     
     // 操作按钮
     toggleDarkMode: '切换深色模式',
@@ -156,6 +155,16 @@ if (typeof window !== 'undefined') {
     languageChangeMsg: '正在切换到中文...',
 
     aiSettingsSaved: 'AI 分析设置已保存成功',
+    
+    // 扩展程序设置
+    extensionSettings: '扩展程序设置',
+    extensionSettingsDesc: '自定义扩展程序的外观和行为。',
+    
+    // 主题设置
+    themeSettings: '主题设置',
+    lightTheme: '浅色主题',
+    darkTheme: '深色主题',
+    fireBlackTheme: '火焰黑主题',
   };
 }
 

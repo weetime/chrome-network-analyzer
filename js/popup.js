@@ -128,6 +128,12 @@ function stopRealTimeUpdates() {
 
 // Setup event handlers for control buttons
 function setupControlButtons() {
+  // Theme toggle button
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', ThemeManager.toggleTheme);
+  }
+  
   // Export button
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
@@ -274,7 +280,7 @@ function clearData() {
   });
 }
 
-// 初始化弹出界面
+// Main initialization function
 async function initPopup() {
   console.log("Initializing popup...");
   

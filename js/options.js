@@ -186,7 +186,11 @@ function initDomainManagement() {
         
         // 更新域名列表
         addDomainToList(domain);
-        showStatusMessage('domainAddSuccess', 'success', 'domain');
+        // 使用域名替换成功消息中的占位符
+        const successMsg = window.I18n 
+          ? window.I18n.getText('domainAddSuccess', { domain }) 
+          : `已添加域名 "${domain}" 的授权`;
+        showStatusMessage(successMsg, 'success', 'domain');
         
         // 隐藏"无域名"消息
         if (noDomainsMessage) noDomainsMessage.style.display = 'none';
@@ -269,7 +273,12 @@ function removeDomain(domain, listItem) {
       }, function() {
         // 从列表中移除
         listItem.remove();
-        showStatusMessage('domainRemoveSuccess', 'success', 'domain');
+        
+        // 使用域名替换成功消息中的占位符
+        const successMsg = window.I18n 
+          ? window.I18n.getText('domainRemoveSuccess', { domain }) 
+          : `已移除域名 "${domain}" 的授权`;
+        showStatusMessage(successMsg, 'success', 'domain');
         
         // 如果没有域名，显示"无域名"消息
         if (newAuthorizedDomains.length === 0 && document.querySelector('.no-domains-message')) {
@@ -454,7 +463,7 @@ function initFormEvents() {
 
 /**
  * 显示状态消息
- * @param {string} messageKey 消息键
+ * @param {string} messageKey 消息键或完整消息
  * @param {string} type 消息类型 ('success' 或 'error')
  * @param {string} id 消息ID，用于特定消息
  */
@@ -492,19 +501,8 @@ function showStatusMessage(messageKey, type, id = 'main') {
     }
   }
   
-  // 尝试翻译消息，如果是i18n键
-  let displayMessage = messageKey;
-  if (window.I18n && window.I18n.getText) {
-    // 尝试将消息作为i18n键进行翻译
-    const translated = window.I18n.getText(messageKey);
-    // 如果翻译结果不等于键本身，说明找到了翻译
-    if (translated !== messageKey) {
-      displayMessage = translated;
-    }
-  }
-  
   // 设置消息内容和类型
-  container.textContent = displayMessage;
+  container.textContent = messageKey;
   container.className = `status-message ${type}`;
   container.setAttribute('data-id', id);
   

@@ -174,8 +174,8 @@ function exportData() {
   const requestData = TableManager.getRequestData();
   
   if (Object.keys(requestData).length === 0) {
-    const noDataMsg = I18n.getText('noDataMessage') || 'No data to export.';
-    ToastManager.warning(noDataMsg, { title: I18n.getText('exportData') });
+    // 没有数据时不显示 toast，直接返回
+    console.log('No data to export');
     return;
   }
   
@@ -242,7 +242,6 @@ function clearData() {
         (response) => {
           if (chrome.runtime.lastError) {
             console.error("Error clearing request data:", chrome.runtime.lastError);
-            ToastManager.error(chrome.runtime.lastError.message, { title: I18n.getText('clearData') });
             return;
           }
           
@@ -264,13 +263,10 @@ function clearData() {
               console.error('Error closing request details:', error);
             }
             
-            // Show success message
-            ToastManager.success(I18n.getText('dataCleared') || 'Data cleared successfully', { 
-              title: I18n.getText('clearData') 
-            });
+            // 不显示成功消息 toast
+            console.log('Data cleared successfully');
           } else if (response && response.error) {
             console.error("Error clearing data:", response.error);
-            ToastManager.error(response.error, { title: I18n.getText('clearData') });
           }
         }
       );

@@ -19,6 +19,14 @@
   pointer-events: none; /* 允许点击穿透 */
 }
 
+/* 在 popup 中使用更紧凑的 toast */
+.popup-body .toast-container {
+  top: 10px;
+  right: 10px;
+  max-width: 250px;
+  min-width: 200px;
+}
+
 /* 单个toast提示 */
 .toast {
   position: relative;
@@ -35,6 +43,20 @@
   overflow: hidden;
   pointer-events: auto; /* 允许交互 */
   max-width: 100%;
+}
+
+/* popup 中的 toast 样式更紧凑 */
+.popup-body .toast {
+  padding: 10px;
+  font-size: 13px;
+}
+
+.popup-body .toast-title {
+  font-size: 13px;
+}
+
+.popup-body .toast-message {
+  font-size: 12px;
 }
 
 /* Toast显示动画 */
@@ -83,6 +105,12 @@
   flex-shrink: 0;
 }
 
+/* popup 中图标更小 */
+.popup-body .toast-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Toast内容 */
 .toast-content {
   flex: 1;
@@ -124,6 +152,13 @@
   transition: opacity 0.2s;
 }
 
+.popup-body .toast-close {
+  width: 20px;
+  height: 20px;
+  top: 5px;
+  right: 5px;
+}
+
 .toast-close:hover {
   opacity: 1;
   background-color: rgba(0, 0, 0, 0.05);
@@ -154,6 +189,11 @@
 
 .toast.warning .toast-progress {
   background: #ED8936;
+}
+
+/* popup 中的 toast 显示时间更短 */
+.popup-body .toast-progress {
+  animation-duration: 1.5s !important;
 }
 
 /* 适配深色模式 */

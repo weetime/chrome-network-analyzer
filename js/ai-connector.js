@@ -16,6 +16,16 @@ const ANTHROPIC_MODELS = {
   'claude-3-haiku': 'claude-3-haiku-20240307'
 };
 
+// API代理地址 - 使用实际可用的API代理
+const OPENAI_PROXY_API = 'https://api.openaiapi.com/v1/chat/completions';
+// 备用代理地址
+const BACKUP_PROXY_API = 'https://api.aiproxy.io/v1/chat/completions';
+
+// 最大重试次数
+const MAX_RETRIES = 2;
+// 重试间隔（毫秒）
+const RETRY_DELAY = 1000;
+
 // Send network analysis data to OpenAI's API
 async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxTokens = 2000) {
   try {
@@ -34,31 +44,96 @@ async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxToke
       }
     ];
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: modelId,
-        messages: messages,
-        max_tokens: maxTokens,
-        temperature: 0.3
-      })
-    });
+    // 尝试直接调用 OpenAI API（如果有代理的情况下）
+    let lastError = null;
+    let retryCount = 0;
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`OpenAI API Error: ${errorData.error?.message || response.statusText}`);
+    // 定义要尝试的API端点
+    const apiEndpoints = [
+      { 
+        url: 'https://api.openai.com/v1/chat/completions', 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        name: 'Direct OpenAI API'
+      },
+      {
+        url: OPENAI_PROXY_API,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
+        name: 'Primary Proxy'
+      },
+      {
+        url: BACKUP_PROXY_API,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
+        name: 'Backup Proxy'
+      }
+    ];
+    
+    // 为每个端点添加重试逻辑
+    for (const endpoint of apiEndpoints) {
+      retryCount = 0;
+      
+      while (retryCount <= MAX_RETRIES) {
+        try {
+          console.log(`Attempting to use ${endpoint.name}, attempt ${retryCount + 1}`);
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+          
+          const response = await fetch(endpoint.url, {
+            method: 'POST',
+            headers: endpoint.headers,
+            body: JSON.stringify({
+              model: modelId,
+              messages: messages,
+              max_tokens: maxTokens,
+              temperature: 0.3
+            }),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+            throw new Error(`API Error (${endpoint.name}): ${errorData.error?.message || response.statusText}`);
+          }
+          
+          const data = await response.json();
+          return {
+            analysis: data.choices[0].message.content,
+            model: model,
+            provider: `OpenAI (via ${endpoint.name})`
+          };
+        } catch (error) {
+          console.error(`Error with ${endpoint.name} (attempt ${retryCount + 1}):`, error);
+          lastError = error;
+          
+          if (error.name === 'AbortError') {
+            console.log(`Request to ${endpoint.name} timed out`);
+          }
+          
+          if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            // 指数退避重试
+            await new Promise(r => setTimeout(r, RETRY_DELAY * retryCount));
+          } else {
+            console.log(`Max retries exceeded for ${endpoint.name}, trying next endpoint`);
+            break;
+          }
+        }
+      }
     }
     
-    const data = await response.json();
-    return {
-      analysis: data.choices[0].message.content,
-      model: model,
-      provider: 'OpenAI'
-    };
+    // 所有尝试都失败了
+    throw lastError || new Error('Failed to connect to any OpenAI API endpoint');
   } catch (error) {
     console.error('Error sending data to OpenAI:', error);
     throw error;

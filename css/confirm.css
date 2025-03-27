@@ -9,69 +9,184 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.25s ease;
+  backdrop-filter: blur(4px);
+}
+
+/* popup 中确认对话框容器 */
+.popup-body .custom-confirm {
+  background-color: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
 }
 
 /* 确认对话框内容 */
 .confirm-content {
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  padding: 24px;
+  background-color: rgba(var(--card-bg-rgb), 0.85);
+  border-radius: 16px;
+  padding: 28px;
   max-width: 400px;
-  width: 80%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-color);
-  animation: scaleIn 0.2s ease;
+  width: 85%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(var(--primary-btn-rgb), 0.15);
+  animation: scaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+/* popup 中确认对话框内容 */
+.popup-body .confirm-content {
+  max-width: 340px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+/* 玻璃效果 */
+.confirm-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    rgba(255, 255, 255, 0.05) 50%, 
+    rgba(0, 0, 0, 0.05) 100%);
+  z-index: -1;
+}
+
+/* 确认对话框背景装饰 */
+.confirm-content::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(var(--accent-color-rgb), 0.8) 0%, transparent 70%);
+  opacity: 0.2;
+  filter: blur(20px);
+  z-index: -1;
 }
 
 /* 确认对话框消息 */
 .confirm-message {
-  margin-bottom: 20px;
-  font-size: 16px;
+  margin-bottom: 26px;
+  font-size: 17px;
   color: var(--text-color);
   text-align: center;
-  line-height: 1.5;
+  line-height: 1.6;
+  position: relative;
+  font-weight: 500;
+}
+
+/* popup 中确认对话框消息 */
+.popup-body .confirm-message {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+/* 添加一个图标到信息上方 */
+.confirm-message::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239F7AEA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'%3E%3C/line%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.8;
+}
+
+/* popup 中图标 */
+.popup-body .confirm-message::before {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 14px;
 }
 
 /* 按钮容器 */
 .confirm-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* popup中的按钮容器 */
+.popup-body .confirm-buttons {
   gap: 12px;
 }
 
 /* 按钮基础样式 */
 .confirm-buttons button {
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 22px;
+  border-radius: 8px;
   cursor: pointer;
   font-family: 'Roboto Mono', monospace;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   transition: all 0.2s ease;
   border: none;
+  min-width: 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* popup 中按钮 */
+.popup-body .confirm-buttons button {
+  padding: 8px 18px;
+  font-size: 14px;
+  min-width: 90px;
+  border-radius: 6px;
+}
+
+/* 按钮悬浮效果 */
+.confirm-buttons button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.4);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.confirm-buttons button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
 }
 
 /* 取消按钮 */
 .cancel-btn {
-  background-color: var(--bg-color);
+  background-color: rgba(var(--bg-color-rgb), 0.7);
   color: var(--text-color);
-  border: 1px solid var(--border-color) !important;
+  border: 1px solid rgba(var(--border-color-rgb), 0.5) !important;
+  backdrop-filter: blur(4px);
 }
 
 .cancel-btn:hover {
-  background-color: var(--border-color);
+  background-color: rgba(var(--border-color-rgb), 0.3);
+  transform: translateY(-2px);
 }
 
 /* 确认按钮 */
 .confirm-btn {
-  background: linear-gradient(to right, var(--primary-btn), var(--accent-color));
+  background: linear-gradient(to right, rgba(var(--primary-btn-rgb), 0.9), rgba(var(--accent-color-rgb), 0.9));
   color: white;
+  box-shadow: 0 4px 12px rgba(var(--primary-btn-rgb), 0.3);
+  backdrop-filter: blur(4px);
 }
 
 .confirm-btn:hover {
@@ -86,28 +201,56 @@
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
+  from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
 }
 
 /* 深色模式调整 */
 [data-theme="dark"] .confirm-content {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(var(--primary-btn-rgb), 0.25);
+  background-color: rgba(var(--card-bg-rgb), 0.75);
+}
+
+[data-theme="dark"] .confirm-message::before {
+  filter: brightness(1.1);
 }
 
 /* 响应式调整 */
 @media (max-width: 480px) {
   .confirm-content {
     width: 90%;
-    padding: 16px;
+    padding: 22px;
   }
   
   .confirm-message {
-    font-size: 14px;
+    font-size: 15px;
+  }
+  
+  .confirm-message::before {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 14px;
   }
   
   .confirm-buttons button {
-    padding: 6px 12px;
-    font-size: 13px;
+    padding: 8px 16px;
+    font-size: 14px;
+    min-width: 90px;
   }
 } 

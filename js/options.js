@@ -117,7 +117,8 @@ function initLanguage() {
     localStorage.setItem('networkAnalyzerLanguage', language);
     
     // 如果语言改变，需要刷新页面以应用新语言
-    showStatusMessage('Language changed to ' + language + '. Refreshing...', 'success', 'language');
+    const languageChangeMsg = I18n.getText('languageChangeMsg') || `正在切换到${language === 'zh' ? '中文' : 'English'}...`;
+    showStatusMessage(languageChangeMsg, 'success', 'language');
     setTimeout(() => {
       location.reload();
     }, 1000);
@@ -340,7 +341,7 @@ function initSettingsSave() {
     // 保存AI设置
     saveAISettings();
     
-    showStatusMessage('AI设置已保存', 'success', 'ai');
+    showStatusMessage('aiSettingsSaved', 'success', 'ai');
     
     // 移除脉冲效果
     this.classList.remove('pulse');
@@ -359,8 +360,6 @@ function saveAISettings() {
     aiModel: aiModel,
     openaiApiKey: openaiApiKey,
     autoAnalysis: autoAnalysis
-  }, function() {
-    showStatusMessage('AI设置已保存', 'success', 'ai');
   });
 }
 

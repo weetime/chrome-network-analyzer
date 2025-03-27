@@ -8,6 +8,7 @@ import './i18n/zh.js';
 import './i18n/en.js';
 import { ThemeManager } from './theme-manager.js';
 import { DomainManager } from './domain-manager.js';
+import { ToastManager } from './toast-manager.js';
 
 // 定义全局变量
 let authorizedDomainsList;
@@ -116,7 +117,7 @@ function initLanguage() {
     localStorage.setItem('networkAnalyzerLanguage', language);
     
     // 如果语言改变，需要刷新页面以应用新语言
-    showStatusMessage('Language changed to ' + language + '. Refreshing...', 'success');
+    showStatusMessage('Language changed to ' + language + '. Refreshing...', 'success', 'language');
     setTimeout(() => {
       location.reload();
     }, 1000);
@@ -339,7 +340,7 @@ function initSettingsSave() {
     // 保存AI设置
     saveAISettings();
     
-    showStatusMessage('AI设置已保存', 'success');
+    showStatusMessage('AI设置已保存', 'success', 'ai');
     
     // 移除脉冲效果
     this.classList.remove('pulse');
@@ -358,6 +359,8 @@ function saveAISettings() {
     aiModel: aiModel,
     openaiApiKey: openaiApiKey,
     autoAnalysis: autoAnalysis
+  }, function() {
+    showStatusMessage('AI设置已保存', 'success', 'ai');
   });
 }
 
@@ -465,57 +468,39 @@ function initFormEvents() {
 /**
  * 显示状态消息
  */
-function showStatusMessage(messageKey, type, id = 'main') {
-  const messageContainerId = id === 'main' ? 'statusMessage' : `${id}StatusMessage`;
-  let messageContainer = document.getElementById(messageContainerId);
-  
-  // 如果不存在消息容器，创建一个
-  if (!messageContainer) {
-    messageContainer = document.createElement('div');
-    messageContainer.id = messageContainerId;
-    messageContainer.className = 'status-message';
-    
-    // 在表单底部或特定位置插入
-    if (id === 'main') {
-      document.querySelector('.content-header').appendChild(messageContainer);
-    } else {
-      // 查找相关表单或容器
-      const container = document.getElementById(id);
-      const targetContainer = container || document.querySelector(`[data-tab="${id}"]`);
-      
-      if (targetContainer) {
-        // 确保消息显示在合适的位置
-        const insertAfter = targetContainer.querySelector('.form-actions') || 
-                            targetContainer.querySelector('form') || 
-                            targetContainer;
-        insertAfter.appendChild(messageContainer);
-      } else {
-        // 如果找不到特定容器，插入到主内容区域
-        document.querySelector('.main-content').appendChild(messageContainer);
-      }
-    }
-  }
-  
-  // 设置消息类型和文本
-  messageContainer.className = `status-message ${type}`;
-  
+function showStatusMessage(messageKey, type, context = '') {
   // 如果messageKey包含特殊字符（比如包含空格、引号等），认为它是直接文本
   // 否则尝试使用I18n查找相应翻译
   const text = messageKey.includes(' ') || messageKey.includes('"') || messageKey.includes("'") ? 
                 messageKey : 
                 (I18n ? I18n.getText(messageKey) : messageKey);
   
-  messageContainer.textContent = text;
-  messageContainer.style.display = 'block';
+  // 根据消息类型选择 toast 类型
+  let toastType = 'info';
+  switch (type) {
+    case 'success':
+      toastType = 'success';
+      break;
+    case 'error':
+      toastType = 'error';
+      break;
+    case 'warning':
+      toastType = 'warning';
+      break;
+    default:
+      toastType = 'info';
+  }
   
-  // 设置动画效果
-  messageContainer.classList.add('show');
+  // 计算标题
+  let title = '';
+  if (context === 'domain') {
+    title = I18n.getText('domainManagement');
+  } else if (context === 'ai') {
+    title = I18n.getText('aiSettings');
+  } else if (context === 'language') {
+    title = I18n.getText('language');
+  }
   
-  // 2秒后自动隐藏消息
-  setTimeout(() => {
-    messageContainer.classList.remove('show');
-    setTimeout(() => {
-      messageContainer.style.display = 'none';
-    }, 300); // 等待淡出动画完成
-  }, 2000);
+  // 使用 ToastManager 显示消息
+  return ToastManager.show(text, toastType, { title });
 } 

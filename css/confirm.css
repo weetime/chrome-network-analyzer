@@ -1,0 +1,113 @@
+/**
+ * 自定义确认对话框样式
+ */
+
+/* 确认对话框容器 */
+.custom-confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+/* 确认对话框内容 */
+.confirm-content {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 80%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  animation: scaleIn 0.2s ease;
+}
+
+/* 确认对话框消息 */
+.confirm-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: var(--text-color);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* 按钮容器 */
+.confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* 按钮基础样式 */
+.confirm-buttons button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* 取消按钮 */
+.cancel-btn {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color) !important;
+}
+
+.cancel-btn:hover {
+  background-color: var(--border-color);
+}
+
+/* 确认按钮 */
+.confirm-btn {
+  background: linear-gradient(to right, var(--primary-btn), var(--accent-color));
+  color: white;
+}
+
+.confirm-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--neon-glow);
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* 深色模式调整 */
+[data-theme="dark"] .confirm-content {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .confirm-content {
+    width: 90%;
+    padding: 16px;
+  }
+  
+  .confirm-message {
+    font-size: 14px;
+  }
+  
+  .confirm-buttons button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+} 

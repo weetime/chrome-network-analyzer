@@ -229,40 +229,6 @@ function initDomainManagement() {
   }
   
   /**
-   * 删除域名
-   */
-  function removeDomain(domain, listItem) {
-    // 添加移除动画
-    listItem.classList.add('removing');
-    
-    setTimeout(() => {
-      chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
-        const authorizedDomains = result.authorizedDomains || [];
-        const headerDomains = result.headerDomainsList || [];
-        
-        // 从两个列表中删除域名
-        const newAuthorizedDomains = authorizedDomains.filter(d => d !== domain);
-        const newHeaderDomains = headerDomains.filter(d => d !== domain);
-        
-        // 保存更新后的数据
-        chrome.storage.sync.set({
-          authorizedDomains: newAuthorizedDomains,
-          headerDomainsList: newHeaderDomains
-        }, function() {
-          // 从列表中移除
-          listItem.remove();
-          showStatusMessage('domainRemoveSuccess', 'success', 'domain');
-          
-          // 如果没有域名，显示"无域名"消息
-          if (newAuthorizedDomains.length === 0 && document.querySelector('.no-domains-message')) {
-            document.querySelector('.no-domains-message').style.display = 'block';
-          }
-        });
-      });
-    }, 300);
-  }
-  
-  /**
    * 验证域名格式
    */
   function isValidDomain(domain) {
@@ -278,6 +244,50 @@ function initDomainManagement() {
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
     return domainRegex.test(domain);
   }
+}
+
+/**
+ * 删除域名
+ */
+function removeDomain(domain, listItem) {
+  // 添加移除动画
+  listItem.classList.add('removing');
+  
+  setTimeout(() => {
+    chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
+      const authorizedDomains = result.authorizedDomains || [];
+      const headerDomains = result.headerDomainsList || [];
+      
+      // 从两个列表中删除域名
+      const newAuthorizedDomains = authorizedDomains.filter(d => d !== domain);
+      const newHeaderDomains = headerDomains.filter(d => d !== domain);
+      
+      // 保存更新后的数据
+      chrome.storage.sync.set({
+        authorizedDomains: newAuthorizedDomains,
+        headerDomainsList: newHeaderDomains
+      }, function() {
+        // 从列表中移除
+        listItem.remove();
+        showStatusMessage('domainRemoveSuccess', 'success', 'domain');
+        
+        // 如果没有域名，显示"无域名"消息
+        if (newAuthorizedDomains.length === 0 && document.querySelector('.no-domains-message')) {
+          document.querySelector('.no-domains-message').style.display = 'block';
+        }
+        
+        // 通知后台脚本更新域名授权状态
+        chrome.runtime.sendMessage(
+          { action: "removeDomainAuthorization", domain },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              console.error("通知后台移除域名授权时出错:", chrome.runtime.lastError);
+            }
+          }
+        );
+      });
+    });
+  }, 300);
 }
 
 /**

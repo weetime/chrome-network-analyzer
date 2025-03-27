@@ -2,8 +2,10 @@
 :root {
   /* Light theme (default) - with geek style */
   --bg-color: #f5f7fa;
+  --bg-color-rgb: 245, 247, 250;
   --text-color: #282c34;
   --border-color: #dcdfe6;
+  --border-color-rgb: 220, 223, 230;
   --header-bg: #e6ebf5;
   --row-even-bg: #edf2fc;
   --stats-bg: #e6ebf5;
@@ -15,14 +17,17 @@
   --fast-bg: rgba(76, 175, 80, 0.18);
   --error-bg: rgba(244, 67, 54, 0.18);
   --primary-btn: #3f6ad8;
+  --primary-btn-rgb: 63, 106, 216;
   --primary-btn-hover: #2952c8;
   --danger-btn: #f44336;
   --shadow-color: rgba(0,0,0,0.1);
   
   /* New geek style variables */
   --accent-color: #00bcd4;
+  --accent-color-rgb: 0, 188, 212;
   --accent-color-hover: #00acc1;
   --card-bg: #ffffff;
+  --card-bg-rgb: 255, 255, 255;
   --code-bg: #282c34;
   --code-color: #5caeef;
   --grid-line: #dcdfe6;
@@ -40,8 +45,10 @@
 
 [data-theme="dark"] {
   --bg-color: #1a1d21;
+  --bg-color-rgb: 26, 29, 33;
   --text-color: #ecf0f1;
   --border-color: #2c3e50;
+  --border-color-rgb: 44, 62, 80;
   --header-bg: #252a33;
   --row-even-bg: #20252e;
   --stats-bg: #252a33;
@@ -53,14 +60,17 @@
   --fast-bg: rgba(76, 175, 80, 0.22);
   --error-bg: rgba(244, 67, 54, 0.22);
   --primary-btn: #5caeef;
+  --primary-btn-rgb: 92, 174, 239;
   --primary-btn-hover: #3498db;
   --danger-btn: #e74c3c;
   --shadow-color: rgba(0,0,0,0.4);
   
   /* Dark theme geek style variables */
   --accent-color: #00e5ff;
+  --accent-color-rgb: 0, 229, 255;
   --accent-color-hover: #18ffff;
   --card-bg: #252a33;
+  --card-bg-rgb: 37, 42, 51;
   --code-bg: #121212;
   --code-color: #5caeef;
   --grid-line: #2c3e50;

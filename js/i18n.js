@@ -127,13 +127,23 @@ async function loadLanguagePacks() {
         // ... existing translations ...
         'confirmClear': '确定要清除所有网络请求数据吗？',
         'cancel': '取消',
-        'confirm': '确认'
+        'confirm': '确认',
+        'languageChangeMsg': '正在切换到中文...',
+        'dataCleared': '数据已成功清除',
+        'aiSettingsSaved': 'AI 分析设置已保存成功',
+        'domainAddSuccess': '已成功添加域名 {domain}',
+        'domainRemoveSuccess': '已成功移除域名 {domain}'
       },
       en: {
         // ... existing translations ...
         'confirmClear': 'Are you sure you want to clear all network request data?',
         'cancel': 'Cancel',
-        'confirm': 'Confirm'
+        'confirm': 'Confirm',
+        'languageChangeMsg': 'Switching to English...',
+        'dataCleared': 'Data cleared successfully',
+        'aiSettingsSaved': 'AI analysis settings saved successfully',
+        'domainAddSuccess': 'Domain {domain} added successfully',
+        'domainRemoveSuccess': 'Domain {domain} removed successfully'
       }
     };
   }

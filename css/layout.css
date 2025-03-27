@@ -410,3 +410,26 @@
     padding: 6px;
   }
 }
+
+/* 火焰黑主题下的布局优化 */
+[data-theme="fireblack"] .stats-container {
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.3);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+}
+
+[data-theme="fireblack"] .stats-container::before {
+  background: linear-gradient(90deg, #ff3300, #ff7700);
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.4);
+}
+
+/* 确保火焰黑主题下所有内容区域布局正常 */
+[data-theme="fireblack"] body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 具体修复表格相关布局问题 */
+[data-theme="fireblack"] .table-container + * {
+  position: relative;
+  z-index: 1;
+}

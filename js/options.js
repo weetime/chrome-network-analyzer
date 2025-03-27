@@ -115,7 +115,7 @@ function initLanguage() {
     localStorage.setItem('networkAnalyzerLanguage', language);
     // 如果语言改变，需要刷新页面以应用新语言
     const languageChangeMsg = I18n.getText('languageChangeMsg');
-    ToastManager.show(languageChangeMsg, 'success');
+    ToastManager.success(languageChangeMsg);
     setTimeout(() => {
       location.reload();
     }, 1000);

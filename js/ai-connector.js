@@ -84,10 +84,20 @@ async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxToke
         try {
           console.log(`Attempting to use ${endpoint.name}, attempt ${retryCount + 1}`);
           
+          // 创建一个具有超时的请求
+          let timeoutId;
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
           
-          const response = await fetch(endpoint.url, {
+          // 创建超时Promise
+          const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+              controller.abort();
+              reject(new Error(`Request to ${endpoint.name} timed out after 30 seconds`));
+            }, 30000);
+          });
+          
+          // 创建fetch Promise
+          const fetchPromise = fetch(endpoint.url, {
             method: 'POST',
             headers: endpoint.headers,
             body: JSON.stringify({
@@ -99,7 +109,11 @@ async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxToke
             signal: controller.signal
           });
           
-          clearTimeout(timeoutId);
+          // 使用Promise.race比较哪个先完成
+          const response = await Promise.race([fetchPromise, timeoutPromise])
+            .finally(() => {
+              clearTimeout(timeoutId);
+            });
           
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
@@ -114,10 +128,13 @@ async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxToke
           };
         } catch (error) {
           console.error(`Error with ${endpoint.name} (attempt ${retryCount + 1}):`, error);
-          lastError = error;
           
-          if (error.name === 'AbortError') {
-            console.log(`Request to ${endpoint.name} timed out`);
+          // 更好地捕获和显示DOMException
+          if (error.name === 'AbortError' || error.name === 'DOMException') {
+            console.warn(`Request to ${endpoint.name} was aborted: ${error.message}`);
+            lastError = new Error(`Connection to ${endpoint.name} failed: Request timed out or was aborted`);
+          } else {
+            lastError = error;
           }
           
           if (retryCount < MAX_RETRIES) {

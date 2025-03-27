@@ -127,6 +127,15 @@
   --stats-tile-bg: rgba(20, 15, 10, 0.7);
   --stats-tile-border: #3d2c00;
   --stats-tile-hover-shadow: 0 0 15px rgba(255, 100, 0, 0.5);
+  
+  /* 修复模态框背景和动画 */
+  --modal-backdrop: rgba(10, 5, 0, 0.75);
+  --modal-border: rgba(255, 85, 0, 0.4);
+  --modal-shadow: 0 0 25px rgba(255, 85, 0, 0.5);
+  
+  /* 确保表格显示正常 */
+  --table-height: 220px;
+  --table-overflow: auto;
 }
 
 /* Base styles for the entire application */

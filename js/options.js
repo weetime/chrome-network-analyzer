@@ -78,9 +78,24 @@ function initTheme() {
     document.documentElement.setAttribute('data-theme', storedTheme);
     
     // 设置对应的单选按钮
-    const radioToCheck = document.getElementById(`theme${storedTheme.charAt(0).toUpperCase() + storedTheme.slice(1)}`);
+    // 修复大小写问题和特殊主题名称
+    let radioId;
+    
+    // 根据主题名称生成正确的ID
+    if (storedTheme === 'fireblack') {
+      radioId = 'themeFireBlack'; // 注意大小写，与HTML中保持一致
+    } else {
+      // 对于light和dark主题，首字母大写
+      radioId = `theme${storedTheme.charAt(0).toUpperCase() + storedTheme.slice(1)}`;
+    }
+    
+    const radioToCheck = document.getElementById(radioId);
+    console.log('Setting theme:', storedTheme, 'Radio ID:', radioId, 'Element:', radioToCheck);
+    
     if (radioToCheck) {
       radioToCheck.checked = true;
+    } else {
+      console.warn('Theme radio button not found:', radioId);
     }
     
     // 确保localStorage和Chrome Storage同步

@@ -99,6 +99,7 @@ th.sort-desc .sort-icon {
   font-size: 12px;
 }
 
+/* 表格容器基础样式 */
 .table-container {
   max-height: 220px;
   overflow-y: auto;
@@ -111,6 +112,36 @@ th.sort-desc .sort-icon {
   z-index: 1;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   background-color: var(--card-bg);
+  will-change: transform, contents;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  contain: none;
+}
+
+/* 确保所有主题下表格高度一致 */
+[data-theme="light"] .table-container,
+[data-theme="dark"] .table-container,
+[data-theme="fireblack"] .table-container {
+  max-height: 220px;
+  height: 220px;
+}
+
+/* 黑暗主题表格样式 */
+[data-theme="dark"] .table-container {
+  box-shadow: var(--neon-glow);
+}
+
+/* 火焰黑主题表格样式 */
+[data-theme="fireblack"] .table-container {
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.3);
+  border-color: #3d2c00;
+  height: 220px;
+  max-height: 220px;
+  overflow-y: auto !important;
+  transform: translate3d(0,0,0);
+  -webkit-transform: translate3d(0,0,0);
 }
 
 .table-container::before {
@@ -124,8 +155,28 @@ th.sort-desc .sort-icon {
   z-index: 10;
 }
 
-[data-theme="dark"] .table-container {
-  box-shadow: var(--neon-glow);
+[data-theme="fireblack"] .table-container::before {
+  background: linear-gradient(90deg, #ff3300, #ff7700);
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.4);
+}
+
+[data-theme="fireblack"] th {
+  background-color: rgba(26, 21, 0, 0.8);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 火焰黑主题下的选中行样式 */
+[data-theme="fireblack"] #requestsTableBody tr.selected {
+  background-color: rgba(255, 85, 0, 0.15);
+  border-left: 3px solid #ff5500;
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.3);
+}
+
+/* 火焰黑主题下的表格行悬停效果 */
+[data-theme="fireblack"] #requestsTableBody tr:hover {
+  background-color: rgba(255, 120, 0, 0.1);
 }
 
 .no-data {
@@ -242,4 +293,20 @@ th.sort-desc .sort-icon {
   text-overflow: ellipsis;
   max-width: 100%;
   opacity: 0.8;
+}
+
+/* 确保火焰黑主题下表格内容正常显示 */
+[data-theme="fireblack"] #requestsTable {
+  width: 100%;
+  height: auto;
+}
+
+/* 改进火焰黑主题下的表格行 */
+[data-theme="fireblack"] #requestsTableBody tr {
+  background-color: rgba(10, 8, 6, 0.8);
+}
+
+/* 改进火焰黑主题下表格的奇偶行样式 */
+[data-theme="fireblack"] #requestsTableBody tr:nth-child(even) {
+  background-color: rgba(15, 12, 8, 0.9);
 }

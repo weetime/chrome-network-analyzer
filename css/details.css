@@ -39,6 +39,36 @@
   box-sizing: border-box;
 }
 
+/* 针对火焰黑主题的特殊处理 */
+[data-theme="fireblack"] .request-details {
+  background: linear-gradient(135deg, rgba(26, 19, 13, 0.95) 0%, rgba(10, 8, 6, 0.95) 100%);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  box-shadow: 0 0 20px rgba(255, 85, 0, 0.4);
+  /* 修复位置异常问题 */
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 1000 !important;
+  /* 确保元素渲染正确 */
+  contain: content;
+  /* 修复滚动条问题 */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  max-height: 80vh !important;
+  height: auto !important;
+  
+  /* 确保硬件加速和正确渲染 */
+  transform: translate3d(-50%, -50%, 0) !important;
+  -webkit-transform: translate3d(-50%, -50%, 0) !important;
+  will-change: transform;
+}
+
+[data-theme="fireblack"] .request-details::before {
+  background: linear-gradient(90deg, #ff3300, #ff7700);
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.5);
+}
+
 /* Modal backdrop */
 .modal-backdrop {
   display: none;
@@ -55,6 +85,11 @@
 
 [data-theme="dark"] .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="fireblack"] .modal-backdrop {
+  background-color: var(--modal-backdrop);
+  backdrop-filter: blur(2px);
 }
 
 .request-details::before {
@@ -157,15 +192,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .request-detail-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--primary-btn);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+}
+
+[data-theme="fireblack"] .request-detail-header {
+  border-bottom: 1px solid rgba(255, 85, 0, 0.3);
+}
+
+[data-theme="fireblack"] .request-detail-title {
+  color: #ff7e00;
+  text-shadow: 0 0 5px rgba(255, 85, 0, 0.3);
 }
 
 .detail-section {
@@ -499,4 +545,154 @@
 
 [data-theme="dark"] .timeline-segment:hover {
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+/* 美化并使Request Details内容更紧凑 */
+.detail-item {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.detail-label {
+  font-weight: 600;
+  margin-right: 10px;
+  min-width: 120px;
+  color: var(--stats-label);
+  flex-shrink: 0;
+}
+
+.detail-value {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* 美化detail section标题 */
+.detail-title {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-btn);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+
+.detail-section {
+  margin-bottom: 12px;
+  padding: 0 0 5px 0;
+}
+
+/* 美化火焰黑主题下的弹窗内容 */
+[data-theme="fireblack"] .detail-title {
+  color: #ff7e00;
+  border-bottom: 1px solid rgba(255, 85, 0, 0.3);
+}
+
+[data-theme="fireblack"] .detail-label {
+  color: #ffcc66;
+}
+
+[data-theme="fireblack"] .detail-value {
+  color: #ffb700;
+}
+
+/* 更紧凑的请求详情展示 */
+.request-header {
+  padding: 10px;
+  background-color: rgba(var(--bg-color-rgb), 0.5);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+}
+
+[data-theme="fireblack"] .request-header {
+  background-color: rgba(26, 21, 0, 0.4);
+  border: 1px solid rgba(255, 85, 0, 0.2);
+}
+
+/* 优化关闭按钮 */
+[data-theme="fireblack"] .close-button {
+  background: rgba(26, 19, 13, 0.9);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  box-shadow: 0 0 10px rgba(255, 85, 0, 0.3);
+}
+
+[data-theme="fireblack"] .close-button:hover {
+  background-color: rgba(255, 85, 0, 0.2);
+  transform: rotate(90deg);
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.5);
+}
+
+/* 更紧凑的请求详情内容组织 */
+.request-details-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.request-details-main {
+  grid-column: 1 / 3;
+}
+
+@media (max-width: 600px) {
+  .request-details-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .request-details-main {
+    grid-column: 1;
+  }
+}
+
+/* 标签式组织信息，更紧凑 */
+.details-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
+}
+
+.details-tab {
+  padding: 5px 12px;
+  margin-right: 5px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.details-tab.active {
+  border-bottom: 2px solid var(--accent-color);
+  color: var(--accent-color);
+}
+
+[data-theme="fireblack"] .details-tabs {
+  border-bottom: 1px solid rgba(255, 85, 0, 0.3);
+}
+
+[data-theme="fireblack"] .details-tab.active {
+  border-bottom: 2px solid #ff5500;
+  color: #ff7e00;
+}
+
+/* 优化火焰黑主题下的滚动条 */
+[data-theme="fireblack"] .request-details::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+[data-theme="fireblack"] .request-details::-webkit-scrollbar-track {
+  background: rgba(26, 19, 13, 0.5);
+}
+
+[data-theme="fireblack"] .request-details::-webkit-scrollbar-thumb {
+  background: rgba(255, 85, 0, 0.5);
+  border-radius: 3px;
+}
+
+[data-theme="fireblack"] .request-details::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 85, 0, 0.8);
 }

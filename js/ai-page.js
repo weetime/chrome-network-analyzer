@@ -126,11 +126,11 @@ async function runAiAnalysis() {
   try {
     // 获取API配置
     const config = await new Promise((resolve) => {
-      chrome.storage.local.get(['aiProvider', 'apiKey', 'modelName'], (result) => {
+      chrome.storage.local.get(['aiModel', 'aiApiKey'], (result) => {
         resolve({
-          provider: result.aiProvider || 'openai',
-          apiKey: result.apiKey || '',
-          model: result.modelName || 'gpt-4-turbo'
+          provider: 'openai',
+          apiKey: result.aiApiKey || '',
+          model: result.aiModel || 'gpt-4-turbo'
         });
       });
     });

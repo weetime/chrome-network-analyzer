@@ -5,15 +5,16 @@
 // DOM 元素
 const aiProvider = document.getElementById('aiProvider');
 const aiModel = document.getElementById('aiModel');
-const apiKey = document.getElementById('apiKey');
+const apiKey = document.getElementById('openaiApiKey');
 const saveApiKey = document.getElementById('saveApiKey');
-const showAiAnalysis = document.getElementById('showAiAnalysis');
+const showAiAnalysis = document.getElementById('autoAnalysis');
 const darkThemeDefault = document.getElementById('darkThemeDefault');
 const defaultRowCount = document.getElementById('defaultRowCount');
 const saveSettings = document.getElementById('saveSettings');
 const statusMessage = document.getElementById('statusMessage');
 const themeToggle = document.getElementById('themeToggle');
 const languageSelector = document.getElementById('languageSelector');
+const saveAISettingsBtn = document.getElementById('saveAISettingsBtn');
 
 // 域授权相关元素
 const authorizedDomainsList = document.getElementById('authorizedDomainsList');
@@ -48,32 +49,21 @@ async function loadSavedSettings() {
   
   chrome.storage.local.get([
     'aiApiKey', 
-    'aiProvider', 
     'aiModel', 
-    'saveApiKey', 
     'showAiAnalysis',
     'darkThemeDefault',
     'defaultRowCount',
     'language'
   ], (result) => {
-    // AI Provider 设置
-    if (result.aiProvider) {
-      aiProvider.value = result.aiProvider;
-    }
-    
     // AI Model 设置
-    updateModelOptions(aiProvider.value);
     if (result.aiModel) {
       aiModel.value = result.aiModel;
     }
     
     // API Key 设置
-    if (result.aiApiKey && result.saveApiKey) {
+    if (result.aiApiKey) {
       apiKey.value = result.aiApiKey;
     }
-    
-    // 保存 API Key 设置
-    saveApiKey.checked = result.saveApiKey || false;
     
     // 显示 AI 分析设置
     showAiAnalysis.checked = result.showAiAnalysis || false;
@@ -131,27 +121,20 @@ function updateModelOptions(provider) {
   }
 }
 
-// 保存设置
-function saveUserSettings() {
+// 保存AI设置
+function saveAISettings() {
   const settings = {
-    aiProvider: aiProvider.value,
     aiModel: aiModel.value,
-    saveApiKey: saveApiKey.checked,
-    showAiAnalysis: showAiAnalysis.checked,
-    darkThemeDefault: darkThemeDefault.checked,
-    defaultRowCount: defaultRowCount.value
+    showAiAnalysis: showAiAnalysis.checked
   };
   
-  // 如果用户选择保存 API 密钥
-  if (saveApiKey.checked && apiKey.value) {
+  // 保存API密钥
+  if (apiKey.value) {
     settings.aiApiKey = apiKey.value;
-  } else if (!saveApiKey.checked) {
-    // 如果用户取消保存 API 密钥，则从存储中移除
-    chrome.storage.local.remove(['aiApiKey']);
   }
   
   // 应用动画效果
-  addSaveAnimation(saveSettings);
+  addSaveAnimation(saveAISettingsBtn);
   
   // 保存设置到 Chrome 存储
   chrome.storage.local.set(settings, () => {
@@ -450,19 +433,60 @@ function changeLanguage(lang) {
   }
 }
 
-// 事件监听器
-document.addEventListener('DOMContentLoaded', () => {
-  // 添加自定义CSS
-  addCustomStyles();
+// 初始化事件处理程序
+function initEventHandlers() {
+  // AI设置保存按钮点击事件
+  if (saveAISettingsBtn) {
+    saveAISettingsBtn.addEventListener('click', saveAISettings);
+  }
   
-  // 使用IIFE包装async函数调用
-  (async () => {
-    try {
-      await loadSavedSettings();
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  })();
+  // 主题切换
+  if (themeToggle) {
+    themeToggle.addEventListener('change', toggleTheme);
+  }
+  
+  // 语言选择
+  if (languageSelector) {
+    languageSelector.addEventListener('change', function() {
+      changeLanguage(this.value);
+    });
+  }
+  
+  // 添加域名按钮
+  if (addDomainBtn) {
+    addDomainBtn.addEventListener('click', function() {
+      const domain = newDomain.value.trim();
+      if (domain) {
+        addDomainAuthorization(domain);
+        newDomain.value = '';
+      }
+    });
+  }
+  
+  // 输入域名时按Enter键添加
+  if (newDomain) {
+    newDomain.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const domain = this.value.trim();
+        if (domain) {
+          addDomainAuthorization(domain);
+          this.value = '';
+        }
+      }
+    });
+  }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+  // 加载保存的设置
+  loadSavedSettings();
+  
+  // 初始化事件处理程序
+  initEventHandlers();
+  
+  // 添加自定义样式
+  addCustomStyles();
 });
 
 // 添加自定义CSS
@@ -604,10 +628,7 @@ aiModel.addEventListener('change', () => {
 });
 
 // 保存按钮点击
-saveSettings.addEventListener('click', saveUserSettings);
-
-// 主题切换
-themeToggle.addEventListener('change', toggleTheme);
+saveSettings.addEventListener('click', saveAISettings);
 
 // 打开扩展按钮点击
 document.getElementById('openExtension').addEventListener('click', () => {

@@ -2,26 +2,38 @@
  * Popup Main Script - Integrates all modules and initializes the popup functionality
  */
 
+// Import all required modules
+import { I18n } from './i18n.js';
+import './i18n/zh.js'; 
+import './i18n/en.js';
+import { AiConnector } from './ai-connector.js';
+import { ThemeManager } from './theme-manager.js';
+import { DomainManager } from './domain-manager.js';
+import { NetworkTracker } from './network-tracker.js';
+import { TableManager } from './table-manager.js';
+import { StatsManager } from './stats-manager.js';
+import { RequestDetailsManager } from './request-details-manager.js';
+import { AiAnalysisManager } from './ai-analysis-manager.js';
+import { DomainAuthUI } from './domain-auth-ui.js';
+
 // Global variables
 let currentTabId = null;
 let updateInterval = null; // 用于存储更新定时器的ID
 
 // 初始化国际化
 async function initI18n() {
-  if (window.I18n) {
-    try {
-      // 初始化I18n并加载语言包
-      await window.I18n.init();
-      console.log('I18n initialized with language:', window.I18n.getCurrentLanguage());
-      
-      // 确保语言设置应用到页面
-      window.I18n.updatePageText();
-      
-      // 设置html元素的lang属性，用于CSS选择器匹配
-      document.documentElement.lang = window.I18n.getCurrentLanguage();
-    } catch (error) {
-      console.error('Failed to initialize I18n:', error);
-    }
+  try {
+    // 初始化I18n并加载语言包
+    await I18n.init();
+    console.log('I18n initialized with language:', I18n.getCurrentLanguage());
+    
+    // 确保语言设置应用到页面
+    I18n.updatePageText();
+    
+    // 设置html元素的lang属性，用于CSS选择器匹配
+    document.documentElement.lang = I18n.getCurrentLanguage();
+  } catch (error) {
+    console.error('Failed to initialize I18n:', error);
   }
 }
 
@@ -31,46 +43,34 @@ function setupMessageListeners() {
     // 处理请求完成的消息
     if (message.action === "requestCompleted" && message.tabId === currentTabId) {
       // 获取当前数据
-      const currentData = window.TableManager ? window.TableManager.getRequestData() : {};
+      const currentData = TableManager.getRequestData();
       // 更新特定请求的数据
       if (currentData) {
         currentData[message.requestId] = message.requestData;
         // 更新表格
-        if (window.TableManager) {
-          window.TableManager.updateTableData(currentData);
-        }
+        TableManager.updateTableData(currentData);
         // 更新统计信息
-        if (window.StatsManager) {
-          window.StatsManager.updateStatistics();
-          
-          // 确保国际化更新
-          if (window.I18n) {
-            window.I18n.updatePageText();
-          }
-        }
+        StatsManager.updateStatistics();
+        
+        // 确保国际化更新
+        I18n.updatePageText();
       }
     }
     
     // 处理请求失败的消息
     if (message.action === "requestFailed" && message.tabId === currentTabId) {
       // 获取当前数据
-      const currentData = window.TableManager ? window.TableManager.getRequestData() : {};
+      const currentData = TableManager.getRequestData();
       // 更新特定请求的数据
       if (currentData) {
         currentData[message.requestId] = message.requestData;
         // 更新表格
-        if (window.TableManager) {
-          window.TableManager.updateTableData(currentData);
-        }
+        TableManager.updateTableData(currentData);
         // 更新统计信息
-        if (window.StatsManager) {
-          window.StatsManager.updateStatistics();
-          
-          // 确保国际化更新
-          if (window.I18n) {
-            window.I18n.updatePageText();
-          }
-        }
+        StatsManager.updateStatistics();
+        
+        // 确保国际化更新
+        I18n.updatePageText();
       }
     }
     
@@ -91,23 +91,20 @@ function requestNetworkData() {
       
       if (response && response.requestData) {
         // Update table data using TableManager
-        if (window.TableManager) {
-          window.TableManager.updateTableData(response.requestData);
-        }
+        TableManager.updateTableData(response.requestData);
         
-        // Update statistics if StatsManager is available
-        if (window.StatsManager) {
-          window.StatsManager.updateStatistics();
-          
-          // 确保国际化更新
-          if (window.I18n) {
-            window.I18n.updatePageText();
-          }
-        }
+        // Update statistics
+        StatsManager.updateStatistics();
+        
+        // 确保国际化更新
+        I18n.updatePageText();
       }
     }
   );
 }
+
+// 将 requestNetworkData 函数设置为全局变量，以便其他模块可以访问
+window.requestNetworkData = requestNetworkData;
 
 // 开始实时更新
 function startRealTimeUpdates() {
@@ -145,13 +142,7 @@ function setupControlButtons() {
   // Analyze button
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   if (analyzeButton) {
-    if (window.AiAnalysisManager && window.AiAnalysisManager.runAnalysis) {
-      // Use the module if available
-      analyzeButton.addEventListener('click', window.AiAnalysisManager.runAnalysis);
-    } else {
-      // Fallback to legacy function
-      analyzeButton.addEventListener('click', runAiAnalysis);
-    }
+    analyzeButton.addEventListener('click', AiAnalysisManager.runAiAnalysis);
   }
   
   // AI分析切换按钮
@@ -179,10 +170,10 @@ function setupControlButtons() {
 
 // Export data as JSON
 function exportData() {
-  const requestData = window.TableManager ? window.TableManager.getRequestData() : {};
+  const requestData = TableManager.getRequestData();
   
   if (Object.keys(requestData).length === 0) {
-    const noDataMsg = window.I18n ? window.I18n.getText('noDataMessage') : 'No data to export.';
+    const noDataMsg = I18n.getText('noDataMessage') || 'No data to export.';
     alert(noDataMsg);
     return;
   }
@@ -199,213 +190,154 @@ function exportData() {
   const date = new Date();
   const dateStr = date.toISOString().replace(/:/g, '-').replace('T', '_').split('.')[0];
   
-  // Set download attributes
-  a.download = `network_data_${dateStr}.json`;
+  // Set attributes and click to trigger download
   a.href = url;
-  
-  // Trigger download
+  a.download = `network_data_${dateStr}.json`;
   document.body.appendChild(a);
   a.click();
   
-  // Clean up
+  // Cleanup
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, 100);
 }
 
-// Clear network data
+// Clear network request data
 function clearData() {
-  const confirmMsg = window.I18n ? window.I18n.getText('confirm') : 'Are you sure you want to clear all network data for this tab?';
-  
-  if (confirm(confirmMsg)) {
+  if (confirm(I18n.getText('confirmClear') || 'Are you sure you want to clear all network data?')) {
     chrome.runtime.sendMessage(
       { action: "clearRequestData", tabId: currentTabId },
       (response) => {
         if (chrome.runtime.lastError) {
-          console.error("Error clearing data:", chrome.runtime.lastError);
+          console.error("Error clearing request data:", chrome.runtime.lastError);
           return;
         }
         
         if (response && response.success) {
-          // Clear table data using TableManager
-          if (window.TableManager) {
-            window.TableManager.clearRequestData();
+          // Clear table data
+          TableManager.updateTableData({});
+          
+          // Update statistics
+          StatsManager.updateStatistics();
+          
+          // Close any open request details
+          try {
+            if (RequestDetailsManager && typeof RequestDetailsManager.closeRequestDetails === 'function') {
+              RequestDetailsManager.closeRequestDetails();
+            } else if (RequestDetailsManager && typeof RequestDetailsManager.closeDetails === 'function') {
+              RequestDetailsManager.closeDetails();
+            }
+          } catch (error) {
+            console.error('Error closing request details:', error);
           }
           
-          // Update statistics if StatsManager is available
-          if (window.StatsManager) {
-            window.StatsManager.updateStatistics();
-          }
-          
-          // Clear request details
-          const requestDetails = document.getElementById('requestDetails');
-          if (requestDetails) {
-            requestDetails.innerHTML = '';
-            requestDetails.style.display = 'none';
-          }
-          
-          // Show no data message
-          const noDataMessage = document.getElementById('noDataMessage');
-          if (noDataMessage) {
-            noDataMessage.style.display = 'block';
-          }
+          // Show success message
+          console.log("Data cleared successfully");
+        } else if (response && response.error) {
+          console.error("Error clearing data:", response.error);
         }
       }
     );
   }
 }
 
-// Initialize the popup
+// 初始化弹出界面
 async function initPopup() {
-  console.log('Initializing popup...');
+  console.log("Initializing popup...");
   
-  try {
-    // 初始化多语言支持
-    await initI18n();
-    
-    // 设置消息监听，用于接收实时网络请求更新
-    setupMessageListeners();
-    
-    // Initialize theme manager if available
-    if (window.ThemeManager) {
-      window.ThemeManager.init();
-      console.log('Theme manager initialized');
-    }
-    
-    // Initialize table manager if available
-    if (window.TableManager) {
-      window.TableManager.init();
-      console.log('Table manager initialized');
-    }
-    
-    // Initialize domain auth UI if available
-    if (window.DomainAuthUi) {
-      window.DomainAuthUi.init();
-      console.log('Domain auth UI initialized');
-    }
-    
-    // Initialize AI analysis manager if available
-    if (window.AiAnalysisManager) {
-      window.AiAnalysisManager.init();
-      console.log('AI analysis manager initialized');
-    }
-    
-    // Setup control buttons
-    setupControlButtons();
-    console.log('Control buttons initialized');
-    
-    // Get current tab
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const currentTab = tabs[0];
-    
-    if (currentTab) {
-      currentTabId = currentTab.id;
+  // 初始化国际化支持
+  await initI18n();
+  
+  // 初始化主题控制器
+  ThemeManager.init();
+  
+  // 获取当前活动标签页
+  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+    if (tabs.length > 0) {
+      currentTabId = tabs[0].tabId || tabs[0].id;
+      const domain = new URL(tabs[0].url).hostname;
       
-      // Extract domain from current tab URL
-      try {
-        const url = new URL(currentTab.url);
-        const domain = url.hostname;
-        
-        // Set current domain
-        if (window.DomainAuthUi) {
-          const isAuthorized = await window.DomainAuthUi.setCurrentDomain(domain);
-          if (isAuthorized) {
-            // If domain is authorized, request network data
-            requestNetworkData();
-            // 启动实时更新
-            startRealTimeUpdates();
-          }
-        } else {
-          // Legacy flow
-          checkDomainAndLoadData(domain);
-        }
-      } catch (error) {
-        console.error("Error extracting domain:", error);
-        // If we can't extract domain, just try to get data
-        document.getElementById('authorizedContent').style.display = 'block';
-        requestNetworkData();
-        // 启动实时更新
-        startRealTimeUpdates();
-      }
+      console.log(`Current tab: ${currentTabId}, Domain: ${domain}`);
+      
+      // 启动网络数据模块
+      await TableManager.init({
+        tableId: 'requestsTable',
+        bodyId: 'requestsTableBody',
+        noDataMessageId: 'noDataMessage',
+        requestDetailsManager: RequestDetailsManager
+      });
+      
+      // 初始化详情管理器
+      await RequestDetailsManager.init({
+        detailsContainerId: 'requestDetails'
+      });
+      
+      // 初始化统计模块
+      await StatsManager.init({
+        containerId: 'statsContainer',
+        getRequestData: TableManager.getRequestData
+      });
+      
+      // 初始化AI分析管理器
+      await AiAnalysisManager.init({
+        containerId: 'aiAnalysisContainer',
+        statusId: 'aiAnalysisStatus',
+        resultId: 'aiAnalysisResult',
+        modelInfoId: 'aiModelInfo',
+        copyButtonId: 'copyAiResultBtn',
+        getRequestData: TableManager.getRequestData,
+        tabId: currentTabId
+      });
+      
+      // 初始化域名身份验证UI
+      await DomainAuthUI.init({
+        domainListId: 'headerDomainsList',
+        switchId: 'headerAuthorizationSwitch',
+        statusId: 'headerAuthStatus',
+        settingsLinkId: 'openDomainSettings'
+      });
+      
+      // 显示当前域名并检查授权
+      checkDomainAndLoadData(domain);
     }
-    
-    // 在页面关闭时停止实时更新
-    window.addEventListener('unload', stopRealTimeUpdates);
-    
-  } catch (error) {
-    console.error("Error initializing popup:", error);
-  }
+  });
+  
+  // 设置消息监听器
+  setupMessageListeners();
+  
+  // 设置控制按钮事件监听器
+  setupControlButtons();
+  
+  // 启动实时更新
+  startRealTimeUpdates();
+  
+  // 监听弹窗关闭事件
+  window.addEventListener('beforeunload', function() {
+    stopRealTimeUpdates();
+  });
 }
 
-// Legacy function for domain checking
+// 检查域名授权并加载数据
 function checkDomainAndLoadData(domain) {
-  // 无论域名是否授权，都显示域名信息区域
-  const domainInfo = document.querySelector('.domain-info');
-  if (domainInfo) {
-    domainInfo.style.display = 'flex';
-  }
-  
-  chrome.runtime.sendMessage(
-    { action: "checkDomainAuthorization", domain },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error checking domain authorization:", chrome.runtime.lastError);
-        return;
-      }
+  // 使用 setCurrentDomain 方法设置当前域名，该方法会同时更新 UI 显示
+  DomainAuthUI.setCurrentDomain(domain).then(isAuthorized => {
+    if (isAuthorized) {
+      // 域名已授权，加载网络数据
+      console.log(`Domain ${domain} is authorized, loading network data...`);
+      requestNetworkData();
       
-      if (response && response.isAuthorized) {
-        // Domain is authorized, request data
-        // Show authorized content area
-        document.getElementById('authorizedContent').style.display = 'block';
-        
-        // Update header authorization switch
-        const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
-        const headerAuthStatus = document.getElementById('headerAuthStatus');
-        
-        if (headerAuthorizationSwitch) {
-          headerAuthorizationSwitch.checked = true;
-        }
-        if (headerAuthStatus) {
-          headerAuthStatus.textContent = window.I18n ? window.I18n.getText('enable') : '启用';
-          headerAuthStatus.className = 'auth-status enabled';
-        }
-        
-        requestNetworkData();
-        // 启动实时更新
-        startRealTimeUpdates();
-      } else {
-        // Domain is not authorized, show authorization UI
-        if (window.DomainAuthUi) {
-          window.DomainAuthUi.hideAuthorizedContent();
-        } else {
-          document.getElementById('authorizedContent').style.display = 'none';
-        }
-        
-        // Update header authorization switch
-        const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
-        const headerAuthStatus = document.getElementById('headerAuthStatus');
-        
-        if (headerAuthorizationSwitch) {
-          headerAuthorizationSwitch.checked = false;
-        }
-        if (headerAuthStatus) {
-          headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
-          headerAuthStatus.className = 'auth-status disabled';
-        }
-      }
+      // 显示授权内容
+      document.getElementById('authorizedContent').style.display = 'block';
+    } else {
+      // 域名未授权，显示授权表单
+      console.log(`Domain ${domain} is not authorized.`);
+      
+      // 隐藏授权内容
+      document.getElementById('authorizedContent').style.display = 'none';
     }
-  );
+  });
 }
 
-// Initialize the popup when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // 使用IIFE包装async函数调用
-  (async () => {
-    try {
-      await initPopup();
-    } catch (error) {
-      console.error('Error in popup initialization:', error);
-    }
-  })();
-});
+// 在DOM加载完成后初始化弹出窗口
+document.addEventListener('DOMContentLoaded', initPopup);

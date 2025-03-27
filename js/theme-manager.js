@@ -79,12 +79,10 @@ function initThemeManager() {
   }
 }
 
-// Make functions available globally
-(function(global) {
-  global.ThemeManager = {
-    init: initThemeManager,
-    loadTheme,
-    toggleTheme,
-    updateThemeIcon
-  };
-})(typeof window !== 'undefined' ? window : self);
+// Export the theme manager functionality
+export const ThemeManager = {
+  init: initThemeManager,
+  loadTheme,
+  toggleTheme,
+  updateThemeIcon
+};

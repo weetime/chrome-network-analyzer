@@ -3,8 +3,9 @@
  * Loads and initializes all required modules
  */
 
-// Import modules explicitly
-importScripts('./domain-manager.js', './network-tracker.js');
+// Import modules using ES6 syntax
+import { DomainManager } from './domain-manager.js';
+import { NetworkTracker } from './network-tracker.js';
 
 // Listen for messages from popup or content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

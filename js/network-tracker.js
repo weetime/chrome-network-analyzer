@@ -2,6 +2,8 @@
  * Network Tracker - Handles network request monitoring and analysis
  */
 
+import { DomainManager } from './domain-manager.js';
+
 // Object to store request data
 let requestData = {};
 
@@ -174,12 +176,10 @@ function clearRequestData(tabId) {
   return chrome.storage.local.remove(`requestData_${tabId}`);
 }
 
-// Make functions available globally
-(function(global) {
-  global.NetworkTracker = {
-    init: initNetworkTracker,
-    getRequestData,
-    clearRequestData,
-    storeRequestData
-  };
-})(typeof window !== 'undefined' ? window : self);
+// 导出需要的函数
+export const NetworkTracker = {
+  init: initNetworkTracker,
+  getRequestData,
+  clearRequestData,
+  storeRequestData
+};

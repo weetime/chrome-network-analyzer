@@ -2,9 +2,15 @@
  * AI Analysis Manager - Handles AI analysis of network requests
  */
 
+import { AiConnector } from './ai-connector.js';
+import { TableManager } from './table-manager.js';
+import { StatsManager } from './stats-manager.js';
+
 // State variables
 let isAnalysisLoading = false;
 let currentAnalysisResult = null;
+let getRequestDataFunction = null; // Store function to get request data
+let currentTabId = null;
 
 /**
  * Initialize the AI analysis manager
@@ -33,12 +39,6 @@ function initAiAnalysisManager() {
  * Run AI analysis on current network data
  */
 async function runAiAnalysis() {
-  // Check if we have the AiConnector available
-  if (!window.AiConnector) {
-    showAnalysisError('AI Connector module not found.');
-    return;
-  }
-  
   // Get the container for AI analysis
   const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
   if (!aiAnalysisContainer) {
@@ -50,32 +50,33 @@ async function runAiAnalysis() {
   aiAnalysisContainer.classList.add('visible');
   
   // Get analysis content and loading elements
-  const analysisLoading = document.getElementById('analysisLoading');
-  const analysisContent = document.getElementById('analysisContent');
-  const analysisError = document.getElementById('analysisError');
+  const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
+  const aiAnalysisResult = document.getElementById('aiAnalysisResult');
   
-  if (!analysisLoading || !analysisContent || !analysisError) {
+  if (!aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
     return;
   }
   
-  // Show loading, hide content and error
-  analysisLoading.style.display = 'block';
-  analysisContent.style.display = 'none';
-  analysisError.style.display = 'none';
+  // Show loading, hide content
+  aiAnalysisStatus.style.display = 'flex';
+  aiAnalysisResult.innerHTML = '';
   
   // Get data for analysis
   let requestsData = {};
   
-  // Try to get data from TableManager
-  if (window.TableManager && window.TableManager.getRequestData) {
-    requestsData = window.TableManager.getRequestData();
+  // Try to get data from stored function first
+  if (typeof getRequestDataFunction === 'function') {
+    requestsData = getRequestDataFunction();
+  } else if (TableManager && TableManager.getRequestData) {
+    // Fall back to TableManager if available
+    requestsData = TableManager.getRequestData();
   } else {
-    // Request from background script
+    // Request from background script as last resort
     try {
       const response = await new Promise((resolve) => {
         chrome.runtime.sendMessage(
-          { action: "getRequestData", tabId: window.currentTabId },
+          { action: "getRequestData", tabId: currentTabId },
           (response) => {
             if (chrome.runtime.lastError) {
               throw new Error(chrome.runtime.lastError.message);
@@ -125,10 +126,10 @@ async function runAiAnalysis() {
     }
     
     // Format data for AI analysis
-    const analysisData = window.AiConnector.formatNetworkDataForAI(requestsData, statistics);
+    const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
     
     // Send to AI provider
-    const result = await window.AiConnector.sendToAI(
+    const result = await AiConnector.sendToAI(
       analysisData, 
       config.provider, 
       config.apiKey, 
@@ -178,9 +179,9 @@ function calculateStatistics(requestsData) {
   
   // Calculate percentiles if we have the function available
   let p95LoadTime = 0;
-  if (window.StatsManager && window.StatsManager.calculatePercentile) {
+  if (StatsManager && StatsManager.calculatePercentile) {
     const times = validRequests.map(req => req.totalTime);
-    p95LoadTime = window.StatsManager.calculatePercentile(times, 95);
+    p95LoadTime = StatsManager.calculatePercentile(times, 95);
   } else {
     // Simple implementation if StatsManager not available
     const times = validRequests.map(req => req.totalTime).sort((a, b) => a - b);
@@ -201,27 +202,28 @@ function calculateStatistics(requestsData) {
  */
 function displayAnalysisResult(result) {
   // Get elements
-  const analysisLoading = document.getElementById('analysisLoading');
-  const analysisContent = document.getElementById('analysisContent');
-  const analysisText = document.getElementById('analysisText');
-  const analysisModel = document.getElementById('analysisModel');
-  const analysisProvider = document.getElementById('analysisProvider');
+  const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
+  const aiAnalysisResult = document.getElementById('aiAnalysisResult');
+  const modelInfoElement = document.getElementById('aiModelInfo');
   
-  if (!analysisLoading || !analysisContent || !analysisText || !analysisModel || !analysisProvider) {
+  if (!aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
     return;
   }
   
-  // Hide loading, show content
-  analysisLoading.style.display = 'none';
-  analysisContent.style.display = 'block';
+  // Hide loading indicator
+  aiAnalysisStatus.style.display = 'none';
   
-  // Set analysis text
-  analysisText.innerHTML = formatAnalysisText(result.analysis);
+  // Set analysis text with formatted content
+  aiAnalysisResult.innerHTML = formatAnalysisText(result.analysis);
   
-  // Set model and provider info
-  analysisModel.textContent = result.model || 'Unknown Model';
-  analysisProvider.textContent = result.provider || 'Unknown Provider';
+  // Set model info if element exists
+  if (modelInfoElement) {
+    modelInfoElement.textContent = `Analyzed with ${result.model || 'AI'}`;
+  }
+  
+  // Save current result for copy function
+  currentAnalysisResult = result;
 }
 
 /**
@@ -256,12 +258,10 @@ function formatAnalysisText(text) {
 function showAnalysisError(message) {
   // Get elements
   const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
-  const analysisLoading = document.getElementById('analysisLoading');
-  const analysisContent = document.getElementById('analysisContent');
-  const analysisError = document.getElementById('analysisError');
-  const analysisErrorText = document.getElementById('analysisErrorText');
+  const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
+  const aiAnalysisResult = document.getElementById('aiAnalysisResult');
   
-  if (!aiAnalysisContainer || !analysisLoading || !analysisContent || !analysisError || !analysisErrorText) {
+  if (!aiAnalysisContainer || !aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
     return;
   }
@@ -269,13 +269,20 @@ function showAnalysisError(message) {
   // Show container
   aiAnalysisContainer.classList.add('visible');
   
-  // Hide loading and content, show error
-  analysisLoading.style.display = 'none';
-  analysisContent.style.display = 'none';
-  analysisError.style.display = 'block';
+  // Hide loading and show error in result
+  aiAnalysisStatus.style.display = 'none';
   
-  // Set error message
-  analysisErrorText.textContent = message;
+  // Set error message in result div
+  aiAnalysisResult.innerHTML = `
+    <div class="analysis-error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <p>${message}</p>
+    </div>
+  `;
   
   // Reset loading state
   isAnalysisLoading = false;
@@ -285,39 +292,33 @@ function showAnalysisError(message) {
  * Copy analysis results to clipboard
  */
 function copyAnalysisResults() {
-  // Check if we have results
   if (!currentAnalysisResult || !currentAnalysisResult.analysis) {
-    // Use RequestDetailsManager's showNotification if available
-    if (window.RequestDetailsManager && window.RequestDetailsManager.showNotification) {
-      window.RequestDetailsManager.showNotification('No analysis results to copy', true);
-    } else {
-      alert('No analysis results to copy');
-    }
     return;
   }
   
-  // Create formatted text
-  let copyText = `Chrome Network Analyzer - AI Analysis\n\n`;
-  copyText += `Provider: ${currentAnalysisResult.provider || 'Unknown'}\n`;
-  copyText += `Model: ${currentAnalysisResult.model || 'Unknown'}\n\n`;
-  copyText += `${currentAnalysisResult.analysis}\n`;
-  
   // Copy to clipboard
-  navigator.clipboard.writeText(copyText).then(() => {
-    // Show notification
-    if (window.RequestDetailsManager && window.RequestDetailsManager.showNotification) {
-      window.RequestDetailsManager.showNotification('Analysis copied to clipboard');
-    } else {
-      alert('Analysis copied to clipboard');
-    }
-  }).catch(err => {
-    console.error('Failed to copy analysis: ', err);
-    if (window.RequestDetailsManager && window.RequestDetailsManager.showNotification) {
-      window.RequestDetailsManager.showNotification('Failed to copy analysis', true);
-    } else {
-      alert('Failed to copy analysis: ' + err.message);
-    }
-  });
+  navigator.clipboard.writeText(currentAnalysisResult.analysis)
+    .then(() => {
+      // Show temporary success message
+      const copyBtn = document.getElementById('copyAiResultBtn');
+      if (copyBtn) {
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+          <span>Copied!</span>
+        `;
+        
+        // Restore original text after 2 seconds
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      }
+    })
+    .catch(err => {
+      console.error('Failed to copy analysis results:', err);
+    });
 }
 
 /**
@@ -330,12 +331,59 @@ function closeAnalysis() {
   }
 }
 
-// Make functions available globally
-(function(global) {
-  global.AiAnalysisManager = {
-    init: initAiAnalysisManager,
-    runAnalysis: runAiAnalysis,
-    copyAnalysisResults,
-    closeAnalysis
-  };
-})(typeof window !== 'undefined' ? window : self);
+// Initialize options
+function init(options = {}) {
+  // Handle options
+  const {
+    containerId = 'aiAnalysisContainer',
+    statusId = 'aiAnalysisStatus',
+    resultId = 'aiAnalysisResult',
+    modelInfoId = 'aiModelInfo',
+    copyButtonId = 'copyAiResultBtn',
+    getRequestData = null,
+    tabId = null
+  } = options;
+  
+  // Store options for later use
+  if (getRequestData) {
+    getRequestDataFunction = getRequestData;
+  }
+  
+  // Store current tab ID if provided
+  if (tabId) {
+    currentTabId = tabId;
+  } else {
+    // Try to get from current URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabIdParam = urlParams.get('tabId');
+    if (tabIdParam) {
+      currentTabId = parseInt(tabIdParam, 10);
+    }
+  }
+  
+  // Add event listener for analyze button
+  const analyzeButton = document.getElementById('runAiAnalysisBtn');
+  if (analyzeButton) {
+    analyzeButton.addEventListener('click', runAiAnalysis);
+  }
+  
+  // Add event listener for copy button
+  const copyButton = document.getElementById(copyButtonId);
+  if (copyButton) {
+    copyButton.addEventListener('click', copyAnalysisResults);
+  }
+  
+  return Promise.resolve();
+}
+
+// Export the AI Analysis Manager functionality
+export const AiAnalysisManager = {
+  init,
+  runAiAnalysis,
+  calculateStatistics,
+  displayAnalysisResult,
+  formatAnalysisText,
+  showAnalysisError,
+  copyAnalysisResults,
+  closeAnalysis
+};

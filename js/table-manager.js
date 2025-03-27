@@ -2,13 +2,22 @@
  * Table Manager - Handles request table rendering and interactions
  */
 
+import { RequestDetailsManager } from './request-details-manager.js';
+
 // Store all request data
 let allRequestsData = {};
-let filteredRequests = [];
+
+// Table elements
+let requestsTable = null;
+let requestsTableBody = null;
+let noDataMessage = null;
+
+// Current sorting state
+let currentSortColumn = 'totalTime';
+let currentSortDirection = 'desc';
 
 // Add sorting variables
-let currentSortColumn = 'p99'; // Default sort by P99
-let currentSortDirection = 'desc'; // Default descending order
+let filteredRequests = [];
 
 /**
  * Sort the requests data based on current sort column and direction
@@ -126,10 +135,19 @@ function formatSize(bytes) {
  * Render the requests table with current data
  */
 function renderRequestsTable() {
-  const requestsTableBody = document.getElementById('requestsTableBody');
-  const noDataMessage = document.getElementById('noDataMessage');
+  // If elements are not initialized, try to find them
+  if (!requestsTableBody) {
+    requestsTableBody = document.getElementById('requestsTableBody');
+  }
   
-  if (!requestsTableBody || !noDataMessage) return;
+  if (!noDataMessage) {
+    noDataMessage = document.getElementById('noDataMessage');
+  }
+  
+  if (!requestsTableBody || !noDataMessage) {
+    console.error('Table elements not found for rendering');
+    return;
+  }
   
   // Apply filters
   filteredRequests = applyFilters();
@@ -208,9 +226,9 @@ function renderRequestsTable() {
   sortedRequests.forEach(request => {
     const row = document.createElement('tr');
     row.addEventListener('click', () => {
-      // Use global function to show details if available
-      if (window.RequestDetailsManager && window.RequestDetailsManager.showRequestDetails) {
-        window.RequestDetailsManager.showRequestDetails(request);
+      // Use RequestDetailsManager to show details
+      if (RequestDetailsManager && RequestDetailsManager.showRequestDetails) {
+        RequestDetailsManager.showRequestDetails(request);
       } else if (typeof showRequestDetails === 'function') {
         showRequestDetails(request);
       }
@@ -398,19 +416,40 @@ function clearRequestData() {
 /**
  * Initialize the table manager
  */
-function initTableManager() {
+function initTableManager(options = {}) {
+  // Process options
+  const {
+    tableId = 'requestsTable',
+    bodyId = 'requestsTableBody',
+    noDataMessageId = 'noDataMessage'
+  } = options;
+  
+  // Get table elements
+  requestsTable = document.getElementById(tableId);
+  requestsTableBody = document.getElementById(bodyId);
+  noDataMessage = document.getElementById(noDataMessageId);
+  
+  if (!requestsTable || !requestsTableBody) {
+    console.error('Table elements not found');
+    return Promise.reject('Table elements not found');
+  }
+  
   setupTableSorting();
   setupFilters();
   renderRequestsTable();
+  
+  return Promise.resolve();
 }
 
-// Expose TableManager methods globally
-(function(global) {
-  global.TableManager = {
-    init: initTableManager,
-    updateTableData,
-    getRequestData,
-    clearRequestData,
-    renderRequestsTable
-  };
-})(typeof window !== 'undefined' ? window : self);
+// Export TableManager using ES6 export syntax
+export const TableManager = {
+  init: initTableManager,
+  updateTableData,
+  getRequestData,
+  clearRequestData,
+  renderRequestsTable,
+  formatTime,
+  formatSize,
+  getLoadTimeClass,
+  applyFilters
+};

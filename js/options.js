@@ -2,6 +2,13 @@
  * Network Analyzer 选项页面脚本
  */
 
+// 导入所需模块
+import { I18n } from './i18n.js';
+import './i18n/zh.js';
+import './i18n/en.js';
+import { ThemeManager } from './theme-manager.js';
+import { DomainManager } from './domain-manager.js';
+
 // 定义全局变量
 let authorizedDomainsList;
 
@@ -36,22 +43,20 @@ document.addEventListener('DOMContentLoaded', async function() {
  * 初始化国际化功能
  */
 async function initI18n() {
-  if (window.I18n) {
-    try {
-      // 初始化I18n并加载语言包
-      await window.I18n.init();
-      
-      // 获取当前语言
-      const currentLang = window.I18n.getCurrentLanguage();
-      
-      // 设置语言选择器
-      const languageSelect = document.getElementById('languageSelect');
-      if (languageSelect) languageSelect.value = currentLang;
-      
-      console.log('I18n initialized with language:', currentLang);
-    } catch (error) {
-      console.error('Failed to initialize I18n:', error);
-    }
+  try {
+    // 初始化I18n并加载语言包
+    await I18n.init();
+    
+    // 获取当前语言
+    const currentLang = I18n.getCurrentLanguage();
+    
+    // 设置语言选择器
+    const languageSelect = document.getElementById('languageSelect');
+    if (languageSelect) languageSelect.value = currentLang;
+    
+    console.log('I18n initialized with language:', currentLang);
+  } catch (error) {
+    console.error('Failed to initialize I18n:', error);
   }
 }
 
@@ -187,9 +192,7 @@ function initDomainManagement() {
         // 更新域名列表
         addDomainToList(domain);
         // 使用域名替换成功消息中的占位符
-        const successMsg = window.I18n 
-          ? window.I18n.getText('domainAddSuccess', { domain }) 
-          : `已添加域名 "${domain}" 的授权`;
+        const successMsg = I18n ? I18n.getText('domainAddSuccess', { domain }) : `已添加域名 "${domain}" 的授权`;
         showStatusMessage(successMsg, 'success', 'domain');
         
         // 隐藏"无域名"消息
@@ -275,9 +278,7 @@ function removeDomain(domain, listItem) {
         listItem.remove();
         
         // 使用域名替换成功消息中的占位符
-        const successMsg = window.I18n 
-          ? window.I18n.getText('domainRemoveSuccess', { domain }) 
-          : `已移除域名 "${domain}" 的授权`;
+        const successMsg = I18n ? I18n.getText('domainRemoveSuccess', { domain }) : `已移除域名 "${domain}" 的授权`;
         showStatusMessage(successMsg, 'success', 'domain');
         
         // 如果没有域名，显示"无域名"消息
@@ -307,7 +308,7 @@ function addDomainToList(domain) {
   li.className = 'domain-item';
   
   // 使用i18n翻译"删除"按钮
-  const removeText = window.I18n ? window.I18n.getText('remove') : '删除';
+  const removeText = I18n ? I18n.getText('remove') : '删除';
   
   li.innerHTML = `
     <div class="domain-name">${domain}</div>
@@ -463,54 +464,58 @@ function initFormEvents() {
 
 /**
  * 显示状态消息
- * @param {string} messageKey 消息键或完整消息
- * @param {string} type 消息类型 ('success' 或 'error')
- * @param {string} id 消息ID，用于特定消息
  */
 function showStatusMessage(messageKey, type, id = 'main') {
-  // 定位或创建消息容器
-  let container = document.querySelector(`.status-message[data-id="${id}"]`);
+  const messageContainerId = id === 'main' ? 'statusMessage' : `${id}StatusMessage`;
+  let messageContainer = document.getElementById(messageContainerId);
   
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'status-message';
-    container.setAttribute('data-id', id);
+  // 如果不存在消息容器，创建一个
+  if (!messageContainer) {
+    messageContainer = document.createElement('div');
+    messageContainer.id = messageContainerId;
+    messageContainer.className = 'status-message';
     
-    // 根据ID添加到不同位置
-    if (id === 'domain') {
-      const domainActionSection = document.querySelector('.domain-action-section');
-      if (domainActionSection) {
-        domainActionSection.after(container);
-      }
-    } else if (id === 'ai') {
-      const aiSettings = document.querySelector('#aiSettings .form-actions');
-      if (aiSettings) {
-        aiSettings.after(container);
-      }
+    // 在表单底部或特定位置插入
+    if (id === 'main') {
+      document.querySelector('.content-header').appendChild(messageContainer);
     } else {
-      // 默认添加到主内容区域顶部
-      const mainContent = document.querySelector('.main-content');
-      if (mainContent) {
-        const contentHeader = mainContent.querySelector('.content-header');
-        if (contentHeader) {
-          contentHeader.after(container);
-        } else {
-          mainContent.prepend(container);
-        }
+      // 查找相关表单或容器
+      const container = document.getElementById(id);
+      const targetContainer = container || document.querySelector(`[data-tab="${id}"]`);
+      
+      if (targetContainer) {
+        // 确保消息显示在合适的位置
+        const insertAfter = targetContainer.querySelector('.form-actions') || 
+                            targetContainer.querySelector('form') || 
+                            targetContainer;
+        insertAfter.appendChild(messageContainer);
+      } else {
+        // 如果找不到特定容器，插入到主内容区域
+        document.querySelector('.main-content').appendChild(messageContainer);
       }
     }
   }
   
-  // 设置消息内容和类型
-  container.textContent = messageKey;
-  container.className = `status-message ${type}`;
-  container.setAttribute('data-id', id);
+  // 设置消息类型和文本
+  messageContainer.className = `status-message ${type}`;
   
-  // 显示消息
-  container.style.display = 'block';
+  // 如果messageKey包含特殊字符（比如包含空格、引号等），认为它是直接文本
+  // 否则尝试使用I18n查找相应翻译
+  const text = messageKey.includes(' ') || messageKey.includes('"') || messageKey.includes("'") ? 
+                messageKey : 
+                (I18n ? I18n.getText(messageKey) : messageKey);
   
-  // 3秒后自动隐藏
+  messageContainer.textContent = text;
+  messageContainer.style.display = 'block';
+  
+  // 设置动画效果
+  messageContainer.classList.add('show');
+  
+  // 2秒后自动隐藏消息
   setTimeout(() => {
-    container.style.display = 'none';
-  }, 3000);
+    messageContainer.classList.remove('show');
+    setTimeout(() => {
+      messageContainer.style.display = 'none';
+    }, 300); // 等待淡出动画完成
+  }, 2000);
 } 

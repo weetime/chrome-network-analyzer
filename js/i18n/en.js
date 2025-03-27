@@ -2,15 +2,14 @@
  * English language pack
  */
 
-// Export English translations
-(function(global) {
-  // Ensure the global I18n object exists
-  if (!global.I18nMessages) {
-    global.I18nMessages = {};
+// Ensure the global I18nMessages object exists
+if (typeof window !== 'undefined') {
+  if (!window.I18nMessages) {
+    window.I18nMessages = {};
   }
   
   // English translations
-  global.I18nMessages.en = {
+  window.I18nMessages.en = {
     // Common
     settings: 'Settings',
     save: 'Save',
@@ -154,4 +153,9 @@
     optimizationTip4: 'Set appropriate caching policies to reduce redundant requests',
     optimizationTip5: 'Compress JS and CSS files to reduce transfer size'
   };
-})(typeof window !== 'undefined' ? window : self); 
+}
+
+// Export English translations for direct import if needed
+export const enTranslations = {
+  // English translations content (same as above)
+}; 

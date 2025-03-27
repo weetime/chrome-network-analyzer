@@ -2,6 +2,9 @@
  * Request Details Manager - Handles displaying and copying request details
  */
 
+import { I18n } from './i18n.js';
+import { TableManager } from './table-manager.js';
+
 // 全局定义关闭按钮位置调整函数
 let positionCloseButton = () => {};
 
@@ -24,16 +27,16 @@ function showRequestDetails(request) {
   requestDetails.classList.add('request-details');
   
   // Check if we have TableManager for formatting
-  const formatTime = window.TableManager && window.TableManager.formatTime ? 
-    window.TableManager.formatTime : 
+  const formatTime = TableManager && TableManager.formatTime ? 
+    TableManager.formatTime : 
     (time => `${time}ms`);
   
-  const formatSize = window.TableManager && window.TableManager.formatSize ? 
-    window.TableManager.formatSize : 
+  const formatSize = TableManager && TableManager.formatSize ? 
+    TableManager.formatSize : 
     (size => `${size} bytes`);
   
-  const getLoadTimeClass = window.TableManager && window.TableManager.getLoadTimeClass ? 
-    window.TableManager.getLoadTimeClass : 
+  const getLoadTimeClass = TableManager && TableManager.getLoadTimeClass ? 
+    TableManager.getLoadTimeClass : 
     (() => '');
   
   // Clear previous details
@@ -102,7 +105,7 @@ function showRequestDetails(request) {
   `;
   
   // 使用I18n支持关闭按钮的title
-  const closeTitle = window.I18n ? window.I18n.getText('close') : '关闭详情';
+  const closeTitle = I18n ? I18n.getText('close') : '关闭详情';
   closeButton.setAttribute('title', closeTitle);
   
   closeButton.addEventListener('click', closeRequestDetails);
@@ -639,12 +642,12 @@ function closeRequestDetails() {
  */
 function copyRequestDetails(request) {
   // Check if we have TableManager for formatting
-  const formatTime = window.TableManager && window.TableManager.formatTime ? 
-    window.TableManager.formatTime : 
+  const formatTime = TableManager && TableManager.formatTime ? 
+    TableManager.formatTime : 
     (time => `${time}ms`);
   
-  const formatSize = window.TableManager && window.TableManager.formatSize ? 
-    window.TableManager.formatSize : 
+  const formatSize = TableManager && TableManager.formatSize ? 
+    TableManager.formatSize : 
     (size => `${size} bytes`);
   
   // Create formatted details text
@@ -735,12 +738,16 @@ function showNotification(message, isError = false) {
   }, 3000);
 }
 
-// Make functions available globally
-(function(global) {
-  global.RequestDetailsManager = {
-    showRequestDetails,
-    closeRequestDetails,
-    copyRequestDetails,
-    showNotification
-  };
-})(typeof window !== 'undefined' ? window : self);
+// Export RequestDetailsManager using ES6 export syntax
+export const RequestDetailsManager = {
+  init: function(options = {}) {
+    // 初始化详情管理器，保存设置选项
+    console.log('RequestDetailsManager initialized with options:', options);
+    return Promise.resolve(); // 返回一个已解决的 Promise
+  },
+  showRequestDetails,
+  closeRequestDetails,
+  closeDetails: closeRequestDetails,
+  copyRequestDetails,
+  showNotification
+};

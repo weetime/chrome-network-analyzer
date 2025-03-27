@@ -117,45 +117,16 @@ function setupObserver() {
 }
 
 // 加载语言包
-function loadLanguagePacks() {
-  return new Promise((resolve, reject) => {
-    let loaded = 0;
-    let errors = 0;
-    
-    // 加载所有支持的语言
-    SUPPORTED_LANGUAGES.forEach(lang => {
-      loadScript(`js/i18n/${lang}.js`)
-        .then(() => {
-          console.log(`Language pack ${lang} loaded.`);
-          loaded++;
-          if (loaded + errors === SUPPORTED_LANGUAGES.length) {
-            if (errors === 0) {
-              resolve();
-            } else {
-              reject(new Error(`Failed to load ${errors} language packs.`));
-            }
-          }
-        })
-        .catch(err => {
-          console.error(`Failed to load language pack ${lang}:`, err);
-          errors++;
-          if (loaded + errors === SUPPORTED_LANGUAGES.length) {
-            reject(new Error(`Failed to load ${errors} language packs.`));
-          }
-        });
-    });
-  });
-}
-
-// 辅助函数：加载脚本
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-    document.head.appendChild(script);
-  });
+async function loadLanguagePacks() {
+  // 在ES6模块系统中，语言包会通过import导入，所以这里不需要动态加载脚本
+  // 只需要确保I18nMessages对象已经正确初始化
+  
+  if (typeof window !== 'undefined' && !window.I18nMessages) {
+    window.I18nMessages = {};
+  }
+  
+  console.log('Language packs loaded via ES6 imports');
+  return Promise.resolve();
 }
 
 // 初始化国际化模块
@@ -173,13 +144,11 @@ async function init() {
 }
 
 // 导出国际化功能
-(function(global) {
-  global.I18n = {
-    init,
-    getText,
-    getCurrentLanguage,
-    setLanguage,
-    updatePageText,
-    SUPPORTED_LANGUAGES
-  };
-})(typeof window !== 'undefined' ? window : self); 
+export const I18n = {
+  init,
+  getText,
+  getCurrentLanguage,
+  setLanguage,
+  updatePageText,
+  SUPPORTED_LANGUAGES
+}; 

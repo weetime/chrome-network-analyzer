@@ -2,6 +2,9 @@
  * Stats Manager - Handles statistics calculation and display
  */
 
+import { I18n } from './i18n.js';
+import { TableManager } from './table-manager.js';
+
 /**
  * Calculate a percentile value from an array of numbers
  */
@@ -30,13 +33,13 @@ function updateStatistics() {
   let requests = [];
   
   // Use TableManager's filtered requests if available
-  if (window.TableManager && window.TableManager.applyFilters) {
-    requests = window.TableManager.applyFilters();
+  if (TableManager && TableManager.applyFilters) {
+    requests = TableManager.applyFilters();
   } else if (typeof applyFilters === 'function') {
     requests = applyFilters();
   } else {
     // Fallback: get all requests with valid time data
-    const requestData = window.TableManager ? window.TableManager.getRequestData() : {};
+    const requestData = TableManager ? TableManager.getRequestData() : {};
     requests = Object.values(requestData).filter(req => req.totalTime);
   }
   
@@ -54,8 +57,8 @@ function updateStatistics() {
     statsContainer.appendChild(noDataElement);
     
     // 应用国际化
-    if (window.I18n && window.I18n.updatePageText) {
-      window.I18n.updatePageText();
+    if (I18n && I18n.updatePageText) {
+      I18n.updatePageText();
     }
     return;
   }
@@ -107,8 +110,8 @@ function updateStatistics() {
     let label = stat.label;
     let hasI18n = false;
     
-    if (window.I18n && window.I18n.getText && stat.i18n) {
-      const translated = window.I18n.getText(stat.i18n);
+    if (I18n && I18n.getText && stat.i18n) {
+      const translated = I18n.getText(stat.i18n);
       // 只有当翻译不等于键名时才使用翻译（避免未翻译的情况）
       if (translated && translated !== stat.i18n) {
         label = translated;
@@ -124,9 +127,9 @@ function updateStatistics() {
   });
   
   // 应用国际化
-  if (window.I18n && window.I18n.updatePageText) {
+  if (I18n && I18n.updatePageText) {
     setTimeout(() => {
-      window.I18n.updatePageText();
+      I18n.updatePageText();
     }, 0);
   }
 }
@@ -136,8 +139,8 @@ function updateStatistics() {
  */
 function formatTime(time) {
   // Use TableManager's formatting if available
-  if (window.TableManager && window.TableManager.formatTime) {
-    return window.TableManager.formatTime(time);
+  if (TableManager && TableManager.formatTime) {
+    return TableManager.formatTime(time);
   }
   
   if (time === undefined || time === null) return 'N/A';
@@ -151,10 +154,13 @@ function formatTime(time) {
   }
 }
 
-// Make functions available globally
-(function(global) {
-  global.StatsManager = {
-    updateStatistics,
-    calculatePercentile
-  };
-})(typeof window !== 'undefined' ? window : self);
+// Export StatsManager using ES6 export syntax
+export const StatsManager = {
+  init: function(options = {}) {
+    // 初始化统计管理器，保存设置选项
+    console.log('StatsManager initialized with options:', options);
+    return Promise.resolve(); // 返回一个已解决的 Promise
+  },
+  updateStatistics,
+  calculatePercentile
+};

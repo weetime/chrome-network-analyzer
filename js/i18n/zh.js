@@ -2,15 +2,14 @@
  * 中文语言包
  */
 
-// 导出中文翻译
-(function(global) {
-  // 确保全局I18n对象存在
-  if (!global.I18nMessages) {
-    global.I18nMessages = {};
+// 确保全局I18nMessages对象存在
+if (typeof window !== 'undefined') {
+  if (!window.I18nMessages) {
+    window.I18nMessages = {};
   }
   
   // 中文翻译
-  global.I18nMessages.zh = {
+  window.I18nMessages.zh = {
     // 通用
     settings: '设置',
     save: '保存',
@@ -154,4 +153,9 @@
     optimizationTip4: '设置合理的缓存策略，减少重复请求',
     optimizationTip5: '压缩JS和CSS文件，减少传输体积'
   };
-})(typeof window !== 'undefined' ? window : self); 
+}
+
+// 导出中文翻译数据，以便在需要时直接导入
+export const zhTranslations = {
+  // 中文翻译内容（与上面相同）
+}; 

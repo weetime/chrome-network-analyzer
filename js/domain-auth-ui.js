@@ -2,16 +2,38 @@
  * Domain Authorization UI - Manages UI for domain authorization
  */
 
+// Import I18n module
+import { I18n } from './i18n.js';
+
 // Variables to store domain info
 let currentDomain = null;
 
 /**
  * Initialize domain authorization UI
  */
-function initDomainAuthUi() {
+function initDomainAuthUi(options = {}) {
+  // Handle options
+  const {
+    domainListId = 'headerDomainsList',
+    switchId = 'headerAuthorizationSwitch',
+    statusId = 'headerAuthStatus',
+    settingsLinkId = 'openDomainSettings'
+  } = options;
+
+  // 确保域名信息区域显示
+  const domainInfoElement = document.querySelector('.domain-info');
+  if (domainInfoElement) {
+    console.log('Making domain info visible');
+    domainInfoElement.style.display = 'flex';
+  } else {
+    console.error('Domain info element not found');
+  }
+
   // Add event listeners for domain management
   setupDomainSwitchListener();
   setupDomainManagementLinks();
+  
+  return Promise.resolve();
 }
 
 /**
@@ -39,15 +61,25 @@ function setupDomainSwitchListener() {
               if (response && response.success) {
                 // Update UI
                 if (headerAuthStatus) {
-                  headerAuthStatus.textContent = window.I18n ? window.I18n.getText('enable') : '启用';
+                  headerAuthStatus.textContent = I18n.getText('enable');
                   headerAuthStatus.className = 'auth-status enabled';
                 }
                 
                 // Show authorized content
                 document.getElementById('authorizedContent').style.display = 'block';
                 
-                // Request network data
-                requestNetworkData();
+                // Request network data - using parent's function if available
+                if (typeof requestNetworkData === 'function') {
+                  requestNetworkData();
+                } else {
+                  // 发送消息给后台脚本获取请求数据
+                  chrome.runtime.sendMessage(
+                    { action: "getRequestData", tabId: currentDomain },
+                    (response) => {
+                      console.log("Requested network data directly from DomainAuthUI");
+                    }
+                  );
+                }
                 
                 // Update authorized domains list
                 loadAuthorizedDomains();
@@ -71,7 +103,7 @@ function setupDomainSwitchListener() {
               if (response && response.success !== false) {
                 // Update UI
                 if (headerAuthStatus) {
-                  headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
+                  headerAuthStatus.textContent = I18n.getText('disable');
                   headerAuthStatus.className = 'auth-status disabled';
                 }
                 
@@ -193,7 +225,7 @@ function removeDomainAuthorization(domain) {
             headerAuthorizationSwitch.checked = false;
           }
           if (headerAuthStatus) {
-            headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
+            headerAuthStatus.textContent = I18n.getText('disable');
             headerAuthStatus.className = 'auth-status disabled';
           }
           
@@ -259,10 +291,10 @@ async function setCurrentDomain(domain) {
   
   if (headerAuthStatus) {
     if (isAuthorized) {
-      headerAuthStatus.textContent = window.I18n ? window.I18n.getText('enable') : '启用';
+      headerAuthStatus.textContent = I18n.getText('enable');
       headerAuthStatus.className = 'auth-status enabled';
     } else {
-      headerAuthStatus.textContent = window.I18n ? window.I18n.getText('disable') : '禁用';
+      headerAuthStatus.textContent = I18n.getText('disable');
       headerAuthStatus.className = 'auth-status disabled';
     }
   }
@@ -280,16 +312,36 @@ async function setCurrentDomain(domain) {
   return isAuthorized;
 }
 
-// Make functions available globally
-(function(global) {
-  global.DomainAuthUi = {
-    init: initDomainAuthUi,
-    hideAuthorizedContent,
-    loadAuthorizedDomains,
-    displayAuthorizedDomains,
-    removeDomainAuthorization,
-    checkDomainAuthorization,
-    setCurrentDomain,
-    getCurrentDomain: () => currentDomain
-  };
-})(typeof window !== 'undefined' ? window : self);
+// Export domain auth UI functionality using ES6 export syntax
+export const DomainAuthUI = {
+  init: initDomainAuthUi,
+  hideAuthorizedContent,
+  loadAuthorizedDomains,
+  displayAuthorizedDomains,
+  removeDomainAuthorization,
+  checkDomainAuthorization,
+  setCurrentDomain,
+  getCurrentDomain: () => currentDomain,
+  updateDomainList: (domain) => {
+    currentDomain = domain;
+    displayAuthorizedDomains([domain]);
+  },
+  updateAuthorizationStatus: (isAuthorized) => {
+    const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
+    const headerAuthStatus = document.getElementById('headerAuthStatus');
+    
+    if (headerAuthorizationSwitch) {
+      headerAuthorizationSwitch.checked = isAuthorized;
+    }
+    
+    if (headerAuthStatus) {
+      if (isAuthorized) {
+        headerAuthStatus.textContent = I18n.getText('enable');
+        headerAuthStatus.className = 'auth-status enabled';
+      } else {
+        headerAuthStatus.textContent = I18n.getText('disable');
+        headerAuthStatus.className = 'auth-status disabled';
+      }
+    }
+  }
+};

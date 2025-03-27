@@ -124,17 +124,16 @@ function syncDomainLists() {
   });
 }
 
-// Make functions available globally
-(function(global) {
-  global.DomainManager = {
-    extractDomain,
-    isDomainAuthorized,
-    authorizeDomain,
-    removeDomainAuthorization,
-    syncDomainLists
-  };
-  
-  syncDomainLists().then(() => {
-    console.log("Domain lists synchronized");
-  });
-})(typeof window !== 'undefined' ? window : self);
+// 初始化时同步域名列表
+syncDomainLists().then(() => {
+  console.log("Domain lists synchronized");
+});
+
+// 导出需要的函数
+export const DomainManager = {
+  extractDomain,
+  isDomainAuthorized,
+  authorizeDomain,
+  removeDomainAuthorization,
+  syncDomainLists
+};

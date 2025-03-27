@@ -2,19 +2,27 @@
  * AI 分析页面脚本 - 处理独立的AI分析页面功能
  */
 
+// 导入依赖的模块
+import { I18n } from './i18n.js';
+import './i18n/zh.js';
+import './i18n/en.js';
+import { AiConnector } from './ai-connector.js';
+import { AiAnalysisManager } from './ai-analysis-manager.js';
+import { ThemeManager } from './theme-manager.js';
+import { StatsManager } from './stats-manager.js';
+import { RequestDetailsManager } from './request-details-manager.js';
+
 // 全局变量
 let currentTabId = null;
 let requestsData = {};
 
 // 初始化国际化
 async function initI18n() {
-  if (window.I18n) {
-    try {
-      await window.I18n.init();
-      console.log('I18n initialized with language:', window.I18n.getCurrentLanguage());
-    } catch (error) {
-      console.error('Failed to initialize I18n:', error);
-    }
+  try {
+    await I18n.init();
+    console.log('I18n initialized with language:', I18n.getCurrentLanguage());
+  } catch (error) {
+    console.error('Failed to initialize I18n:', error);
   }
 }
 
@@ -40,13 +48,14 @@ async function initPage() {
     await fetchNetworkData();
     
     // 更新统计信息
-    if (window.StatsManager) {
-      // 确保TableManager有正确的请求数据
-      if (window.TableManager && window.TableManager.updateTableData) {
-        window.TableManager.updateTableData(requestsData);
-      }
+    if (StatsManager) {
+      // 初始化统计模块
+      await StatsManager.init({
+        containerId: 'statsContainer',
+        getRequestData: () => requestsData
+      });
       
-      window.StatsManager.updateStatistics();
+      StatsManager.updateStatistics();
     }
     
   } catch (error) {
@@ -79,12 +88,6 @@ async function fetchNetworkData() {
 
 // 运行AI分析
 async function runAiAnalysis() {
-  // 检查是否有AiConnector
-  if (!window.AiConnector) {
-    showError('AI 连接器模块未找到');
-    return;
-  }
-  
   // 获取分析元素
   const analysisLoading = document.getElementById('analysisLoading');
   const analysisContent = document.getElementById('analysisContent');
@@ -143,10 +146,10 @@ async function runAiAnalysis() {
     }
     
     // 格式化数据
-    const analysisData = window.AiConnector.formatNetworkDataForAI(requestsData, statistics);
+    const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
     
     // 发送到AI提供商
-    const result = await window.AiConnector.sendToAI(
+    const result = await AiConnector.sendToAI(
       analysisData, 
       config.provider, 
       config.apiKey, 
@@ -275,42 +278,45 @@ function showError(message) {
 // 复制分析结果到剪贴板
 function copyAnalysisResults() {
   const analysisText = document.getElementById('analysisText');
-  
-  if (!analysisText || !analysisText.textContent.trim()) {
-    if (window.RequestDetailsManager && window.RequestDetailsManager.showNotification) {
-      window.RequestDetailsManager.showNotification('没有分析结果可复制', true);
-    } else {
-      alert('没有分析结果可复制');
-    }
+  if (!analysisText || !analysisText.textContent) {
+    showError('没有可复制的分析结果');
     return;
   }
   
-  // 创建格式化文本
-  let copyText = `Chrome 网络分析器 - AI 分析\n\n`;
-  copyText += `提供商: ${document.getElementById('analysisProvider').textContent || '未知'}\n`;
-  copyText += `模型: ${document.getElementById('analysisModel').textContent || '未知'}\n\n`;
-  copyText += `${analysisText.textContent}\n`;
-  
-  // 复制到剪贴板
-  navigator.clipboard.writeText(copyText).then(() => {
-    // 显示通知
-    if (window.RequestDetailsManager && window.RequestDetailsManager.showNotification) {
-      window.RequestDetailsManager.showNotification('分析结果已复制到剪贴板');
-    } else {
-      alert('分析结果已复制到剪贴板');
-    }
-  }).catch(err => {
-    console.error('复制分析失败: ', err);
-    if (window.RequestDetailsManager && window.RequestDetailsManager.showNotification) {
-      window.RequestDetailsManager.showNotification('复制分析失败', true);
-    } else {
-      alert('复制分析失败: ' + err.message);
-    }
-  });
+  navigator.clipboard.writeText(analysisText.textContent)
+    .then(() => {
+      const copyBtn = document.getElementById('copyAnalysisBtn');
+      if (copyBtn) {
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+          <span>已复制!</span>
+        `;
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+        }, 2000);
+      }
+    })
+    .catch(err => {
+      console.error('复制分析结果失败:', err);
+      showError('复制分析结果失败: ' + err.message);
+    });
 }
 
 // 设置事件处理程序
 function setupEventHandlers() {
+  // 返回主页按钮
+  const backToMainBtn = document.getElementById('backToMain');
+  if (backToMainBtn) {
+    backToMainBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.close(); // 关闭当前标签页
+    });
+  }
+  
   // 运行分析按钮
   const runAiAnalysisBtn = document.getElementById('runAiAnalysisBtn');
   if (runAiAnalysisBtn) {
@@ -323,31 +329,13 @@ function setupEventHandlers() {
     copyAnalysisBtn.addEventListener('click', copyAnalysisResults);
   }
   
-  // 返回主页链接
-  const backToMain = document.getElementById('backToMain');
-  if (backToMain) {
-    backToMain.addEventListener('click', (e) => {
-      e.preventDefault();
-      // 返回popup页面或关闭当前标签页
-      chrome.tabs.getCurrent(tab => {
-        if (tab) {
-          chrome.tabs.remove(tab.id);
-        } else {
-          window.close();
-        }
-      });
-    });
-  }
-  
-  // 打开选项页面链接
+  // 打开设置页面
   const openOptionsPage = document.getElementById('openOptionsPage');
   if (openOptionsPage) {
     openOptionsPage.addEventListener('click', (e) => {
       e.preventDefault();
       if (chrome.runtime.openOptionsPage) {
         chrome.runtime.openOptionsPage();
-      } else {
-        window.open(chrome.runtime.getURL('options.html'));
       }
     });
   }
@@ -356,32 +344,29 @@ function setupEventHandlers() {
 // 初始化页面
 async function init() {
   try {
-    // 初始化国际化
-    await initI18n();
+    console.log('Initializing AI analysis page...');
     
     // 初始化主题管理器
-    if (window.ThemeManager) {
-      window.ThemeManager.init();
-    }
+    ThemeManager.init();
     
-    // 设置事件处理程序
-    setupEventHandlers();
+    // 初始化国际化
+    await initI18n();
     
     // 初始化页面数据
     await initPage();
     
+    // 设置事件处理程序
+    setupEventHandlers();
+    
+    // 如果有请求数据，自动运行分析
+    if (Object.keys(requestsData).length > 0) {
+      runAiAnalysis();
+    }
   } catch (error) {
     console.error('初始化AI分析页面时出错:', error);
+    showError('初始化AI分析页面时出错: ' + error.message);
   }
 }
 
-// 页面加载完成时初始化
-document.addEventListener('DOMContentLoaded', () => {
-  (async () => {
-    try {
-      await init();
-    } catch (error) {
-      console.error('AI分析页面初始化错误:', error);
-    }
-  })();
-});
+// 在DOM加载完成后初始化页面
+document.addEventListener('DOMContentLoaded', init);

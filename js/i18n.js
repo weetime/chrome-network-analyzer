@@ -122,7 +122,20 @@ async function loadLanguagePacks() {
   // 只需要确保I18nMessages对象已经正确初始化
   
   if (typeof window !== 'undefined' && !window.I18nMessages) {
-    window.I18nMessages = {};
+    window.I18nMessages = {
+      zh: {
+        // ... existing translations ...
+        'confirmClear': '确定要清除所有网络请求数据吗？',
+        'cancel': '取消',
+        'confirm': '确认'
+      },
+      en: {
+        // ... existing translations ...
+        'confirmClear': 'Are you sure you want to clear all network request data?',
+        'cancel': 'Cancel',
+        'confirm': 'Confirm'
+      }
+    };
   }
   
   console.log('Language packs loaded via ES6 imports');

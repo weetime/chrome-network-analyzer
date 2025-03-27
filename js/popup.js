@@ -15,6 +15,7 @@ import { StatsManager } from './stats-manager.js';
 import { RequestDetailsManager } from './request-details-manager.js';
 import { AiAnalysisManager } from './ai-analysis-manager.js';
 import { DomainAuthUI } from './domain-auth-ui.js';
+import { ToastManager } from './toast-manager.js';
 
 // Global variables
 let currentTabId = null;
@@ -174,7 +175,7 @@ function exportData() {
   
   if (Object.keys(requestData).length === 0) {
     const noDataMsg = I18n.getText('noDataMessage') || 'No data to export.';
-    alert(noDataMsg);
+    ToastManager.warning(noDataMsg, { title: I18n.getText('exportData') });
     return;
   }
   
@@ -205,41 +206,76 @@ function exportData() {
 
 // Clear network request data
 function clearData() {
-  if (confirm(I18n.getText('confirmClear') || 'Are you sure you want to clear all network data?')) {
-    chrome.runtime.sendMessage(
-      { action: "clearRequestData", tabId: currentTabId },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Error clearing request data:", chrome.runtime.lastError);
-          return;
-        }
-        
-        if (response && response.success) {
-          // Clear table data
-          TableManager.updateTableData({});
-          
-          // Update statistics
-          StatsManager.updateStatistics();
-          
-          // Close any open request details
-          try {
-            if (RequestDetailsManager && typeof RequestDetailsManager.closeRequestDetails === 'function') {
-              RequestDetailsManager.closeRequestDetails();
-            } else if (RequestDetailsManager && typeof RequestDetailsManager.closeDetails === 'function') {
-              RequestDetailsManager.closeDetails();
-            }
-          } catch (error) {
-            console.error('Error closing request details:', error);
+  const confirmMsg = I18n.getText('confirmClear') || 'Are you sure you want to clear all network data?';
+  
+  // 创建自定义确认对话框
+  const confirmDialog = document.createElement('div');
+  confirmDialog.className = 'custom-confirm';
+  confirmDialog.innerHTML = `
+    <div class="confirm-content">
+      <div class="confirm-message">${confirmMsg}</div>
+      <div class="confirm-buttons">
+        <button class="cancel-btn">${I18n.getText('cancel') || 'Cancel'}</button>
+        <button class="confirm-btn">${I18n.getText('confirm') || 'Confirm'}</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(confirmDialog);
+  
+  // 添加事件监听器
+  return new Promise(resolve => {
+    // 取消按钮
+    confirmDialog.querySelector('.cancel-btn').addEventListener('click', () => {
+      document.body.removeChild(confirmDialog);
+      resolve(false);
+    });
+    
+    // 确认按钮
+    confirmDialog.querySelector('.confirm-btn').addEventListener('click', () => {
+      document.body.removeChild(confirmDialog);
+      resolve(true);
+      
+      // 执行清除操作
+      chrome.runtime.sendMessage(
+        { action: "clearRequestData", tabId: currentTabId },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error("Error clearing request data:", chrome.runtime.lastError);
+            ToastManager.error(chrome.runtime.lastError.message, { title: I18n.getText('clearData') });
+            return;
           }
           
-          // Show success message
-          console.log("Data cleared successfully");
-        } else if (response && response.error) {
-          console.error("Error clearing data:", response.error);
+          if (response && response.success) {
+            // Clear table data
+            TableManager.updateTableData({});
+            
+            // Update statistics
+            StatsManager.updateStatistics();
+            
+            // Close any open request details
+            try {
+              if (RequestDetailsManager && typeof RequestDetailsManager.closeRequestDetails === 'function') {
+                RequestDetailsManager.closeRequestDetails();
+              } else if (RequestDetailsManager && typeof RequestDetailsManager.closeDetails === 'function') {
+                RequestDetailsManager.closeDetails();
+              }
+            } catch (error) {
+              console.error('Error closing request details:', error);
+            }
+            
+            // Show success message
+            ToastManager.success(I18n.getText('dataCleared') || 'Data cleared successfully', { 
+              title: I18n.getText('clearData') 
+            });
+          } else if (response && response.error) {
+            console.error("Error clearing data:", response.error);
+            ToastManager.error(response.error, { title: I18n.getText('clearData') });
+          }
         }
-      }
-    );
-  }
+      );
+    });
+  });
 }
 
 // 初始化弹出界面

@@ -848,8 +848,8 @@ input:checked + .toggle-slider:before {
 }
 
 .theme-preview {
-  width: 90px;
-  height: 90px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -868,8 +868,8 @@ input:checked + .toggle-slider:before {
 }
 
 .light-preview .theme-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   color: #ff9900;
   filter: drop-shadow(0 0 3px rgba(255, 153, 0, 0.3));
 }
@@ -880,8 +880,8 @@ input:checked + .toggle-slider:before {
 }
 
 .dark-preview .theme-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   color: #607d8b;
   filter: drop-shadow(0 0 3px rgba(96, 125, 139, 0.5));
 }
@@ -923,8 +923,8 @@ input:checked + .toggle-slider:before {
 }
 
 .fire-preview .theme-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   color: #ff5500;
   position: relative;
   z-index: 2;

@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   // 显示保存的AI设置
   loadAISettings();
+  
+  // 初始化扩展程序设置
+  initExtensionSettings();
 });
 
 /**
@@ -63,33 +66,42 @@ async function initI18n() {
  * 初始化主题切换功能
  */
 function initTheme() {
-  const themeToggle = document.getElementById('themeToggle');
+  // 获取主题单选按钮
+  const themeRadios = document.querySelectorAll('input[name="theme"]');
   
   // 首先尝试从Chrome Storage获取主题设置
-  chrome.storage.local.get(['darkThemeDefault'], (result) => {
-    const storedTheme = result.hasOwnProperty('darkThemeDefault') 
-      ? (result.darkThemeDefault ? 'dark' : 'light') 
-      : (localStorage.getItem('networkAnalyzerTheme') || 'light');
+  chrome.storage.local.get(['theme'], (result) => {
+    // 获取存储的主题，默认为light
+    const storedTheme = result.theme || localStorage.getItem('networkAnalyzerTheme') || 'light';
     
     // 应用存储的主题
     document.documentElement.setAttribute('data-theme', storedTheme);
-    themeToggle.checked = storedTheme === 'dark';
+    
+    // 设置对应的单选按钮
+    const radioToCheck = document.getElementById(`theme${storedTheme.charAt(0).toUpperCase() + storedTheme.slice(1)}`);
+    if (radioToCheck) {
+      radioToCheck.checked = true;
+    }
     
     // 确保localStorage和Chrome Storage同步
     localStorage.setItem('networkAnalyzerTheme', storedTheme);
     localStorage.setItem('theme', storedTheme); // 兼容popup.html
-    chrome.storage.local.set({ darkThemeDefault: storedTheme === 'dark' });
+    chrome.storage.local.set({ theme: storedTheme });
   });
   
-  // 主题切换事件
-  themeToggle.addEventListener('change', function() {
-    const theme = this.checked ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', theme);
-    
-    // 同步保存到两个存储位置
-    localStorage.setItem('networkAnalyzerTheme', theme);
-    localStorage.setItem('theme', theme); // 兼容popup.html
-    chrome.storage.local.set({ darkThemeDefault: theme === 'dark' });
+  // 为每个主题单选按钮添加事件监听
+  themeRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.checked) {
+        const theme = this.value;
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        // 同步保存到两个存储位置
+        localStorage.setItem('networkAnalyzerTheme', theme);
+        localStorage.setItem('theme', theme); // 兼容popup.html
+        chrome.storage.local.set({ theme: theme });
+      }
+    });
   });
 }
 
@@ -449,5 +461,58 @@ function initFormEvents() {
       if (saveButton) saveButton.classList.add('pulse');
     });
   });
+}
+
+/**
+ * 初始化扩展程序设置
+ */
+function initExtensionSettings() {
+  const saveExtensionSettingsBtn = document.getElementById('saveExtensionSettingsBtn');
+  
+  // 保存扩展程序设置
+  if (saveExtensionSettingsBtn) {
+    saveExtensionSettingsBtn.addEventListener('click', function() {
+      saveExtensionSettings();
+    });
+  }
+}
+
+/**
+ * 保存扩展程序设置
+ */
+function saveExtensionSettings() {
+  // 获取当前选中的主题
+  const selectedTheme = document.querySelector('input[name="theme"]:checked');
+  const theme = selectedTheme ? selectedTheme.value : 'light';
+  
+  // 获取当前选中的语言
+  const selectedLanguage = document.getElementById('languageSelect');
+  const language = selectedLanguage ? selectedLanguage.value : 'en';
+  
+  // 保存设置
+  localStorage.setItem('networkAnalyzerTheme', theme);
+  localStorage.setItem('theme', theme);
+  localStorage.setItem('networkAnalyzerLanguage', language);
+  
+  // 同步到Chrome Storage
+  chrome.storage.local.set({ 
+    theme: theme,
+    darkThemeDefault: theme === 'dark' // 兼容旧版设置
+  });
+  
+  // 显示成功消息
+  ToastManager.success(I18n.getText('settingsSaved'));
+  
+  // 应用设置
+  document.documentElement.setAttribute('data-theme', theme);
+  
+  // 如果语言改变，需要刷新页面以应用新语言
+  if (language !== I18n.getCurrentLanguage()) {
+    const languageChangeMsg = I18n.getText('languageChangeMsg');
+    ToastManager.success(languageChangeMsg);
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+  }
 }
 

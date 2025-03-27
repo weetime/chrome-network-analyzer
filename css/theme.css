@@ -86,6 +86,49 @@
   --stats-tile-hover-shadow: 0 0 12px rgba(92, 174, 239, 0.25);
 }
 
+[data-theme="fireblack"] {
+  --bg-color: #0a0a0a;
+  --bg-color-rgb: 10, 10, 10;
+  --text-color: #ffb700;
+  --border-color: #3d2c00;
+  --border-color-rgb: 61, 44, 0;
+  --header-bg: #1a1500;
+  --row-even-bg: #140f0a;
+  --stats-bg: #1a1500;
+  --stats-border: #3d2c00;
+  --stats-value: #ff9900;
+  --stats-label: #ffcc66;
+  --slow-bg: rgba(255, 87, 34, 0.3);
+  --medium-bg: rgba(255, 191, 0, 0.3);
+  --fast-bg: rgba(76, 175, 80, 0.3);
+  --error-bg: rgba(244, 67, 54, 0.3);
+  --primary-btn: #ff5500;
+  --primary-btn-rgb: 255, 85, 0;
+  --primary-btn-hover: #ff7700;
+  --danger-btn: #ff3300;
+  --shadow-color: rgba(255, 85, 0, 0.3);
+  
+  /* 火焰黑主题变量 */
+  --accent-color: #ff4400;
+  --accent-color-rgb: 255, 68, 0;
+  --accent-color-hover: #ff6600;
+  --card-bg: rgba(20, 15, 10, 0.9);
+  --card-bg-rgb: 20, 15, 10;
+  --code-bg: #0a0a0a;
+  --code-color: #ff9900;
+  --grid-line: rgba(255, 180, 0, 0.05);
+  --terminal-green: #ffaa00;
+  --glow-color: rgba(255, 100, 0, 0.6);
+  --neon-glow: 0 0 15px var(--glow-color), 0 0 30px rgba(255, 80, 0, 0.3);
+  --card-radius: 8px;
+  --hover-effect: rgba(255, 120, 0, 0.15);
+  
+  /* Stats tile 火焰黑主题变量 */
+  --stats-tile-bg: #140f0a;
+  --stats-tile-border: #3d2c00;
+  --stats-tile-hover-shadow: 0 0 12px rgba(255, 100, 0, 0.4);
+}
+
 /* Base styles for the entire application */
 body {
   font-family: 'Roboto Mono', monospace, 'SF Mono', 'Consolas', Arial, sans-serif;
@@ -185,6 +228,11 @@ h2, h3, h4 {
   box-shadow: var(--neon-glow);
 }
 
+[data-theme="fireblack"] .card::before {
+  background: linear-gradient(90deg, #ff5500, #ff9900);
+  box-shadow: 0 0 15px rgba(255, 100, 0, 0.6);
+}
+
 /* Theme toggle related styles */
 .theme-toggle {
   display: flex;
@@ -199,11 +247,11 @@ h2, h3, h4 {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  border-radius: 50%;
-  background-color: var(--primary-btn);
-  color: white;
-  margin-right: 5px;
-  box-shadow: var(--neon-glow);
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
 /* Updated theme toggle styles to match geek design */
@@ -319,4 +367,34 @@ h2, h3, h4 {
 
 .glow-effect:hover {
   box-shadow: 0 0 12px var(--glow-color);
+}
+
+/* 火焰主题图标样式 */
+.fire-mode .theme-icon {
+  color: #ff5500;
+  filter: drop-shadow(0 0 3px rgba(255, 85, 0, 0.8));
+}
+
+#fireIcon {
+  fill: currentColor;
+  animation: flicker 3s infinite alternate;
+}
+
+.fire-effect {
+  animation: flicker 3s infinite alternate;
+  color: #ff5500 !important;
+  filter: drop-shadow(0 0 3px rgba(255, 85, 0, 0.8));
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.7;
+  }
+}
+
+[data-theme="fireblack"] .btn-minimal:hover {
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.8);
 }

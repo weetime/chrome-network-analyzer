@@ -19,6 +19,8 @@ function isDomainAuthorized(domain) {
     chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], (result) => {
       const authorizedDomains = result.authorizedDomains || [];
       const headerDomains = result.headerDomainsList || [];
+      
+      // Only use sync storage as the source of truth
       const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
       resolve(allDomains.includes(domain));
     });
@@ -98,12 +100,15 @@ function syncDomainLists() {
         const syncHeaderDomains = syncResult.headerDomainsList || [];
         const localAuthorizedDomains = localResult.authorizedDomains || [];
         
+        // Instead of blindly merging all domains, we need to respect domains
+        // that have been explicitly removed from sync storage
+        // Use sync storage as the source of truth
         const allDomains = [...new Set([
           ...syncAuthorizedDomains, 
-          ...syncHeaderDomains, 
-          ...localAuthorizedDomains
+          ...syncHeaderDomains
         ])];
         
+        // Save the synchronized domains back to both storage locations
         chrome.storage.sync.set({
           authorizedDomains: allDomains,
           headerDomainsList: allDomains

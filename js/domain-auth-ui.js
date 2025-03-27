@@ -246,7 +246,7 @@ async function setCurrentDomain(domain) {
     domainInfoElement.style.display = 'flex';
   }
   
-  // Check if domain is authorized
+  // Check if domain is authorized - make sure we're checking from sync storage
   const isAuthorized = await checkDomainAuthorization(domain);
   
   // Update UI based on authorization status
@@ -267,19 +267,14 @@ async function setCurrentDomain(domain) {
     }
   }
   
-  // Show appropriate content
+  // Update content visibility
   if (isAuthorized) {
     document.getElementById('authorizedContent').style.display = 'block';
-    
-    // Request network data if function available
-    if (typeof requestNetworkData === 'function') {
-      requestNetworkData();
-    }
   } else {
     hideAuthorizedContent();
   }
   
-  // Update authorized domains list
+  // Load authorized domains list
   loadAuthorizedDomains();
   
   return isAuthorized;

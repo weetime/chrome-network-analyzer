@@ -372,6 +372,8 @@ function checkDomainAndLoadData(domain) {
         }
         
         requestNetworkData();
+        // 启动实时更新
+        startRealTimeUpdates();
       } else {
         // Domain is not authorized, show authorization UI
         if (window.DomainAuthUi) {

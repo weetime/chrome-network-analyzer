@@ -12,7 +12,8 @@
 </head>
 <body class="tech-bg">
   <div class="content-wrapper">
-    <div class="header-container">
+    <!-- 头部区域 -->
+    <div class="header-container card">
       <h1 class="page-title" data-i18n="aiAnalysisTitle">网络请求 AI 分析</h1>
       <a href="#" id="backToMain" class="back-link">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -23,7 +24,7 @@
       </a>
     </div>
     
-    <!-- 页面和数据信息 - 合并域名信息和数据概览 -->
+    <!-- 页面和数据信息卡片 -->
     <div class="info-container card">
       <div class="info-section domain-info">
         <h3><span data-i18n="analyzingDomain">分析域名</span>: <span id="currentDomain" class="highlight-text">--</span></h3>
@@ -55,7 +56,7 @@
     </div>
     
     <!-- AI分析主要内容 -->
-    <div class="ai-container card terminal-card">
+    <div class="ai-container card">
       <div class="ai-header">
         <h3 data-i18n="aiAnalysis">网络请求 AI 性能分析</h3>
         <div class="ai-header-actions">
@@ -127,37 +128,34 @@
             </button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- 使用提示区域 - 可折叠 -->
-    <div class="collapsible-container">
-      <button class="collapsible-trigger" id="tipsCollapseTrigger">
-        <span class="collapsible-title" data-i18n="aiTips">AI 分析使用提示</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </button>
-      <div class="collapsible-content tips-container card">
-        <ul class="tips-list">
-          <li data-i18n="aiTip1">AI分析能够识别网络性能瓶颈，并提供优化建议</li>
-          <li data-i18n="aiTip2">分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本</li>
-          <li data-i18n="aiTip3">您可以在扩展设置中配置偏好的AI提供商和API密钥</li>
-          <li data-i18n="aiTip4">分析过程视请求量和响应而定，可能需要几秒钟时间</li>
-        </ul>
         
-        <h3 class="tips-title optimization-title" data-i18n="optimizationTips">优化建议</h3>
-        <ul class="tips-list optimization-list">
-          <li data-i18n="optimizationTip1">合并小型资源文件，减少HTTP请求次数</li>
-          <li data-i18n="optimizationTip2">启用图片懒加载，优先加载可视区域内容</li>
-          <li data-i18n="optimizationTip3">使用HTTP/2协议可以并行处理多个请求</li>
-          <li data-i18n="optimizationTip4">设置合理的缓存策略，减少重复请求</li>
-          <li data-i18n="optimizationTip5">压缩JS和CSS文件，减少传输体积</li>
-        </ul>
+        <!-- AI分析使用提示（内嵌版本） -->
+        <div class="tips-section">
+          <details>
+            <summary data-i18n="aiTips">AI 分析使用提示</summary>
+            <div class="tips-content">
+              <ul class="tips-list">
+                <li data-i18n="aiTip1">AI分析能够识别网络性能瓶颈，并提供优化建议</li>
+                <li data-i18n="aiTip2">分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本</li>
+                <li data-i18n="aiTip3">您可以在扩展设置中配置偏好的AI提供商和API密钥</li>
+                <li data-i18n="aiTip4">分析过程视请求量和响应而定，可能需要几秒钟时间</li>
+              </ul>
+              
+              <h4 class="tips-subtitle" data-i18n="optimizationTips">优化建议</h4>
+              <ul class="tips-list optimization-list">
+                <li data-i18n="optimizationTip1">合并小型资源文件，减少HTTP请求次数</li>
+                <li data-i18n="optimizationTip2">启用图片懒加载，优先加载可视区域内容</li>
+                <li data-i18n="optimizationTip3">使用HTTP/2协议可以并行处理多个请求</li>
+                <li data-i18n="optimizationTip4">设置合理的缓存策略，减少重复请求</li>
+                <li data-i18n="optimizationTip5">压缩JS和CSS文件，减少传输体积</li>
+              </ul>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   </div>
 
-<script type="module" src="js/ai-page.js"></script>
+  <script type="module" src="js/ai-page.js"></script>
 </body>
 </html>

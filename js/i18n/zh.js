@@ -154,6 +154,15 @@ if (typeof window !== 'undefined') {
     downloadSuccess: '下载成功',
     downloadFailed: '下载失败',
     
+    // 通知消息
+    noDataAvailable: '没有可用的请求数据进行分析',
+    noApiKeyConfigured: '未配置API密钥。请在选项页面中配置API密钥',
+    aiAnalysisError: 'AI分析过程中出错',
+    noCopyContent: '没有可复制的分析结果',
+    copySuccess: '已复制到剪贴板',
+    copyFailed: '复制失败',
+    initPageError: '初始化AI分析页面时出错',
+    
     // 优化建议
     optimizationTips: '优化建议',
     optimizationTip1: '合并小型资源文件，减少HTTP请求次数',

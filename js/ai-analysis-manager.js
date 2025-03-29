@@ -110,12 +110,18 @@ async function runAiAnalysis() {
   try {
     // Get API configuration from storage
     const config = await new Promise((resolve) => {
-      chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'openaiApiKey'], (result) => {
-        resolve({
+      chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], (result) => {
+        console.log('获取AI设置:', result); // 调试信息
+        
+        const config = {
           provider: result.aiProvider || 'openai',
           apiKey: result.apiKey || result.openaiApiKey || '',
-          model: result.aiModel || 'gpt-4-turbo'
-        });
+          model: result.aiModel || 'gpt-4-turbo',
+          apiUrl: result.apiUrl || ''
+        };
+        
+        console.log('使用AI配置:', config.provider, config.model); // 调试信息
+        resolve(config);
       });
     });
     
@@ -123,6 +129,13 @@ async function runAiAnalysis() {
     if (!config.apiKey) {
       showAnalysisError('API key not configured. Please configure API key in the options page.');
       return;
+    }
+    
+    // 预先更新模型信息显示
+    const modelInfoElement = document.getElementById('aiModelInfo');
+    if (modelInfoElement) {
+      const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+      modelInfoElement.textContent = `Analyzed with ${providerName} ${config.model}`;
     }
     
     // Format data for AI analysis
@@ -136,11 +149,13 @@ async function runAiAnalysis() {
       config.model
     );
     
+    console.log('AI分析结果:', result); // 调试信息
+    
     // Save result
     currentAnalysisResult = result;
     
     // Display analysis result
-    displayAnalysisResult(result);
+    displayAnalysisResult(result, config);
   } catch (error) {
     showAnalysisError(`Error during AI analysis: ${error.message}`);
   } finally {
@@ -200,7 +215,7 @@ function calculateStatistics(requestsData) {
 /**
  * Display AI analysis result
  */
-function displayAnalysisResult(result) {
+function displayAnalysisResult(result, userConfig) {
   // Get elements
   const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
   const aiAnalysisResult = document.getElementById('aiAnalysisResult');
@@ -217,9 +232,25 @@ function displayAnalysisResult(result) {
   // Set analysis text with formatted content
   aiAnalysisResult.innerHTML = formatAnalysisText(result.analysis);
   
+  // 处理provider信息
+  let provider = result.provider || '';
+  // 如果provider包含括号内容（如"OpenAI (via Custom OpenAI API)"），则提取主要提供商名称
+  if (provider.includes('(')) {
+    provider = provider.split('(')[0].trim();
+  }
+  
+  // 优先使用用户配置的提供商
+  if (userConfig && userConfig.provider) {
+    provider = userConfig.provider.charAt(0).toUpperCase() + userConfig.provider.slice(1);
+    console.log('使用用户配置的提供商:', provider); // 调试信息
+  }
+  
+  const model = userConfig && userConfig.model ? userConfig.model : (result.model || 'AI');
+  
   // Set model info if element exists
   if (modelInfoElement) {
-    modelInfoElement.textContent = `Analyzed with ${result.model || 'AI'}`;
+    modelInfoElement.textContent = `Analyzed with ${provider} ${model}`;
+    console.log('显示模型信息:', `Analyzed with ${provider} ${model}`); // 调试信息
   }
   
   // Save current result for copy function

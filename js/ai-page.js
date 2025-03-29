@@ -418,7 +418,7 @@ function copyAnalysisResults() {
   
   navigator.clipboard.writeText(analysisText.textContent)
     .then(() => {
-      ToastManager.showSuccess(I18n.getText('copySuccess') || '已复制到剪贴板');
+      ToastManager.success(I18n.getText('copySuccess') || '已复制到剪贴板');
     })
     .catch(err => {
       console.error('复制分析结果失败:', err);
@@ -445,7 +445,7 @@ function downloadReport() {
     dropdown.innerHTML = `
       <div class="download-dropdown-content">
         <div class="download-header">${I18n.getText('downloadOptions') || '下载选项'}</div>
-        <a href="#" id="downloadReportOnly">${I18n.getText('downloadReportOnly') || '仅下载报告 (TXT)'}</a>
+        <a href="#" id="downloadReportOnly">${I18n.getText('downloadReportOnly').replace('TXT', 'MD') || '仅下载报告 (MD)'}</a>
         <a href="#" id="downloadDataJSON">${I18n.getText('downloadDataJSON') || '数据 (JSON)'}</a>
         <a href="#" id="downloadDataCSV">${I18n.getText('downloadDataCSV') || '数据 (CSV)'}</a>
         <a href="#" id="downloadAll">${I18n.getText('downloadAll') || '全部下载'}</a>
@@ -466,7 +466,9 @@ function downloadReport() {
       // 下载报告按钮点击事件
       document.getElementById('downloadReportOnly').addEventListener('click', (e) => {
         e.preventDefault();
-        downloadTextFile(analysisText.textContent, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`);
+        // 获取原始Markdown文本，而不是HTML格式
+        const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
+        downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.md`);
         closeDropdown();
       });
       
@@ -496,7 +498,8 @@ function downloadReport() {
       // 下载全部按钮点击事件
       document.getElementById('downloadAll').addEventListener('click', (e) => {
         e.preventDefault();
-        downloadTextFile(analysisText.textContent, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`);
+        const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
+        downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.md`);
         
         if (requestsData && Object.keys(requestsData).length > 0) {
           downloadJsonFile(requestsData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`);
@@ -554,7 +557,7 @@ function downloadTextFile(text, filename) {
     URL.revokeObjectURL(url);
   }, 100);
   
-  ToastManager.showSuccess(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
+  ToastManager.success(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
 }
 
 // 下载JSON文件
@@ -574,7 +577,7 @@ function downloadJsonFile(data, filename) {
     URL.revokeObjectURL(url);
   }, 100);
   
-  ToastManager.showSuccess(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
+  ToastManager.success(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
 }
 
 // 将请求数据转换为CSV格式
@@ -623,6 +626,54 @@ function convertRequestsToCSV(requestsData) {
   });
   
   return csvContent;
+}
+
+// 下载Markdown文件
+function downloadMarkdownFile(text, filename) {
+  const blob = new Blob([text], {type: 'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+  
+  ToastManager.success(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
+}
+
+// 将HTML格式转换回Markdown
+function convertHtmlToMarkdown(html) {
+  if (!html) return '';
+  
+  let markdown = html;
+  
+  // 替换HTML标签为Markdown格式
+  markdown = markdown.replace(/<h2>(.*?)<\/h2>/g, '# $1\n\n');
+  markdown = markdown.replace(/<h3>(.*?)<\/h3>/g, '## $1\n\n');
+  markdown = markdown.replace(/<h4>(.*?)<\/h4>/g, '### $1\n\n');
+  markdown = markdown.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
+  markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
+  
+  // 替换列表项
+  markdown = markdown.replace(/• (.*?)<br>/g, '- $1\n');
+  
+  // 替换换行
+  markdown = markdown.replace(/<br>/g, '\n');
+  
+  // 清理可能的HTML实体
+  markdown = markdown.replace(/&nbsp;/g, ' ');
+  markdown = markdown.replace(/&amp;/g, '&');
+  markdown = markdown.replace(/&lt;/g, '<');
+  markdown = markdown.replace(/&gt;/g, '>');
+  
+  return markdown;
 }
 
 // 设置事件处理程序

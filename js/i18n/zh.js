@@ -155,7 +155,7 @@ if (typeof window !== 'undefined') {
     downloadFailed: '下载失败',
     downloadReportAndData: '下载报告和数据',
     downloadOptions: '下载选项',
-    downloadReportOnly: '仅下载报告 (TXT)',
+    downloadReportOnly: '仅下载报告 (MD)',
     downloadDataJSON: '下载数据 (JSON)',
     downloadDataCSV: '下载数据 (CSV)',
     downloadAll: '全部下载',

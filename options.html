@@ -65,17 +65,29 @@
           <h2 data-i18n="aiSettings">AI Analysis Settings</h2>
           
           <div class="form-group">
-            <label for="aiModel" data-i18n="model">AI Model</label>
-            <select id="aiModel">
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-              <option value="gpt-4">GPT-4</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+            <label for="aiProvider" data-i18n="apiProvider">AI Provider</label>
+            <select id="aiProvider">
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="deepseek">Deepseek</option>
             </select>
           </div>
           
           <div class="form-group">
-            <label for="openaiApiKey" data-i18n="apiKey">OpenAI API Key</label>
-            <input type="password" id="openaiApiKey" data-i18n-placeholder="enterApiKey" placeholder="Enter your OpenAI API key">
+            <label for="aiModel" data-i18n="model">AI Model</label>
+            <select id="aiModel">
+              <!-- 将通过JavaScript动态填充 -->
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="aiApiKey" data-i18n="apiKey">API Key</label>
+            <input type="password" id="aiApiKey" data-i18n-placeholder="enterApiKey" placeholder="Enter your API key">
+          </div>
+          
+          <div class="form-group">
+            <label for="aiApiUrl" data-i18n="apiUrl">Custom API URL (Optional)</label>
+            <input type="text" id="aiApiUrl" data-i18n-placeholder="enterApiUrl" placeholder="Enter custom API URL if needed">
           </div>
           
           <div class="form-group">

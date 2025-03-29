@@ -48,9 +48,11 @@ if (typeof window !== 'undefined') {
     apiProvider: 'API Provider',
     apiKey: 'API Key',
     model: 'AI Model',
-    enterApiKey: 'Enter your OpenAI API key',
+    enterApiKey: 'Enter your API key',
     saveApiKey: 'Save API Key',
     apiKeyWarning: 'Note: API key will be saved in local storage.',
+    apiUrl: 'Custom API URL',
+    enterApiUrl: 'Enter custom API URL if needed',
     showAiAnalysis: 'Automatic Analysis',
     configRequired: 'API key not configured. Please configure API key in settings page.',
     

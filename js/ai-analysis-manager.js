@@ -110,10 +110,10 @@ async function runAiAnalysis() {
   try {
     // Get API configuration from storage
     const config = await new Promise((resolve) => {
-      chrome.storage.local.get(['aiModel', 'aiApiKey'], (result) => {
+      chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'openaiApiKey'], (result) => {
         resolve({
-          provider: 'openai',
-          apiKey: result.aiApiKey || '',
+          provider: result.aiProvider || 'openai',
+          apiKey: result.apiKey || result.openaiApiKey || '',
           model: result.aiModel || 'gpt-4-turbo'
         });
       });

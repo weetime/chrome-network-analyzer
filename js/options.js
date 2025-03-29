@@ -7,6 +7,7 @@ import { I18n } from './i18n.js';
 import './i18n/zh.js';
 import './i18n/en.js';
 import { ToastManager } from './toast-manager.js';
+import { AiConnector } from './ai-connector.js';
 
 // 定义全局变量
 let authorizedDomainsList;
@@ -33,6 +34,9 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   // 初始化所有选项卡的表单事件
   initFormEvents();
+  
+  // 初始化AI Provider选择器
+  initAIProviderSelection();
   
   // 显示保存的AI设置
   loadAISettings();
@@ -354,11 +358,6 @@ function initSettingsSave() {
   saveAISettingsBtn.addEventListener('click', function() {
     // 保存AI设置
     saveAISettings();
-    
-    ToastManager.success(I18n.getText('aiSettingsSaved'));
-    
-    // 移除脉冲效果
-    this.classList.remove('pulse');
   });
 }
 
@@ -366,14 +365,30 @@ function initSettingsSave() {
  * 保存AI设置
  */
 function saveAISettings() {
+  const aiProvider = document.getElementById('aiProvider').value;
   const aiModel = document.getElementById('aiModel').value;
-  const openaiApiKey = document.getElementById('openaiApiKey').value;
+  const apiKey = document.getElementById('aiApiKey').value;
+  const apiUrl = document.getElementById('aiApiUrl').value;
   const autoAnalysis = document.getElementById('autoAnalysis').checked;
   
+  // 更新API URL设置（如果有）
+  if (apiUrl) {
+    const providerKey = aiProvider.toUpperCase();
+    AiConnector.setCustomApiUrl(providerKey, apiUrl);
+  }
+  
+  // 保存到Chrome Storage
   chrome.storage.sync.set({
+    aiProvider: aiProvider,
     aiModel: aiModel,
-    openaiApiKey: openaiApiKey,
+    apiKey: apiKey,
+    apiUrl: apiUrl,
     autoAnalysis: autoAnalysis
+  }, function() {
+    ToastManager.success(I18n.getText('aiSettingsSaved'));
+    // 移除保存按钮的脉冲效果
+    const saveButton = document.getElementById('saveAISettingsBtn');
+    if (saveButton) saveButton.classList.remove('pulse');
   });
 }
 
@@ -381,16 +396,40 @@ function saveAISettings() {
  * 加载AI设置
  */
 function loadAISettings() {
-  chrome.storage.sync.get(['aiModel', 'openaiApiKey', 'autoAnalysis'], function(result) {
+  chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey', 'autoAnalysis'], function(result) {
+    const aiProviderSelect = document.getElementById('aiProvider');
+    const aiModelSelect = document.getElementById('aiModel');
+    const apiKeyInput = document.getElementById('aiApiKey');
+    const apiUrlInput = document.getElementById('aiApiUrl');
+    const autoAnalysisCheckbox = document.getElementById('autoAnalysis');
+    
+    // 设置AI提供商
+    if (result.aiProvider) {
+      aiProviderSelect.value = result.aiProvider;
+      // 更新对应提供商的模型列表
+      updateAIModels(result.aiProvider);
+    }
+    
+    // 设置AI模型
     if (result.aiModel) {
-      document.getElementById('aiModel').value = result.aiModel;
+      aiModelSelect.value = result.aiModel;
     }
     
-    if (result.openaiApiKey) {
-      document.getElementById('openaiApiKey').value = result.openaiApiKey;
+    // 设置API密钥
+    if (result.apiKey) {
+      apiKeyInput.value = result.apiKey;
+    } else if (result.openaiApiKey) {
+      // 兼容旧版本设置
+      apiKeyInput.value = result.openaiApiKey;
     }
     
-    document.getElementById('autoAnalysis').checked = result.autoAnalysis || false;
+    // 设置API URL
+    if (result.apiUrl) {
+      apiUrlInput.value = result.apiUrl;
+    }
+    
+    // 设置自动分析选项
+    autoAnalysisCheckbox.checked = result.autoAnalysis || false;
   });
 }
 
@@ -528,6 +567,69 @@ function saveExtensionSettings() {
     setTimeout(() => {
       location.reload();
     }, 1000);
+  }
+}
+
+/**
+ * 初始化AI Provider选择器
+ */
+function initAIProviderSelection() {
+  const aiProviderSelect = document.getElementById('aiProvider');
+  const aiModelSelect = document.getElementById('aiModel');
+  
+  if (!aiProviderSelect || !aiModelSelect) {
+    console.error('AI settings elements not found');
+    return;
+  }
+  
+  // 根据选择的提供商更新模型列表
+  aiProviderSelect.addEventListener('change', function() {
+    updateAIModels(this.value);
+  });
+  
+  // 初始设置模型列表
+  updateAIModels(aiProviderSelect.value);
+}
+
+/**
+ * 根据选择的AI Provider更新模型列表
+ * @param {string} provider - 选择的AI提供商
+ */
+function updateAIModels(provider) {
+  const aiModelSelect = document.getElementById('aiModel');
+  
+  // 清空当前选项
+  aiModelSelect.innerHTML = '';
+  
+  let models = {};
+  
+  // 根据提供商获取模型列表
+  switch(provider.toLowerCase()) {
+    case 'openai':
+      models = AiConnector.AI_PROVIDERS.OPENAI.models;
+      break;
+    case 'anthropic':
+      models = AiConnector.AI_PROVIDERS.ANTHROPIC.models;
+      break;
+    case 'deepseek':
+      models = AiConnector.AI_PROVIDERS.DEEPSEEK.models;
+      break;
+    default:
+      models = AiConnector.AI_PROVIDERS.OPENAI.models;
+  }
+  
+  // 添加模型选项
+  Object.keys(models).forEach(modelKey => {
+    const option = document.createElement('option');
+    option.value = modelKey;
+    option.textContent = modelKey;
+    aiModelSelect.appendChild(option);
+  });
+  
+  // 选择默认模型
+  const providerKey = provider.toUpperCase();
+  if (AiConnector.AI_PROVIDERS[providerKey] && AiConnector.AI_PROVIDERS[providerKey].defaultModel) {
+    aiModelSelect.value = AiConnector.AI_PROVIDERS[providerKey].defaultModel;
   }
 }
 

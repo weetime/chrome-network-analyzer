@@ -23,6 +23,39 @@
       </a>
     </div>
     
+    <!-- 页面和数据信息 -->
+    <div class="domain-info-container card">
+      <div class="domain-info">
+        <h3><span data-i18n="analyzingDomain">分析域名</span>: <span id="currentDomain" class="highlight-text">--</span></h3>
+        <div id="domainUrl" class="domain-url">--</div>
+        <div id="requestsCount" class="requests-count"><span data-i18n="totalRequests">总请求数</span>: <span class="highlight-text">0</span></div>
+      </div>
+    </div>
+    
+    <!-- 数据概览区域 -->
+    <div class="stats-overview card">
+      <h3 data-i18n="dataOverview">数据概览</h3>
+      <div class="stats-grid" id="statsOverview">
+        <!-- 将由JS动态填充 -->
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="totalRequests">总请求数</div>
+          <div class="stat-value" id="totalRequestsValue">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="totalLoadTime">总加载时间</div>
+          <div class="stat-value" id="totalLoadTimeValue">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="avgResponse">平均响应时间</div>
+          <div class="stat-value" id="avgResponseTimeValue">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="slowestRequest">最慢请求</div>
+          <div class="stat-value" id="slowestRequestValue">--</div>
+        </div>
+      </div>
+    </div>
+    
     <!-- AI分析主要内容 -->
     <div class="ai-container card terminal-card">
       <div class="ai-header">

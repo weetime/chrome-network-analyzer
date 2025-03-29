@@ -153,6 +153,13 @@ if (typeof window !== 'undefined') {
     dataFileName: 'Network Request Data',
     downloadSuccess: 'Download Successful',
     downloadFailed: 'Download Failed',
+    downloadReportAndData: 'Download Report & Data',
+    downloadOptions: 'Download Options',
+    downloadReportOnly: 'Report Only (TXT)',
+    downloadDataJSON: 'Data (JSON)',
+    downloadDataCSV: 'Data (CSV)',
+    downloadAll: 'Download All',
+    requestsCount: 'Request Count',
     
     // Notification messages
     noDataAvailable: 'No request data available for analysis',

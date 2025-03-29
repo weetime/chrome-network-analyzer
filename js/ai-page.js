@@ -105,6 +105,14 @@ function updateDataOverview(requestsData) {
     if (countSpan) countSpan.textContent = requests.length;
   }
   
+  // 更新主信息摘要的请求数
+  const totalRequestsValue = document.getElementById('totalRequestsValue');
+  if (totalRequestsValue) totalRequestsValue.textContent = requests.length;
+  
+  // 更新数据详情中的请求数
+  const totalRequestsValue2 = document.getElementById('totalRequestsValue2');
+  if (totalRequestsValue2) totalRequestsValue2.textContent = requests.length;
+  
   // 获取有效的请求（有时间数据的）
   const validRequests = requests.filter(req => req.totalTime);
   
@@ -122,12 +130,9 @@ function updateDataOverview(requestsData) {
   }
   
   // 更新统计值
-  const totalRequestsValue = document.getElementById('totalRequestsValue');
   const totalLoadTimeValue = document.getElementById('totalLoadTimeValue');
   const avgResponseTimeValue = document.getElementById('avgResponseTimeValue');
   const slowestRequestValue = document.getElementById('slowestRequestValue');
-  
-  if (totalRequestsValue) totalRequestsValue.textContent = requests.length;
   
   if (totalLoadTimeValue) {
     totalLoadTimeValue.textContent = totalLoadTime > 0 ? 
@@ -421,8 +426,8 @@ function copyAnalysisResults() {
     });
 }
 
-// 下载分析报告
-function downloadAnalysisReport() {
+// 下载分析报告和数据
+function downloadReport() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.textContent) {
     ToastManager.showError(I18n.getText('downloadFailed') || '下载失败: 没有可下载的分析报告');
@@ -434,72 +439,190 @@ function downloadAnalysisReport() {
     const domainName = document.getElementById('currentDomain')?.textContent || 'unknown-domain';
     const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
     
-    // 获取报告文件名
-    const reportFileName = `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`;
+    // 创建下载选项菜单
+    const dropdown = document.createElement('div');
+    dropdown.className = 'download-dropdown';
+    dropdown.innerHTML = `
+      <div class="download-dropdown-content">
+        <div class="download-header">${I18n.getText('downloadOptions') || '下载选项'}</div>
+        <a href="#" id="downloadReportOnly">${I18n.getText('downloadReportOnly') || '仅下载报告 (TXT)'}</a>
+        <a href="#" id="downloadDataJSON">${I18n.getText('downloadDataJSON') || '数据 (JSON)'}</a>
+        <a href="#" id="downloadDataCSV">${I18n.getText('downloadDataCSV') || '数据 (CSV)'}</a>
+        <a href="#" id="downloadAll">${I18n.getText('downloadAll') || '全部下载'}</a>
+      </div>
+    `;
     
-    // 创建Blob对象
-    const blob = new Blob([analysisText.textContent], {type: 'text/plain'});
-    const url = URL.createObjectURL(blob);
-    
-    // 创建下载链接并触发下载
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = reportFileName;
-    document.body.appendChild(a);
-    a.click();
-    
-    // 清理
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-    
-    // 显示成功消息
-    ToastManager.showSuccess(I18n.getText('downloadSuccess') || '下载成功');
+    // 添加到页面并定位在按钮下方
+    const downloadBtn = document.getElementById('downloadReportBtn');
+    if (downloadBtn) {
+      // 计算位置
+      const rect = downloadBtn.getBoundingClientRect();
+      dropdown.style.position = 'absolute';
+      dropdown.style.top = `${rect.bottom + window.scrollY + 5}px`;
+      dropdown.style.left = `${rect.left + window.scrollX}px`;
+      
+      document.body.appendChild(dropdown);
+      
+      // 下载报告按钮点击事件
+      document.getElementById('downloadReportOnly').addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadTextFile(analysisText.textContent, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`);
+        closeDropdown();
+      });
+      
+      // 下载JSON数据按钮点击事件
+      document.getElementById('downloadDataJSON').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (requestsData && Object.keys(requestsData).length > 0) {
+          downloadJsonFile(requestsData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`);
+        } else {
+          ToastManager.showError(I18n.getText('noDataAvailable') || '没有可用的请求数据');
+        }
+        closeDropdown();
+      });
+      
+      // 下载CSV数据按钮点击事件
+      document.getElementById('downloadDataCSV').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (requestsData && Object.keys(requestsData).length > 0) {
+          const csvData = convertRequestsToCSV(requestsData);
+          downloadTextFile(csvData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.csv`);
+        } else {
+          ToastManager.showError(I18n.getText('noDataAvailable') || '没有可用的请求数据');
+        }
+        closeDropdown();
+      });
+      
+      // 下载全部按钮点击事件
+      document.getElementById('downloadAll').addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadTextFile(analysisText.textContent, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`);
+        
+        if (requestsData && Object.keys(requestsData).length > 0) {
+          downloadJsonFile(requestsData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`);
+          
+          const csvData = convertRequestsToCSV(requestsData);
+          downloadTextFile(csvData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.csv`);
+        }
+        closeDropdown();
+      });
+      
+      // 点击其他地方关闭下拉菜单
+      document.addEventListener('click', closeDropdownOnOutsideClick);
+      
+      // 防止点击下拉菜单本身时关闭
+      dropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
   } catch (error) {
-    console.error('下载分析报告失败:', error);
+    console.error('下载功能出错:', error);
     ToastManager.showError(`${I18n.getText('downloadFailed') || '下载失败'}: ${error.message}`);
+  }
+  
+  // 关闭下拉菜单
+  function closeDropdown() {
+    const dropdown = document.querySelector('.download-dropdown');
+    if (dropdown) {
+      document.body.removeChild(dropdown);
+      document.removeEventListener('click', closeDropdownOnOutsideClick);
+    }
+  }
+  
+  // 点击外部区域关闭下拉菜单
+  function closeDropdownOnOutsideClick(e) {
+    if (!e.target.closest('#downloadReportBtn')) {
+      closeDropdown();
+    }
   }
 }
 
-// 下载原始网络请求数据
-function downloadRequestData() {
-  if (!requestsData || Object.keys(requestsData).length === 0) {
-    ToastManager.showError(I18n.getText('downloadFailed') || '下载失败: 没有可下载的请求数据');
-    return;
-  }
+// 下载文本文件
+function downloadTextFile(text, filename) {
+  const blob = new Blob([text], {type: 'text/plain'});
+  const url = URL.createObjectURL(blob);
   
-  try {
-    // 获取域名和时间信息
-    const domainName = document.getElementById('currentDomain')?.textContent || 'unknown-domain';
-    const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-    
-    // 获取数据文件名
-    const dataFileName = `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`;
-    
-    // 创建Blob对象
-    const blob = new Blob([JSON.stringify(requestsData, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    
-    // 创建下载链接并触发下载
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = dataFileName;
-    document.body.appendChild(a);
-    a.click();
-    
-    // 清理
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-    
-    // 显示成功消息
-    ToastManager.showSuccess(I18n.getText('downloadSuccess') || '下载成功');
-  } catch (error) {
-    console.error('下载请求数据失败:', error);
-    ToastManager.showError(`${I18n.getText('downloadFailed') || '下载失败'}: ${error.message}`);
-  }
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+  
+  ToastManager.showSuccess(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
+}
+
+// 下载JSON文件
+function downloadJsonFile(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+  
+  ToastManager.showSuccess(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
+}
+
+// 将请求数据转换为CSV格式
+function convertRequestsToCSV(requestsData) {
+  const requests = Object.values(requestsData);
+  if (requests.length === 0) return '';
+  
+  // CSV头部
+  const headers = [
+    'URL', 'Type', 'Method', 'Status', 
+    'Total Time (ms)', 'TTFB (ms)', 'Domain',
+    'Transferred Size (bytes)', 'Content Size (bytes)',
+    'Protocol', 'Priority', 'Cache Control'
+  ];
+  
+  // 创建CSV内容
+  let csvContent = headers.join(',') + '\n';
+  
+  // 转义CSV字段
+  const escapeCSV = (field) => {
+    if (field === null || field === undefined) return '';
+    const str = String(field);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+  
+  // 添加每个请求的行
+  requests.forEach(req => {
+    const row = [
+      escapeCSV(req.url),
+      escapeCSV(req.type),
+      escapeCSV(req.method),
+      escapeCSV(req.status),
+      escapeCSV(req.totalTime),
+      escapeCSV(req.ttfb),
+      escapeCSV(req.domain),
+      escapeCSV(req.transferSize),
+      escapeCSV(req.contentSize),
+      escapeCSV(req.protocol),
+      escapeCSV(req.priority),
+      escapeCSV(req.cacheControl)
+    ];
+    csvContent += row.join(',') + '\n';
+  });
+  
+  return csvContent;
 }
 
 // 设置事件处理程序
@@ -525,16 +648,10 @@ function setupEventHandlers() {
     copyAnalysisBtn.addEventListener('click', copyAnalysisResults);
   }
   
-  // 下载报告按钮
+  // 下载报告和数据按钮
   const downloadReportBtn = document.getElementById('downloadReportBtn');
   if (downloadReportBtn) {
-    downloadReportBtn.addEventListener('click', downloadAnalysisReport);
-  }
-  
-  // 下载数据按钮
-  const downloadDataBtn = document.getElementById('downloadDataBtn');
-  if (downloadDataBtn) {
-    downloadDataBtn.addEventListener('click', downloadRequestData);
+    downloadReportBtn.addEventListener('click', downloadReport);
   }
   
   // 打开设置页面

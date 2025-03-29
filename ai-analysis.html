@@ -24,37 +24,6 @@
       </a>
     </div>
     
-    <!-- 页面和数据信息卡片 -->
-    <div class="info-container card">
-      <div class="info-section domain-info">
-        <h3><span data-i18n="analyzingDomain">分析域名</span>: <span id="currentDomain" class="highlight-text">--</span></h3>
-        <div id="domainUrl" class="domain-url">--</div>
-        <div id="requestsCount" class="requests-count"><span data-i18n="totalRequests">总请求数</span>: <span class="highlight-text">0</span></div>
-      </div>
-      
-      <div class="info-section data-overview">
-        <h3 data-i18n="dataOverview">数据概览</h3>
-        <div class="stats-grid" id="statsOverview">
-          <div class="stat-item">
-            <div class="stat-label" data-i18n="totalRequests">总请求数</div>
-            <div class="stat-value" id="totalRequestsValue">--</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label" data-i18n="totalLoadTime">总加载时间</div>
-            <div class="stat-value" id="totalLoadTimeValue">--</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label" data-i18n="avgResponse">平均响应时间</div>
-            <div class="stat-value" id="avgResponseTimeValue">--</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label" data-i18n="slowestRequest">最慢请求</div>
-            <div class="stat-value" id="slowestRequestValue">--</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
     <!-- AI分析主要内容 -->
     <div class="ai-container card">
       <div class="ai-header">
@@ -67,6 +36,17 @@
             <span data-i18n="runAnalysis">运行分析</span>
           </button>
           <a href="#" id="openOptionsPage" class="ai-options-link" data-i18n="aiSettings">配置 AI 设置</a>
+        </div>
+      </div>
+      
+      <!-- 页面和数据信息 -->
+      <div class="info-summary">
+        <div class="info-summary-item">
+          <span data-i18n="analyzingDomain">分析域名</span>: <span id="currentDomain" class="highlight-text">--</span>
+          <span class="domain-url-small" id="domainUrl">--</span>
+        </div>
+        <div class="info-summary-item">
+          <span data-i18n="totalRequests">总请求数</span>: <span id="totalRequestsValue" class="highlight-text">--</span>
         </div>
       </div>
       
@@ -101,23 +81,13 @@
             <span id="analysisModel" class="ai-model">GPT-4</span>
           </div>
           <div class="ai-actions">
-            <button id="downloadReportBtn" class="action-btn download-btn" title="下载分析报告">
+            <button id="downloadReportBtn" class="action-btn download-btn" title="下载分析报告和数据">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              <span data-i18n="downloadReport">下载报告</span>
-            </button>
-            <button id="downloadDataBtn" class="action-btn download-data-btn" title="下载原始数据">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <line x1="10" y1="9" x2="8" y2="9"></line>
-              </svg>
-              <span data-i18n="downloadData">下载数据</span>
+              <span data-i18n="downloadReportAndData">下载报告和数据</span>
             </button>
             <button id="copyAnalysisBtn" class="action-btn copy-btn">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -153,6 +123,37 @@
           </details>
         </div>
       </div>
+    </div>
+    
+    <!-- 数据概览区域 - 放在AI分析下方不那么显眼的位置 -->
+    <div class="data-details-container card">
+      <details>
+        <summary class="data-summary-toggle" data-i18n="dataOverview">数据概览</summary>
+        <div class="data-details-content">
+          <div class="stats-grid" id="statsOverview">
+            <div class="stat-item">
+              <div class="stat-label" data-i18n="totalRequests">总请求数</div>
+              <div class="stat-value" id="totalRequestsValue2">--</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label" data-i18n="totalLoadTime">总加载时间</div>
+              <div class="stat-value" id="totalLoadTimeValue">--</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label" data-i18n="avgResponse">平均响应时间</div>
+              <div class="stat-value" id="avgResponseTimeValue">--</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label" data-i18n="slowestRequest">最慢请求</div>
+              <div class="stat-value" id="slowestRequestValue">--</div>
+            </div>
+            <div class="stat-item requestsCount">
+              <div class="stat-label" data-i18n="requestsCount">请求统计</div>
+              <div class="stat-value" id="requestsCount"><span class="highlight-text">0</span></div>
+            </div>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 

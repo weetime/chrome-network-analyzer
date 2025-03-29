@@ -460,105 +460,185 @@ body.tech-bg {
   border: 1px solid var(--border-color);
 }
 
-/* 域名信息容器样式 */
-.domain-info-container {
+/* 合并后的信息容器 */
+.info-container {
   padding: 20px;
   margin-bottom: 20px;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
   border: 1px solid var(--border-color);
   transition: all 0.3s ease;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.domain-info-container:hover {
+.info-container:hover {
   transform: translateY(-2px);
 }
 
-.domain-info {
+.info-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.info-section.domain-info {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.domain-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 16px;
-  color: var(--text-color);
+.info-section.data-overview h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
 }
 
-.domain-url {
-  font-size: 14px;
-  color: var(--accent-color);
-  word-break: break-all;
-  margin-bottom: 10px;
-}
-
-.requests-count {
-  font-size: 14px;
-  color: var(--text-color);
-}
-
-.highlight-text {
-  color: var(--accent-color);
-  font-weight: 600;
-}
-
-/* 数据概览区域样式 */
-.stats-overview {
-  padding: 20px;
-  margin-bottom: 20px;
-  background-color: var(--card-bg);
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-color);
-  transition: all 0.3s ease;
-}
-
-.stats-overview:hover {
-  transform: translateY(-2px);
-}
-
-.stats-overview h3 {
-  margin: 0 0 15px 0;
-  font-size: 16px;
-  color: var(--text-color);
-}
-
+/* 统计网格布局调整 */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 15px;
 }
 
-.stat-item {
-  background-color: var(--stats-bg);
-  padding: 12px;
-  border-radius: var(--card-radius);
+/* 可折叠面板样式 */
+.collapsible-container {
+  margin-bottom: 20px;
+}
+
+.collapsible-trigger {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  color: var(--text-color);
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--stats-label);
-}
-
-.stat-value {
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
   font-size: 16px;
+  font-weight: 500;
+}
+
+.collapsible-trigger:hover {
+  background-color: var(--stats-bg);
+}
+
+.collapsible-title {
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--primary-btn);
+}
+
+.chevron-icon {
+  transition: transform 0.3s ease;
+}
+
+.collapsible-trigger.active .chevron-icon {
+  transform: rotate(180deg);
+}
+
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 15px;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--card-radius) var(--card-radius);
+}
+
+.collapsible-content.active {
+  max-height: 800px;
+  padding: 15px;
+}
+
+/* 调整提示容器样式 */
+.tips-container {
+  background-color: var(--card-bg);
+  margin-bottom: 0;
+  padding: 0;
+  border: none;
+}
+
+.tips-container:hover {
+  transform: none;
+}
+
+/* 操作按钮组 */
+.ai-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  border: none;
+  border-radius: var(--card-radius);
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn.copy-btn {
+  background-color: var(--primary-btn);
+}
+
+.action-btn.copy-btn:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+.action-btn.download-btn {
+  background-color: var(--accent-color);
+}
+
+.action-btn.download-btn:hover {
+  background-color: var(--accent-color-hover);
+}
+
+.action-btn.download-data-btn {
+  background-color: #4a6fa5;
+}
+
+.action-btn.download-data-btn:hover {
+  background-color: #5d83ba;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .info-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .info-section {
+    min-width: 100%;
+  }
+  
+  .ai-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .ai-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .ai-actions {
+    justify-content: space-between;
+    width: 100%;
   }
 }

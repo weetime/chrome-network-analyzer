@@ -147,6 +147,12 @@ if (typeof window !== 'undefined') {
     aiModelInfo: '分析提供: ',
     analyzingDomain: '分析域名',
     dataOverview: '数据概览',
+    downloadReport: '下载报告',
+    downloadData: '下载数据',
+    reportFileName: '网络分析报告',
+    dataFileName: '网络请求数据',
+    downloadSuccess: '下载成功',
+    downloadFailed: '下载失败',
     
     // 优化建议
     optimizationTips: '优化建议',

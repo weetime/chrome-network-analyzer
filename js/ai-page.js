@@ -248,12 +248,16 @@ async function runAiAnalysis() {
     // 格式化数据
     const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
     
-    // 发送到AI提供商
+    // 获取当前语言
+    const currentLanguage = I18n.getCurrentLanguage();
+    
+    // 发送到AI提供商，包含语言信息
     const result = await AiConnector.sendToAI(
       analysisData, 
       config.provider, 
       config.apiKey, 
-      config.model
+      config.model,
+      {language: currentLanguage} // 添加语言信息
     );
     
     console.log('AI分析结果:', result); // 调试信息
@@ -425,6 +429,115 @@ function copyAnalysisResults() {
     });
 }
 
+// 下载分析报告
+function downloadAnalysisReport() {
+  const analysisText = document.getElementById('analysisText');
+  if (!analysisText || !analysisText.textContent) {
+    showError(I18n.getMessage('downloadFailed') || '下载失败: 没有可下载的分析报告');
+    return;
+  }
+  
+  try {
+    // 获取域名和时间信息
+    const domainName = document.getElementById('currentDomain')?.textContent || 'unknown-domain';
+    const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+    
+    // 获取报告文件名
+    const reportFileName = `${I18n.getMessage('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`;
+    
+    // 创建Blob对象
+    const blob = new Blob([analysisText.textContent], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    
+    // 创建下载链接并触发下载
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = reportFileName;
+    document.body.appendChild(a);
+    a.click();
+    
+    // 清理
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
+    // 显示成功消息
+    showDownloadSuccess('downloadReportBtn');
+  } catch (error) {
+    console.error('下载分析报告失败:', error);
+    showError(I18n.getMessage('downloadFailed') || '下载失败: ' + error.message);
+  }
+}
+
+// 下载原始网络请求数据
+function downloadRequestData() {
+  if (!requestsData || Object.keys(requestsData).length === 0) {
+    showError(I18n.getMessage('downloadFailed') || '下载失败: 没有可下载的请求数据');
+    return;
+  }
+  
+  try {
+    // 获取域名和时间信息
+    const domainName = document.getElementById('currentDomain')?.textContent || 'unknown-domain';
+    const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+    
+    // 获取数据文件名
+    const dataFileName = `${I18n.getMessage('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`;
+    
+    // 创建Blob对象
+    const blob = new Blob([JSON.stringify(requestsData, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    
+    // 创建下载链接并触发下载
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = dataFileName;
+    document.body.appendChild(a);
+    a.click();
+    
+    // 清理
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
+    // 显示成功消息
+    showDownloadSuccess('downloadDataBtn');
+  } catch (error) {
+    console.error('下载请求数据失败:', error);
+    showError(I18n.getMessage('downloadFailed') || '下载失败: ' + error.message);
+  }
+}
+
+// 显示下载成功反馈
+function showDownloadSuccess(buttonId) {
+  const button = document.getElementById(buttonId);
+  if (!button) return;
+  
+  const originalHtml = button.innerHTML;
+  button.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    <span>${I18n.getMessage('downloadSuccess') || '下载成功'}</span>
+  `;
+  
+  setTimeout(() => {
+    button.innerHTML = originalHtml;
+  }, 2000);
+}
+
+// 切换可折叠面板
+function toggleCollapsible(event) {
+  const trigger = event.currentTarget;
+  const content = trigger.nextElementSibling;
+  
+  // 切换激活状态
+  trigger.classList.toggle('active');
+  content.classList.toggle('active');
+}
+
 // 设置事件处理程序
 function setupEventHandlers() {
   // 返回主页按钮
@@ -446,6 +559,24 @@ function setupEventHandlers() {
   const copyAnalysisBtn = document.getElementById('copyAnalysisBtn');
   if (copyAnalysisBtn) {
     copyAnalysisBtn.addEventListener('click', copyAnalysisResults);
+  }
+  
+  // 下载报告按钮
+  const downloadReportBtn = document.getElementById('downloadReportBtn');
+  if (downloadReportBtn) {
+    downloadReportBtn.addEventListener('click', downloadAnalysisReport);
+  }
+  
+  // 下载数据按钮
+  const downloadDataBtn = document.getElementById('downloadDataBtn');
+  if (downloadDataBtn) {
+    downloadDataBtn.addEventListener('click', downloadRequestData);
+  }
+  
+  // 可折叠面板切换
+  const tipsCollapseTrigger = document.getElementById('tipsCollapseTrigger');
+  if (tipsCollapseTrigger) {
+    tipsCollapseTrigger.addEventListener('click', toggleCollapsible);
   }
   
   // 打开设置页面

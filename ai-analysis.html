@@ -23,35 +23,33 @@
       </a>
     </div>
     
-    <!-- 页面和数据信息 -->
-    <div class="domain-info-container card">
-      <div class="domain-info">
+    <!-- 页面和数据信息 - 合并域名信息和数据概览 -->
+    <div class="info-container card">
+      <div class="info-section domain-info">
         <h3><span data-i18n="analyzingDomain">分析域名</span>: <span id="currentDomain" class="highlight-text">--</span></h3>
         <div id="domainUrl" class="domain-url">--</div>
         <div id="requestsCount" class="requests-count"><span data-i18n="totalRequests">总请求数</span>: <span class="highlight-text">0</span></div>
       </div>
-    </div>
-    
-    <!-- 数据概览区域 -->
-    <div class="stats-overview card">
-      <h3 data-i18n="dataOverview">数据概览</h3>
-      <div class="stats-grid" id="statsOverview">
-        <!-- 将由JS动态填充 -->
-        <div class="stat-item">
-          <div class="stat-label" data-i18n="totalRequests">总请求数</div>
-          <div class="stat-value" id="totalRequestsValue">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label" data-i18n="totalLoadTime">总加载时间</div>
-          <div class="stat-value" id="totalLoadTimeValue">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label" data-i18n="avgResponse">平均响应时间</div>
-          <div class="stat-value" id="avgResponseTimeValue">--</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label" data-i18n="slowestRequest">最慢请求</div>
-          <div class="stat-value" id="slowestRequestValue">--</div>
+      
+      <div class="info-section data-overview">
+        <h3 data-i18n="dataOverview">数据概览</h3>
+        <div class="stats-grid" id="statsOverview">
+          <div class="stat-item">
+            <div class="stat-label" data-i18n="totalRequests">总请求数</div>
+            <div class="stat-value" id="totalRequestsValue">--</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label" data-i18n="totalLoadTime">总加载时间</div>
+            <div class="stat-value" id="totalLoadTimeValue">--</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label" data-i18n="avgResponse">平均响应时间</div>
+            <div class="stat-value" id="avgResponseTimeValue">--</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label" data-i18n="slowestRequest">最慢请求</div>
+            <div class="stat-value" id="slowestRequestValue">--</div>
+          </div>
         </div>
       </div>
     </div>
@@ -101,35 +99,62 @@
             <span>/</span>
             <span id="analysisModel" class="ai-model">GPT-4</span>
           </div>
-          <button id="copyAnalysisBtn" class="ai-copy-btn btn-glow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span data-i18n="copy">复制</span>
-          </button>
+          <div class="ai-actions">
+            <button id="downloadReportBtn" class="action-btn download-btn" title="下载分析报告">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span data-i18n="downloadReport">下载报告</span>
+            </button>
+            <button id="downloadDataBtn" class="action-btn download-data-btn" title="下载原始数据">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <line x1="10" y1="9" x2="8" y2="9"></line>
+              </svg>
+              <span data-i18n="downloadData">下载数据</span>
+            </button>
+            <button id="copyAnalysisBtn" class="action-btn copy-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span data-i18n="copy">复制</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 使用提示区域 -->
-    <div class="tips-container card">
-      <h3 class="tips-title" data-i18n="aiTips">AI 分析使用提示</h3>
-      <ul class="tips-list">
-        <li data-i18n="aiTip1">AI分析能够识别网络性能瓶颈，并提供优化建议</li>
-        <li data-i18n="aiTip2">分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本</li>
-        <li data-i18n="aiTip3">您可以在扩展设置中配置偏好的AI提供商和API密钥</li>
-        <li data-i18n="aiTip4">分析过程视请求量和响应而定，可能需要几秒钟时间</li>
-      </ul>
-      
-      <h3 class="tips-title optimization-title" data-i18n="optimizationTips">优化建议</h3>
-      <ul class="tips-list optimization-list">
-        <li data-i18n="optimizationTip1">合并小型资源文件，减少HTTP请求次数</li>
-        <li data-i18n="optimizationTip2">启用图片懒加载，优先加载可视区域内容</li>
-        <li data-i18n="optimizationTip3">使用HTTP/2协议可以并行处理多个请求</li>
-        <li data-i18n="optimizationTip4">设置合理的缓存策略，减少重复请求</li>
-        <li data-i18n="optimizationTip5">压缩JS和CSS文件，减少传输体积</li>
-      </ul>
+    <!-- 使用提示区域 - 可折叠 -->
+    <div class="collapsible-container">
+      <button class="collapsible-trigger" id="tipsCollapseTrigger">
+        <span class="collapsible-title" data-i18n="aiTips">AI 分析使用提示</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+      <div class="collapsible-content tips-container card">
+        <ul class="tips-list">
+          <li data-i18n="aiTip1">AI分析能够识别网络性能瓶颈，并提供优化建议</li>
+          <li data-i18n="aiTip2">分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本</li>
+          <li data-i18n="aiTip3">您可以在扩展设置中配置偏好的AI提供商和API密钥</li>
+          <li data-i18n="aiTip4">分析过程视请求量和响应而定，可能需要几秒钟时间</li>
+        </ul>
+        
+        <h3 class="tips-title optimization-title" data-i18n="optimizationTips">优化建议</h3>
+        <ul class="tips-list optimization-list">
+          <li data-i18n="optimizationTip1">合并小型资源文件，减少HTTP请求次数</li>
+          <li data-i18n="optimizationTip2">启用图片懒加载，优先加载可视区域内容</li>
+          <li data-i18n="optimizationTip3">使用HTTP/2协议可以并行处理多个请求</li>
+          <li data-i18n="optimizationTip4">设置合理的缓存策略，减少重复请求</li>
+          <li data-i18n="optimizationTip5">压缩JS和CSS文件，减少传输体积</li>
+        </ul>
+      </div>
     </div>
   </div>
 

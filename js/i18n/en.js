@@ -147,6 +147,12 @@ if (typeof window !== 'undefined') {
     aiModelInfo: 'Analysis by: ',
     analyzingDomain: 'Analyzing Domain',
     dataOverview: 'Data Overview',
+    downloadReport: 'Download Report',
+    downloadData: 'Download Data',
+    reportFileName: 'Network Analysis Report',
+    dataFileName: 'Network Request Data',
+    downloadSuccess: 'Download Successful',
+    downloadFailed: 'Download Failed',
     
     // Optimization Suggestions
     optimizationTips: 'Optimization Suggestions',

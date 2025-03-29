@@ -155,18 +155,25 @@ async function fetchWithTimeout(url, options, endpointName) {
  * @param {string} apiKey - API密钥
  * @param {string} model - 模型名称
  * @param {number} maxTokens - 最大token数
+ * @param {object} options - 附加选项，如语言设置
  * @returns {Promise<object>} 分析结果
  */
-async function sendToOpenAI(analysisData, apiKey, model = AI_PROVIDERS.OPENAI.defaultModel, maxTokens = 2000) {
+async function sendToOpenAI(analysisData, apiKey, model = AI_PROVIDERS.OPENAI.defaultModel, maxTokens = 2000, options = {}) {
   try {
     // 选择模型
     const modelId = AI_PROVIDERS.OPENAI.models[model] || AI_PROVIDERS.OPENAI.models[AI_PROVIDERS.OPENAI.defaultModel];
+    
+    // 添加语言指令
+    const language = options?.language || 'en';
+    const languageInstructions = language === 'zh' 
+      ? '请用中文回答，并对以下网络性能数据进行分析。' 
+      : 'Please respond in English and analyze the following network performance data.';
     
     // 创建提示和用户消息
     const messages = [
       {
         role: 'system',
-        content: 'You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues.'
+        content: `You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues. ${languageInstructions}`
       },
       {
         role: 'user',
@@ -254,15 +261,22 @@ async function sendToOpenAI(analysisData, apiKey, model = AI_PROVIDERS.OPENAI.de
  * @param {string} apiKey - API密钥
  * @param {string} model - 模型名称
  * @param {number} maxTokens - 最大token数
+ * @param {object} options - 附加选项，如语言设置
  * @returns {Promise<object>} 分析结果
  */
-async function sendToAnthropic(analysisData, apiKey, model = AI_PROVIDERS.ANTHROPIC.defaultModel, maxTokens = 2000) {
+async function sendToAnthropic(analysisData, apiKey, model = AI_PROVIDERS.ANTHROPIC.defaultModel, maxTokens = 2000, options = {}) {
   try {
     // 选择模型
     const modelId = AI_PROVIDERS.ANTHROPIC.models[model] || AI_PROVIDERS.ANTHROPIC.models[AI_PROVIDERS.ANTHROPIC.defaultModel];
     
+    // 添加语言指令
+    const language = options?.language || 'en';
+    const languageInstructions = language === 'zh' 
+      ? '请用中文回答，并对以下网络性能数据进行分析。' 
+      : 'Please respond in English and analyze the following network performance data.';
+    
     // 为Claude API格式化消息
-    const systemPrompt = 'You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues.';
+    const systemPrompt = `You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues. ${languageInstructions}`;
     const userContent = `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`;
     
     // 构建请求体
@@ -320,18 +334,25 @@ async function sendToAnthropic(analysisData, apiKey, model = AI_PROVIDERS.ANTHRO
  * @param {string} apiKey - API密钥
  * @param {string} model - 模型名称
  * @param {number} maxTokens - 最大token数
+ * @param {object} options - 附加选项，如语言设置
  * @returns {Promise<object>} 分析结果
  */
-async function sendToDeepseek(analysisData, apiKey, model = AI_PROVIDERS.DEEPSEEK.defaultModel, maxTokens = 2000) {
+async function sendToDeepseek(analysisData, apiKey, model = AI_PROVIDERS.DEEPSEEK.defaultModel, maxTokens = 2000, options = {}) {
   try {
     // 选择模型
     const modelId = AI_PROVIDERS.DEEPSEEK.models[model] || AI_PROVIDERS.DEEPSEEK.models[AI_PROVIDERS.DEEPSEEK.defaultModel];
+    
+    // 添加语言指令
+    const language = options?.language || 'en';
+    const languageInstructions = language === 'zh' 
+      ? '请用中文回答，并对以下网络性能数据进行分析。' 
+      : 'Please respond in English and analyze the following network performance data.';
     
     // 创建提示和用户消息
     const messages = [
       {
         role: 'system',
-        content: 'You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues.'
+        content: `You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues. ${languageInstructions}`
       },
       {
         role: 'user',
@@ -394,19 +415,26 @@ async function sendToDeepseek(analysisData, apiKey, model = AI_PROVIDERS.DEEPSEE
  * @param {string} provider - AI提供商标识
  * @param {string} apiKey - API密钥
  * @param {string} model - 模型名称
+ * @param {object|number} options - 附加选项或最大token数
  * @param {number} maxTokens - 最大token数
  * @returns {Promise<object>} 分析结果
  */
-async function sendToAI(analysisData, provider, apiKey, model, maxTokens = 2000) {
+async function sendToAI(analysisData, provider, apiKey, model, options = {}, maxTokens = 2000) {
+  // 处理参数兼容性（如果第5个参数是数字，则它是旧版API中的maxTokens）
+  if (typeof options === 'number') {
+    maxTokens = options;
+    options = {};
+  }
+  
   const providerKey = provider.toUpperCase();
   
   switch (providerKey) {
     case 'OPENAI':
-      return sendToOpenAI(analysisData, apiKey, model, maxTokens);
+      return sendToOpenAI(analysisData, apiKey, model, maxTokens, options);
     case 'ANTHROPIC':
-      return sendToAnthropic(analysisData, apiKey, model, maxTokens);
+      return sendToAnthropic(analysisData, apiKey, model, maxTokens, options);
     case 'DEEPSEEK':
-      return sendToDeepseek(analysisData, apiKey, model, maxTokens);
+      return sendToDeepseek(analysisData, apiKey, model, maxTokens, options);
     default:
       throw new Error(`Unsupported AI provider: ${provider}`);
   }

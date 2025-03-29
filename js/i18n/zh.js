@@ -153,6 +153,13 @@ if (typeof window !== 'undefined') {
     dataFileName: '网络请求数据',
     downloadSuccess: '下载成功',
     downloadFailed: '下载失败',
+    downloadReportAndData: '下载报告和数据',
+    downloadOptions: '下载选项',
+    downloadReportOnly: '仅下载报告 (TXT)',
+    downloadDataJSON: '下载数据 (JSON)',
+    downloadDataCSV: '下载数据 (CSV)',
+    downloadAll: '全部下载',
+    requestsCount: '请求统计',
     
     // 通知消息
     noDataAvailable: '没有可用的请求数据进行分析',

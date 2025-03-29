@@ -50,6 +50,9 @@
 /* AI分析容器 */
 .ai-container {
   padding: 25px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .ai-container::before {
@@ -60,6 +63,41 @@
   width: 100%;
   height: 3px;
   background: linear-gradient(90deg, var(--accent-color), var(--primary-btn));
+}
+
+/* 简洁信息摘要 */
+.info-summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+.info-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.domain-url-small {
+  color: var(--stats-label);
+  font-size: 12px;
+  margin-left: 5px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.highlight-text {
+  color: var(--accent-color);
+  font-weight: 600;
 }
 
 /* AI头部样式 */
@@ -298,55 +336,38 @@
   background-color: var(--accent-color-hover);
 }
 
-.action-btn.download-data-btn {
-  background-color: #4a6fa5;
+/* 数据详细信息容器 */
+.data-details-container {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
-.action-btn.download-data-btn:hover {
-  background-color: #5d83ba;
-}
-
-/* 合并后的信息容器 */
-.info-container {
-  padding: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.info-section {
-  flex: 1;
-  min-width: 300px;
-}
-
-.info-section.domain-info {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.info-section h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 16px;
-  color: var(--text-color);
-}
-
-.domain-url {
-  font-size: 14px;
-  color: var(--accent-color);
-  word-break: break-all;
-  margin-bottom: 10px;
-}
-
-.requests-count {
-  font-size: 14px;
-  color: var(--text-color);
-}
-
-.highlight-text {
-  color: var(--accent-color);
+.data-summary-toggle {
+  cursor: pointer;
+  padding: 15px 20px;
   font-weight: 600;
+  color: var(--stats-label);
+  outline: none;
+  user-select: none;
+  display: block;
+  transition: all 0.2s ease;
+}
+
+.data-summary-toggle:hover {
+  color: var(--accent-color);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.data-details-content {
+  padding: 0 20px 20px;
+}
+
+.data-details-container details[open] .data-summary-toggle {
+  color: var(--accent-color);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 15px;
 }
 
 /* 统计网格布局 */
@@ -394,7 +415,7 @@ body.tech-bg {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1000px;
   padding: 25px;
   box-sizing: border-box;
   min-height: 100vh;
@@ -456,6 +477,14 @@ body.tech-bg {
   text-shadow: 0 0 3px rgba(90, 200, 250, 0.3);
 }
 
+[data-theme="dark"] .info-summary {
+  background-color: rgba(0, 30, 60, 0.2);
+}
+
+[data-theme="dark"] .data-summary-toggle:hover {
+  background-color: rgba(0, 30, 60, 0.3);
+}
+
 /* 响应式设计 */
 @media (max-width: 1024px) {
   .content-wrapper {
@@ -497,15 +526,6 @@ body.tech-bg {
     justify-content: space-between;
   }
   
-  .info-container {
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .info-section {
-    min-width: 100%;
-  }
-  
   .ai-actions {
     flex-wrap: wrap;
     justify-content: flex-end;
@@ -542,4 +562,59 @@ body.tech-bg {
     justify-content: space-between;
     width: 100%;
   }
+  
+  .info-summary {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* 下载选项下拉菜单 */
+.download-dropdown {
+  position: absolute;
+  z-index: 1000;
+}
+
+.download-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.download-header {
+  padding: 12px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--stats-label);
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.download-dropdown-content a {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: var(--text-color);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.download-dropdown-content a:hover {
+  background-color: var(--stats-bg);
+  color: var(--accent-color);
+}
+
+/* 深色模式下的下拉菜单 */
+[data-theme="dark"] .download-dropdown-content {
+  box-shadow: var(--neon-glow);
+  background-color: var(--card-bg);
+}
+
+[data-theme="dark"] .download-header {
+  background-color: rgba(0, 30, 60, 0.3);
 }

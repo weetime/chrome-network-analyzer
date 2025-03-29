@@ -9,18 +9,31 @@ This Chrome extension analyzes the timing of all network requests on the current
 - Total request time
 - Time to First Byte (TTFB)
 - Performance metrics (P99, P95, P90, P50, Average)
+- AI-powered performance analysis
 - And more...
 
 ## Screenshots
 
-The extension supports both light and dark themes:
+The extension supports multiple themes and features:
 
 ### Light Mode
 ![Light Mode Screenshot](images/light.jpg)
 
 ### Dark Mode
-![Dark Mode authorization](images/authorization.jpg)
 ![Dark Mode Screenshot](images/dark.jpg)
+
+### Fire Dark Theme
+![Fire Dark Screenshot](images/firedark.jpg)
+
+### Detail View
+![Request Detail View](images/detail.jpg)
+
+### AI Analysis
+![AI Analysis View](images/ai-analysis.jpg)
+
+### Settings
+![Settings Page 1](images/setting_01.jpg)
+![Settings Page 2](images/setting_02.jpg)
 
 ## How It Works
 
@@ -36,6 +49,7 @@ graph TD
     F --> G[Displays results in extension UI]
     G --> H[User can filter/search requests]
     G --> I[User can export data as CSV]
+    G --> J[User can run AI analysis on requests]
 ```
 
 ## Installation
@@ -55,6 +69,7 @@ graph TD
 5. View performance metrics like P99, P95, P90, P50, and average response times
 6. Click on any request to view detailed information
 7. Use the "Export CSV" button to download the data for further analysis
+8. Click "AI Analysis" to get AI-powered insights about your network performance
 
 ## Features
 
@@ -65,6 +80,26 @@ graph TD
 - Color-coding based on request duration (fast, medium, slow)
 - Detailed view of individual requests
 - CSV export for data analysis (includes performance metrics)
+- AI-powered analysis of network performance with insights and recommendations
+- Download analysis reports and data in various formats
+
+## AI Analysis
+
+The extension includes an AI-powered analysis feature that:
+
+- Identifies network performance bottlenecks
+- Provides specific optimization recommendations
+- Analyzes request patterns and suggests improvements
+- Generates comprehensive performance reports
+- Supports multiple AI providers (OpenAI, Anthropic, Deepseek)
+- Customizable API settings
+
+To use the AI analysis:
+1. Configure your AI API provider and key in the extension settings
+2. Navigate to a website and capture network requests
+3. Click the "AI Analysis" button
+4. View detailed performance insights and recommendations
+5. Download or copy the analysis for sharing
 
 ## Performance Metrics
 
@@ -77,7 +112,6 @@ The extension calculates the following performance metrics:
 - **Average**: The average response time of all requests
 
 These metrics are calculated based on the currently filtered requests, allowing you to analyze performance for specific request types or status codes.
-
 
 ## License
 

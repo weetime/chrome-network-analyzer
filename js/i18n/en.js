@@ -155,7 +155,7 @@ if (typeof window !== 'undefined') {
     downloadFailed: 'Download Failed',
     downloadReportAndData: 'Download Report & Data',
     downloadOptions: 'Download Options',
-    downloadReportOnly: 'Report Only (TXT)',
+    downloadReportOnly: 'Report Only (MD)',
     downloadDataJSON: 'Data (JSON)',
     downloadDataCSV: 'Data (CSV)',
     downloadAll: 'Download All',

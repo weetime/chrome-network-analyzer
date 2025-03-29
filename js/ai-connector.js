@@ -2,37 +2,167 @@
  * AI-Connector - Handles sending network analysis data to AI models
  */
 
-// OpenAI API configuration
-const OPENAI_MODELS = {
-  'gpt-4-turbo': 'gpt-4-turbo-preview',
-  'gpt-4': 'gpt-4',
-  'gpt-3.5-turbo': 'gpt-3.5-turbo'
+// AI Model Providers Configuration
+const AI_PROVIDERS = {
+  // OpenAI configuration
+  OPENAI: {
+    name: 'OpenAI',
+    models: {
+      'gpt-4-turbo': 'gpt-4-turbo-preview',
+      'gpt-4': 'gpt-4',
+      'gpt-3.5-turbo': 'gpt-3.5-turbo'
+    },
+    defaultModel: 'gpt-4-turbo',
+    defaultApiUrl: 'https://api.openai.com/v1/chat/completions',
+    proxyUrls: [
+      'https://api.openaiapi.com/v1/chat/completions',
+      'https://api.aiproxy.io/v1/chat/completions'
+    ],
+    buildRequest: (model, messages, maxTokens) => ({
+      model: model,
+      messages: messages,
+      max_tokens: maxTokens,
+      temperature: 0.3
+    }),
+    extractResponse: (data) => data.choices[0].message.content,
+    buildHeaders: (apiKey, isProxy = false) => isProxy ? 
+      {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      } : 
+      {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      }
+  },
+  
+  // Anthropic (Claude) configuration
+  ANTHROPIC: {
+    name: 'Anthropic',
+    models: {
+      'claude-3-opus': 'claude-3-opus-20240229',
+      'claude-3-sonnet': 'claude-3-sonnet-20240229',
+      'claude-3-haiku': 'claude-3-haiku-20240307'
+    },
+    defaultModel: 'claude-3-sonnet',
+    defaultApiUrl: 'https://api.anthropic.com/v1/messages',
+    buildRequest: (model, systemPrompt, userContent, maxTokens) => ({
+      model: model,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: userContent
+        }
+      ],
+      max_tokens: maxTokens
+    }),
+    extractResponse: (data) => data.content[0].text,
+    buildHeaders: (apiKey) => ({
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    })
+  },
+  
+  // Deepseek configuration
+  DEEPSEEK: {
+    name: 'Deepseek',
+    models: {
+      'deepseek-chat': 'deepseek-chat',
+      'deepseek-coder': 'deepseek-coder'
+    },
+    defaultModel: 'deepseek-chat',
+    defaultApiUrl: 'https://api.deepseek.com/v1/chat/completions',
+    buildRequest: (model, messages, maxTokens) => ({
+      model: model,
+      messages: messages,
+      max_tokens: maxTokens,
+      temperature: 0.3
+    }),
+    extractResponse: (data) => data.choices[0].message.content,
+    buildHeaders: (apiKey) => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    })
+  }
 };
 
-// Anthropic API configuration 
-const ANTHROPIC_MODELS = {
-  'claude-3-opus': 'claude-3-opus-20240229',
-  'claude-3-sonnet': 'claude-3-sonnet-20240229',
-  'claude-3-haiku': 'claude-3-haiku-20240307'
-};
-
-// API代理地址 - 使用实际可用的API代理
-const OPENAI_PROXY_API = 'https://api.openaiapi.com/v1/chat/completions';
-// 备用代理地址
-const BACKUP_PROXY_API = 'https://api.aiproxy.io/v1/chat/completions';
-
-// 最大重试次数
+// 配置常量
 const MAX_RETRIES = 2;
-// 重试间隔（毫秒）
 const RETRY_DELAY = 1000;
+const REQUEST_TIMEOUT = 30000;
 
-// Send network analysis data to OpenAI's API
-async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxTokens = 2000) {
+// 存储用户自定义API URL的设置对象
+let userApiSettings = {
+  // 默认为每个提供商的默认URL
+  OPENAI: AI_PROVIDERS.OPENAI.defaultApiUrl,
+  ANTHROPIC: AI_PROVIDERS.ANTHROPIC.defaultApiUrl,
+  DEEPSEEK: AI_PROVIDERS.DEEPSEEK.defaultApiUrl
+};
+
+/**
+ * 设置用户自定义API URL
+ * @param {string} provider - 提供商标识符 (OPENAI, ANTHROPIC, DEEPSEEK)
+ * @param {string} apiUrl - 自定义API URL
+ */
+function setCustomApiUrl(provider, apiUrl) {
+  if (AI_PROVIDERS[provider] && apiUrl) {
+    userApiSettings[provider] = apiUrl;
+  }
+}
+
+/**
+ * 获取当前有效的API URL
+ * @param {string} provider - 提供商标识符
+ * @returns {string} 当前有效的API URL
+ */
+function getApiUrl(provider) {
+  return userApiSettings[provider] || AI_PROVIDERS[provider].defaultApiUrl;
+}
+
+/**
+ * 创建超时和请求处理
+ * @param {string} url - API URL
+ * @param {object} options - fetch选项
+ * @param {string} endpointName - 端点名称，用于日志
+ * @returns {Promise} 响应Promise
+ */
+async function fetchWithTimeout(url, options, endpointName) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  
   try {
-    // Choose model
-    const modelId = OPENAI_MODELS[model] || OPENAI_MODELS['gpt-4-turbo'];
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
     
-    // Create system prompt and user message from network data
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      throw new Error(`API Error (${endpointName}): ${errorData.error?.message || response.statusText}`);
+    }
+    
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * 发送数据到OpenAI API
+ * @param {object} analysisData - 网络分析数据
+ * @param {string} apiKey - API密钥
+ * @param {string} model - 模型名称
+ * @param {number} maxTokens - 最大token数
+ * @returns {Promise<object>} 分析结果
+ */
+async function sendToOpenAI(analysisData, apiKey, model = AI_PROVIDERS.OPENAI.defaultModel, maxTokens = 2000) {
+  try {
+    // 选择模型
+    const modelId = AI_PROVIDERS.OPENAI.models[model] || AI_PROVIDERS.OPENAI.models[AI_PROVIDERS.OPENAI.defaultModel];
+    
+    // 创建提示和用户消息
     const messages = [
       {
         role: 'system',
@@ -44,92 +174,53 @@ async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxToke
       }
     ];
     
-    // 尝试直接调用 OpenAI API（如果有代理的情况下）
-    let lastError = null;
-    let retryCount = 0;
+    // 构建请求体
+    const requestBody = AI_PROVIDERS.OPENAI.buildRequest(modelId, messages, maxTokens);
     
     // 定义要尝试的API端点
     const apiEndpoints = [
       { 
-        url: 'https://api.openai.com/v1/chat/completions', 
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        name: 'Direct OpenAI API'
+        url: getApiUrl('OPENAI'),
+        headers: AI_PROVIDERS.OPENAI.buildHeaders(apiKey, false),
+        name: 'Custom OpenAI API'
       },
-      {
-        url: OPENAI_PROXY_API,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey
-        },
-        name: 'Primary Proxy'
-      },
-      {
-        url: BACKUP_PROXY_API,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey
-        },
-        name: 'Backup Proxy'
-      }
+      ...AI_PROVIDERS.OPENAI.proxyUrls.map((url, index) => ({
+        url: url,
+        headers: AI_PROVIDERS.OPENAI.buildHeaders(apiKey, true),
+        name: `Proxy ${index + 1}`
+      }))
     ];
+    
+    let lastError = null;
     
     // 为每个端点添加重试逻辑
     for (const endpoint of apiEndpoints) {
-      retryCount = 0;
+      let retryCount = 0;
       
       while (retryCount <= MAX_RETRIES) {
         try {
           console.log(`Attempting to use ${endpoint.name}, attempt ${retryCount + 1}`);
           
-          // 创建一个具有超时的请求
-          let timeoutId;
-          const controller = new AbortController();
-          
-          // 创建超时Promise
-          const timeoutPromise = new Promise((_, reject) => {
-            timeoutId = setTimeout(() => {
-              controller.abort();
-              reject(new Error(`Request to ${endpoint.name} timed out after 30 seconds`));
-            }, 30000);
-          });
-          
-          // 创建fetch Promise
-          const fetchPromise = fetch(endpoint.url, {
-            method: 'POST',
-            headers: endpoint.headers,
-            body: JSON.stringify({
-              model: modelId,
-              messages: messages,
-              max_tokens: maxTokens,
-              temperature: 0.3
-            }),
-            signal: controller.signal
-          });
-          
-          // 使用Promise.race比较哪个先完成
-          const response = await Promise.race([fetchPromise, timeoutPromise])
-            .finally(() => {
-              clearTimeout(timeoutId);
-            });
-          
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
-            throw new Error(`API Error (${endpoint.name}): ${errorData.error?.message || response.statusText}`);
-          }
+          const response = await fetchWithTimeout(
+            endpoint.url, 
+            {
+              method: 'POST',
+              headers: endpoint.headers,
+              body: JSON.stringify(requestBody)
+            },
+            endpoint.name
+          );
           
           const data = await response.json();
           return {
-            analysis: data.choices[0].message.content,
+            analysis: AI_PROVIDERS.OPENAI.extractResponse(data),
             model: model,
             provider: `OpenAI (via ${endpoint.name})`
           };
         } catch (error) {
           console.error(`Error with ${endpoint.name} (attempt ${retryCount + 1}):`, error);
           
-          // 更好地捕获和显示DOMException
+          // 捕获和显示DOMException
           if (error.name === 'AbortError' || error.name === 'DOMException') {
             console.warn(`Request to ${endpoint.name} was aborted: ${error.message}`);
             lastError = new Error(`Connection to ${endpoint.name} failed: Request timed out or was aborted`);
@@ -157,64 +248,176 @@ async function sendToOpenAI(analysisData, apiKey, model = 'gpt-4-turbo', maxToke
   }
 }
 
-// Send network analysis data to Anthropic's API (Claude)
-async function sendToAnthropic(analysisData, apiKey, model = 'claude-3-sonnet', maxTokens = 2000) {
+/**
+ * 发送数据到Anthropic API (Claude)
+ * @param {object} analysisData - 网络分析数据
+ * @param {string} apiKey - API密钥
+ * @param {string} model - 模型名称
+ * @param {number} maxTokens - 最大token数
+ * @returns {Promise<object>} 分析结果
+ */
+async function sendToAnthropic(analysisData, apiKey, model = AI_PROVIDERS.ANTHROPIC.defaultModel, maxTokens = 2000) {
   try {
-    // Choose model
-    const modelId = ANTHROPIC_MODELS[model] || ANTHROPIC_MODELS['claude-3-sonnet'];
+    // 选择模型
+    const modelId = AI_PROVIDERS.ANTHROPIC.models[model] || AI_PROVIDERS.ANTHROPIC.models[AI_PROVIDERS.ANTHROPIC.defaultModel];
     
-    // Format the message for Claude API
+    // 为Claude API格式化消息
     const systemPrompt = 'You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues.';
+    const userContent = `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`;
     
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: modelId,
-        system: systemPrompt,
-        messages: [
+    // 构建请求体
+    const requestBody = AI_PROVIDERS.ANTHROPIC.buildRequest(modelId, systemPrompt, userContent, maxTokens);
+    
+    // 获取用户配置的API URL
+    const apiUrl = getApiUrl('ANTHROPIC');
+    
+    let retryCount = 0;
+    let lastError = null;
+    
+    while (retryCount <= MAX_RETRIES) {
+      try {
+        console.log(`Attempting to use Anthropic API, attempt ${retryCount + 1}`);
+        
+        const response = await fetchWithTimeout(
+          apiUrl,
           {
-            role: 'user',
-            content: `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`
-          }
-        ],
-        max_tokens: maxTokens
-      })
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Anthropic API Error: ${errorData.error?.message || response.statusText}`);
+            method: 'POST',
+            headers: AI_PROVIDERS.ANTHROPIC.buildHeaders(apiKey),
+            body: JSON.stringify(requestBody)
+          },
+          'Anthropic API'
+        );
+        
+        const data = await response.json();
+        return {
+          analysis: AI_PROVIDERS.ANTHROPIC.extractResponse(data),
+          model: model,
+          provider: 'Anthropic'
+        };
+      } catch (error) {
+        console.error(`Error with Anthropic API (attempt ${retryCount + 1}):`, error);
+        lastError = error;
+        
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          await new Promise(r => setTimeout(r, RETRY_DELAY * retryCount));
+        } else {
+          break;
+        }
+      }
     }
     
-    const data = await response.json();
-    return {
-      analysis: data.content[0].text,
-      model: model,
-      provider: 'Anthropic'
-    };
+    throw lastError || new Error('Failed to connect to Anthropic API');
   } catch (error) {
     console.error('Error sending data to Anthropic:', error);
     throw error;
   }
 }
 
-// Generic function to send data to specified AI provider
-async function sendToAI(analysisData, provider, apiKey, model, maxTokens = 2000) {
-  if (provider.toLowerCase() === 'openai') {
-    return sendToOpenAI(analysisData, apiKey, model, maxTokens);
-  } else if (provider.toLowerCase() === 'anthropic') {
-    return sendToAnthropic(analysisData, apiKey, model, maxTokens);
-  } else {
-    throw new Error(`Unsupported AI provider: ${provider}`);
+/**
+ * 发送数据到Deepseek API
+ * @param {object} analysisData - 网络分析数据
+ * @param {string} apiKey - API密钥
+ * @param {string} model - 模型名称
+ * @param {number} maxTokens - 最大token数
+ * @returns {Promise<object>} 分析结果
+ */
+async function sendToDeepseek(analysisData, apiKey, model = AI_PROVIDERS.DEEPSEEK.defaultModel, maxTokens = 2000) {
+  try {
+    // 选择模型
+    const modelId = AI_PROVIDERS.DEEPSEEK.models[model] || AI_PROVIDERS.DEEPSEEK.models[AI_PROVIDERS.DEEPSEEK.defaultModel];
+    
+    // 创建提示和用户消息
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues.'
+      },
+      {
+        role: 'user',
+        content: `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`
+      }
+    ];
+    
+    // 构建请求体
+    const requestBody = AI_PROVIDERS.DEEPSEEK.buildRequest(modelId, messages, maxTokens);
+    
+    // 获取用户配置的API URL
+    const apiUrl = getApiUrl('DEEPSEEK');
+    
+    let retryCount = 0;
+    let lastError = null;
+    
+    while (retryCount <= MAX_RETRIES) {
+      try {
+        console.log(`Attempting to use Deepseek API, attempt ${retryCount + 1}`);
+        
+        const response = await fetchWithTimeout(
+          apiUrl,
+          {
+            method: 'POST',
+            headers: AI_PROVIDERS.DEEPSEEK.buildHeaders(apiKey),
+            body: JSON.stringify(requestBody)
+          },
+          'Deepseek API'
+        );
+        
+        const data = await response.json();
+        return {
+          analysis: AI_PROVIDERS.DEEPSEEK.extractResponse(data),
+          model: model,
+          provider: 'Deepseek'
+        };
+      } catch (error) {
+        console.error(`Error with Deepseek API (attempt ${retryCount + 1}):`, error);
+        lastError = error;
+        
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          await new Promise(r => setTimeout(r, RETRY_DELAY * retryCount));
+        } else {
+          break;
+        }
+      }
+    }
+    
+    throw lastError || new Error('Failed to connect to Deepseek API');
+  } catch (error) {
+    console.error('Error sending data to Deepseek:', error);
+    throw error;
   }
 }
 
-// Format network data for AI analysis
+/**
+ * 根据提供商发送数据到指定AI
+ * @param {object} analysisData - 网络分析数据
+ * @param {string} provider - AI提供商标识
+ * @param {string} apiKey - API密钥
+ * @param {string} model - 模型名称
+ * @param {number} maxTokens - 最大token数
+ * @returns {Promise<object>} 分析结果
+ */
+async function sendToAI(analysisData, provider, apiKey, model, maxTokens = 2000) {
+  const providerKey = provider.toUpperCase();
+  
+  switch (providerKey) {
+    case 'OPENAI':
+      return sendToOpenAI(analysisData, apiKey, model, maxTokens);
+    case 'ANTHROPIC':
+      return sendToAnthropic(analysisData, apiKey, model, maxTokens);
+    case 'DEEPSEEK':
+      return sendToDeepseek(analysisData, apiKey, model, maxTokens);
+    default:
+      throw new Error(`Unsupported AI provider: ${provider}`);
+  }
+}
+
+/**
+ * 格式化网络数据用于AI分析
+ * @param {object} requestsData - 请求数据
+ * @param {object} statistics - 统计数据
+ * @returns {object} 格式化后的摘要数据
+ */
 function formatNetworkDataForAI(requestsData, statistics) {
   // Create a summarized version of the data to avoid token limit issues
   const summary = {
@@ -265,10 +468,20 @@ function formatNetworkDataForAI(requestsData, statistics) {
 
 // Export the AI Connector functionality
 export const AiConnector = {
+  // Core functions
   sendToAI,
+  formatNetworkDataForAI,
+  setCustomApiUrl,
+  
+  // Provider-specific functions
   sendToOpenAI,
   sendToAnthropic,
-  formatNetworkDataForAI,
-  OPENAI_MODELS,
-  ANTHROPIC_MODELS
+  sendToDeepseek,
+  
+  // Configuration constants
+  AI_PROVIDERS,
+  
+  // For backward compatibility
+  OPENAI_MODELS: AI_PROVIDERS.OPENAI.models,
+  ANTHROPIC_MODELS: AI_PROVIDERS.ANTHROPIC.models
 }; 

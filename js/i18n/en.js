@@ -154,12 +154,21 @@ if (typeof window !== 'undefined') {
     downloadSuccess: 'Download Successful',
     downloadFailed: 'Download Failed',
     
+    // Notification messages
+    noDataAvailable: 'No request data available for analysis',
+    noApiKeyConfigured: 'No API key configured. Please configure API key in options page',
+    aiAnalysisError: 'Error during AI analysis',
+    noCopyContent: 'No analysis result to copy',
+    copySuccess: 'Copied to clipboard',
+    copyFailed: 'Copy failed',
+    initPageError: 'Error initializing AI analysis page',
+    
     // Optimization Suggestions
-    optimizationTips: 'Optimization Suggestions',
-    optimizationTip1: 'Combine small resource files to reduce HTTP request count',
-    optimizationTip2: 'Enable image lazy loading to prioritize visible content',
-    optimizationTip3: 'Using HTTP/2 protocol allows parallel processing of multiple requests',
-    optimizationTip4: 'Set appropriate caching policies to reduce redundant requests',
+    optimizationTips: 'Optimization Tips',
+    optimizationTip1: 'Combine small resources to reduce HTTP requests',
+    optimizationTip2: 'Enable lazy loading for images to prioritize visible content',
+    optimizationTip3: 'Use HTTP/2 protocol for parallel request processing',
+    optimizationTip4: 'Set appropriate caching strategies to reduce repeat requests',
     optimizationTip5: 'Compress JS and CSS files to reduce transfer size',
 
     languageChangeMsg: 'Switching to English...',

@@ -11,6 +11,7 @@ import { AiAnalysisManager } from './ai-analysis-manager.js';
 import { ThemeManager } from './theme-manager.js';
 import { StatsManager } from './stats-manager.js';
 import { RequestDetailsManager } from './request-details-manager.js';
+import { ToastManager } from './toast-manager.js';
 
 // 全局变量
 let currentTabId = null;
@@ -196,7 +197,8 @@ async function runAiAnalysis() {
       }
       updateDataOverview(requestsData);
     } catch (error) {
-      showError('没有可用的请求数据进行分析');
+      showAnalysisError('没有可用的请求数据进行分析');
+      ToastManager.showError(I18n.getText('noDataAvailable') || '没有可用的请求数据进行分析');
       analysisLoading.style.display = 'none';
       return;
     }
@@ -204,7 +206,8 @@ async function runAiAnalysis() {
   
   // 如果仍然没有数据，显示错误
   if (Object.keys(requestsData).length === 0) {
-    showError('没有可用的请求数据进行分析');
+    showAnalysisError('没有可用的请求数据进行分析');
+    ToastManager.showError(I18n.getText('noDataAvailable') || '没有可用的请求数据进行分析');
     analysisLoading.style.display = 'none';
     return;
   }
@@ -232,7 +235,8 @@ async function runAiAnalysis() {
     
     // 检查API密钥是否配置
     if (!config.apiKey) {
-      showError('未配置API密钥。请在选项页面中配置API密钥。');
+      showAnalysisError('未配置API密钥。请在选项页面中配置API密钥。');
+      ToastManager.showError(I18n.getText('noApiKeyConfigured') || '未配置API密钥。请在选项页面中配置API密钥。');
       analysisLoading.style.display = 'none';
       return;
     }
@@ -266,7 +270,8 @@ async function runAiAnalysis() {
     displayAnalysisResult(result, config);
     
   } catch (error) {
-    showError(`AI分析过程中出错: ${error.message}`);
+    showAnalysisError(`AI分析过程中出错: ${error.message}`);
+    ToastManager.showError(`${I18n.getText('aiAnalysisError') || 'AI分析过程中出错'}: ${error.message}`);
     analysisLoading.style.display = 'none';
   }
 }
@@ -377,8 +382,8 @@ function formatAnalysisText(text) {
   return formatted;
 }
 
-// 显示错误信息
-function showError(message) {
+// 显示错误信息 - 仅用于分析结果区域的错误显示
+function showAnalysisError(message) {
   const analysisLoading = document.getElementById('analysisLoading');
   const analysisText = document.getElementById('analysisText');
   const analysisError = document.getElementById('analysisError');
@@ -402,30 +407,17 @@ function showError(message) {
 function copyAnalysisResults() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.textContent) {
-    showError('没有可复制的分析结果');
+    ToastManager.showError(I18n.getText('noCopyContent') || '没有可复制的分析结果');
     return;
   }
   
   navigator.clipboard.writeText(analysisText.textContent)
     .then(() => {
-      const copyBtn = document.getElementById('copyAnalysisBtn');
-      if (copyBtn) {
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6L9 17l-5-5"></path>
-          </svg>
-          <span>已复制!</span>
-        `;
-        
-        setTimeout(() => {
-          copyBtn.innerHTML = originalText;
-        }, 2000);
-      }
+      ToastManager.showSuccess(I18n.getText('copySuccess') || '已复制到剪贴板');
     })
     .catch(err => {
       console.error('复制分析结果失败:', err);
-      showError('复制分析结果失败: ' + err.message);
+      ToastManager.showError(`${I18n.getText('copyFailed') || '复制失败'}: ${err.message}`);
     });
 }
 
@@ -433,7 +425,7 @@ function copyAnalysisResults() {
 function downloadAnalysisReport() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.textContent) {
-    showError(I18n.getMessage('downloadFailed') || '下载失败: 没有可下载的分析报告');
+    ToastManager.showError(I18n.getText('downloadFailed') || '下载失败: 没有可下载的分析报告');
     return;
   }
   
@@ -443,7 +435,7 @@ function downloadAnalysisReport() {
     const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
     
     // 获取报告文件名
-    const reportFileName = `${I18n.getMessage('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`;
+    const reportFileName = `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.txt`;
     
     // 创建Blob对象
     const blob = new Blob([analysisText.textContent], {type: 'text/plain'});
@@ -463,17 +455,17 @@ function downloadAnalysisReport() {
     }, 100);
     
     // 显示成功消息
-    showDownloadSuccess('downloadReportBtn');
+    ToastManager.showSuccess(I18n.getText('downloadSuccess') || '下载成功');
   } catch (error) {
     console.error('下载分析报告失败:', error);
-    showError(I18n.getMessage('downloadFailed') || '下载失败: ' + error.message);
+    ToastManager.showError(`${I18n.getText('downloadFailed') || '下载失败'}: ${error.message}`);
   }
 }
 
 // 下载原始网络请求数据
 function downloadRequestData() {
   if (!requestsData || Object.keys(requestsData).length === 0) {
-    showError(I18n.getMessage('downloadFailed') || '下载失败: 没有可下载的请求数据');
+    ToastManager.showError(I18n.getText('downloadFailed') || '下载失败: 没有可下载的请求数据');
     return;
   }
   
@@ -483,7 +475,7 @@ function downloadRequestData() {
     const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
     
     // 获取数据文件名
-    const dataFileName = `${I18n.getMessage('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`;
+    const dataFileName = `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`;
     
     // 创建Blob对象
     const blob = new Blob([JSON.stringify(requestsData, null, 2)], {type: 'application/json'});
@@ -503,39 +495,11 @@ function downloadRequestData() {
     }, 100);
     
     // 显示成功消息
-    showDownloadSuccess('downloadDataBtn');
+    ToastManager.showSuccess(I18n.getText('downloadSuccess') || '下载成功');
   } catch (error) {
     console.error('下载请求数据失败:', error);
-    showError(I18n.getMessage('downloadFailed') || '下载失败: ' + error.message);
+    ToastManager.showError(`${I18n.getText('downloadFailed') || '下载失败'}: ${error.message}`);
   }
-}
-
-// 显示下载成功反馈
-function showDownloadSuccess(buttonId) {
-  const button = document.getElementById(buttonId);
-  if (!button) return;
-  
-  const originalHtml = button.innerHTML;
-  button.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M20 6L9 17l-5-5"></path>
-    </svg>
-    <span>${I18n.getMessage('downloadSuccess') || '下载成功'}</span>
-  `;
-  
-  setTimeout(() => {
-    button.innerHTML = originalHtml;
-  }, 2000);
-}
-
-// 切换可折叠面板
-function toggleCollapsible(event) {
-  const trigger = event.currentTarget;
-  const content = trigger.nextElementSibling;
-  
-  // 切换激活状态
-  trigger.classList.toggle('active');
-  content.classList.toggle('active');
 }
 
 // 设置事件处理程序
@@ -571,12 +535,6 @@ function setupEventHandlers() {
   const downloadDataBtn = document.getElementById('downloadDataBtn');
   if (downloadDataBtn) {
     downloadDataBtn.addEventListener('click', downloadRequestData);
-  }
-  
-  // 可折叠面板切换
-  const tipsCollapseTrigger = document.getElementById('tipsCollapseTrigger');
-  if (tipsCollapseTrigger) {
-    tipsCollapseTrigger.addEventListener('click', toggleCollapsible);
   }
   
   // 打开设置页面
@@ -615,7 +573,7 @@ async function init() {
     console.log('AI分析页面初始化完成，等待用户点击运行分析');
   } catch (error) {
     console.error('初始化AI分析页面时出错:', error);
-    showError('初始化AI分析页面时出错: ' + error.message);
+    ToastManager.showError(`${I18n.getText('initPageError') || '初始化AI分析页面时出错'}: ${error.message}`);
   }
 }
 

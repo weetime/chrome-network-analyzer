@@ -459,3 +459,106 @@ body.tech-bg {
   transition: all 0.3s ease;
   border: 1px solid var(--border-color);
 }
+
+/* 域名信息容器样式 */
+.domain-info-container {
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.domain-info-container:hover {
+  transform: translateY(-2px);
+}
+
+.domain-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.domain-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.domain-url {
+  font-size: 14px;
+  color: var(--accent-color);
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+
+.requests-count {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.highlight-text {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* 数据概览区域样式 */
+.stats-overview {
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.stats-overview:hover {
+  transform: translateY(-2px);
+}
+
+.stats-overview h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.stat-item {
+  background-color: var(--stats-bg);
+  padding: 12px;
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--stats-label);
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -145,6 +145,8 @@ if (typeof window !== 'undefined') {
     aiTip3: 'You can configure your preferred AI provider and API key in the extension settings',
     aiTip4: 'Processing time depends on request volume and response, it may take a few seconds',
     aiModelInfo: 'Analysis by: ',
+    analyzingDomain: 'Analyzing Domain',
+    dataOverview: 'Data Overview',
     
     // Optimization Suggestions
     optimizationTips: 'Optimization Suggestions',

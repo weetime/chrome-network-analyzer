@@ -44,8 +44,16 @@ async function initPage() {
       }
     }
     
+    // 获取当前标签页信息以显示域名
+    if (currentTabId) {
+      await updateTabInfo(currentTabId);
+    }
+    
     // 获取网络请求数据
     await fetchNetworkData();
+    
+    // 更新数据概览
+    updateDataOverview(requestsData);
     
     // 更新统计信息
     if (StatsManager) {
@@ -61,6 +69,78 @@ async function initPage() {
   } catch (error) {
     console.error('初始化页面时出错:', error);
     showError('初始化页面时出错: ' + error.message);
+  }
+}
+
+// 获取并更新当前标签页信息
+async function updateTabInfo(tabId) {
+  try {
+    const tab = await chrome.tabs.get(tabId);
+    if (tab && tab.url) {
+      // 提取域名
+      const url = new URL(tab.url);
+      const domain = url.hostname;
+      
+      // 更新UI显示
+      const domainElement = document.getElementById('currentDomain');
+      const urlElement = document.getElementById('domainUrl');
+      
+      if (domainElement) domainElement.textContent = domain;
+      if (urlElement) urlElement.textContent = tab.url;
+    }
+  } catch (error) {
+    console.error('获取标签页信息出错:', error);
+  }
+}
+
+// 更新数据概览区域
+function updateDataOverview(requestsData) {
+  const requests = Object.values(requestsData);
+  
+  // 更新请求计数
+  const requestsCountElement = document.getElementById('requestsCount');
+  if (requestsCountElement) {
+    const countSpan = requestsCountElement.querySelector('.highlight-text');
+    if (countSpan) countSpan.textContent = requests.length;
+  }
+  
+  // 获取有效的请求（有时间数据的）
+  const validRequests = requests.filter(req => req.totalTime);
+  
+  // 计算总加载时间
+  const totalLoadTime = validRequests.reduce((sum, req) => sum + req.totalTime, 0);
+  
+  // 计算平均响应时间
+  const avgResponseTime = validRequests.length > 0 ? totalLoadTime / validRequests.length : 0;
+  
+  // 找出最慢的请求
+  let slowestRequest = { totalTime: 0 };
+  if (validRequests.length > 0) {
+    slowestRequest = validRequests.reduce((prev, current) => 
+      (prev.totalTime > current.totalTime) ? prev : current);
+  }
+  
+  // 更新统计值
+  const totalRequestsValue = document.getElementById('totalRequestsValue');
+  const totalLoadTimeValue = document.getElementById('totalLoadTimeValue');
+  const avgResponseTimeValue = document.getElementById('avgResponseTimeValue');
+  const slowestRequestValue = document.getElementById('slowestRequestValue');
+  
+  if (totalRequestsValue) totalRequestsValue.textContent = requests.length;
+  
+  if (totalLoadTimeValue) {
+    totalLoadTimeValue.textContent = totalLoadTime > 0 ? 
+      `${Math.round(totalLoadTime)}ms` : '--';
+  }
+  
+  if (avgResponseTimeValue) {
+    avgResponseTimeValue.textContent = avgResponseTime > 0 ? 
+      `${Math.round(avgResponseTime)}ms` : '--';
+  }
+  
+  if (slowestRequestValue) {
+    slowestRequestValue.textContent = slowestRequest.totalTime > 0 ? 
+      `${Math.round(slowestRequest.totalTime)}ms` : '--';
   }
 }
 
@@ -109,6 +189,12 @@ async function runAiAnalysis() {
     try {
       // 尝试重新获取数据
       await fetchNetworkData();
+      
+      // 刷新域名信息和数据概览
+      if (currentTabId) {
+        await updateTabInfo(currentTabId);
+      }
+      updateDataOverview(requestsData);
     } catch (error) {
       showError('没有可用的请求数据进行分析');
       analysisLoading.style.display = 'none';
@@ -385,6 +471,9 @@ async function init() {
     // 初始化国际化
     await initI18n();
     
+    // 初始化AI提供商显示
+    await initAIProviderDisplay();
+    
     // 初始化页面数据
     await initPage();
     
@@ -396,6 +485,37 @@ async function init() {
   } catch (error) {
     console.error('初始化AI分析页面时出错:', error);
     showError('初始化AI分析页面时出错: ' + error.message);
+  }
+}
+
+// 初始化AI提供商和模型显示
+async function initAIProviderDisplay() {
+  try {
+    // 获取AI配置信息
+    const config = await new Promise((resolve) => {
+      chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], (result) => {
+        const config = {
+          provider: result.aiProvider || 'openai',
+          model: result.aiModel || 'gpt-4-turbo'
+        };
+        resolve(config);
+      });
+    });
+    
+    // 更新UI显示
+    const analysisProvider = document.getElementById('analysisProvider');
+    const analysisModel = document.getElementById('analysisModel');
+    
+    if (analysisProvider && analysisModel) {
+      // 格式化提供商名称，首字母大写
+      const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+      analysisProvider.textContent = providerName;
+      analysisModel.textContent = config.model;
+      
+      console.log('初始化AI提供商显示:', providerName, config.model);
+    }
+  } catch (error) {
+    console.error('初始化AI提供商显示出错:', error);
   }
 }
 

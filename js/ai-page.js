@@ -129,12 +129,18 @@ async function runAiAnalysis() {
   try {
     // 获取API配置
     const config = await new Promise((resolve) => {
-      chrome.storage.local.get(['aiModel', 'aiApiKey'], (result) => {
-        resolve({
-          provider: 'openai',
-          apiKey: result.aiApiKey || '',
-          model: result.aiModel || 'gpt-4-turbo'
-        });
+      chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], (result) => {
+        console.log('获取AI设置:', result); // 调试信息
+        
+        const config = {
+          provider: result.aiProvider || 'openai',
+          apiKey: result.apiKey || result.openaiApiKey || '',
+          model: result.aiModel || 'gpt-4-turbo',
+          apiUrl: result.apiUrl || ''
+        };
+        
+        console.log('使用AI配置:', config.provider, config.model); // 调试信息
+        resolve(config);
       });
     });
     
@@ -143,6 +149,14 @@ async function runAiAnalysis() {
       showError('未配置API密钥。请在选项页面中配置API密钥。');
       analysisLoading.style.display = 'none';
       return;
+    }
+    
+    // 预先更新提供商和模型显示，即使分析尚未完成
+    const analysisProvider = document.getElementById('analysisProvider');
+    const analysisModel = document.getElementById('analysisModel');
+    if (analysisProvider && analysisModel) {
+      analysisProvider.textContent = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+      analysisModel.textContent = config.model;
     }
     
     // 格式化数据
@@ -156,8 +170,10 @@ async function runAiAnalysis() {
       config.model
     );
     
+    console.log('AI分析结果:', result); // 调试信息
+    
     // 显示分析结果
-    displayAnalysisResult(result);
+    displayAnalysisResult(result, config);
     
   } catch (error) {
     showError(`AI分析过程中出错: ${error.message}`);
@@ -206,7 +222,7 @@ function calculateStatistics(requestsData) {
 }
 
 // 显示分析结果
-function displayAnalysisResult(result) {
+function displayAnalysisResult(result, userConfig) {
   // 获取元素
   const analysisLoading = document.getElementById('analysisLoading');
   const analysisText = document.getElementById('analysisText');
@@ -225,9 +241,26 @@ function displayAnalysisResult(result) {
   // 设置分析文本
   analysisText.innerHTML = formatAnalysisText(result.analysis);
   
+  // 处理provider信息，可能包含"via"文本
+  let provider = result.provider || '未知提供商';
+  // 如果provider包含括号内容（如"OpenAI (via Custom OpenAI API)"），
+  // 则提取主要提供商名称
+  if (provider.includes('(')) {
+    provider = provider.split('(')[0].trim();
+  }
+  
+  // 优先使用用户配置的提供商和模型（如果可用）
+  if (userConfig && userConfig.provider) {
+    provider = userConfig.provider.charAt(0).toUpperCase() + userConfig.provider.slice(1);
+    console.log('使用用户配置的提供商:', provider); // 调试信息
+  }
+  
+  const model = userConfig && userConfig.model ? userConfig.model : (result.model || '未知模型');
+  console.log('显示模型信息:', provider, model); // 调试信息
+  
   // 设置模型和提供商信息
-  analysisModel.textContent = result.model || '未知模型';
-  analysisProvider.textContent = result.provider || '未知提供商';
+  analysisModel.textContent = model;
+  analysisProvider.textContent = provider;
 }
 
 // 使用类似Markdown的格式格式化分析文本
@@ -358,10 +391,8 @@ async function init() {
     // 设置事件处理程序
     setupEventHandlers();
     
-    // 如果有请求数据，自动运行分析
-    if (Object.keys(requestsData).length > 0) {
-      runAiAnalysis();
-    }
+    // 不再自动运行分析，等待用户点击"运行分析"按钮
+    console.log('AI分析页面初始化完成，等待用户点击运行分析');
   } catch (error) {
     console.error('初始化AI分析页面时出错:', error);
     showError('初始化AI分析页面时出错: ' + error.message);

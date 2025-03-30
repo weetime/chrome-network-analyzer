@@ -48,13 +48,8 @@ async function updateTabInfo(tabId) {
   try {
     const tab = await chrome.tabs.get(tabId);
     if (tab && tab.url) {
-      const url = new URL(tab.url);
-      const domain = url.hostname;
-      
-      const domainElement = document.getElementById('currentDomain');
       const urlElement = document.getElementById('domainUrl');
       
-      if (domainElement) domainElement.textContent = domain;
       if (urlElement) urlElement.textContent = tab.url;
     }
   } catch (error) {

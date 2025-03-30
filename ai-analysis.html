@@ -42,11 +42,18 @@
       <!-- 页面和数据信息 -->
       <div class="info-summary">
         <div class="info-summary-item">
-          <span data-i18n="analyzingDomain">分析域名</span>: <span id=". " class="highlight-text">--</span>
+          <span data-i18n="analyzingDomain">分析域名</span>: <span id="currentDomain" class="highlight-text">--</span>
           <span class="domain-url-small" id="domainUrl">--</span>
         </div>
         <div class="info-summary-item">
           <span data-i18n="totalRequests">总请求数</span>: <span id="totalRequestsValue" class="highlight-text">--</span>
+        </div>
+        <!-- 标签页选择器 -->
+        <div class="info-summary-item tab-selector-wrapper">
+          <span data-i18n="selectTab">选择标签页</span>:
+          <select id="tabSelector" class="tab-selector">
+            <option value="current" data-i18n="currentTab">当前标签页</option>
+          </select>
         </div>
       </div>
       
@@ -56,6 +63,17 @@
             <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="42" stroke-dashoffset="12"></circle>
           </svg>
           <p class="ai-status-text" data-i18n="processing">处理中，请稍候...</p>
+          
+          <!-- 添加进度条 -->
+          <div id="analysisProgress" class="progress-container">
+            <div class="progress-status">
+              <span id="analysisProgressText">开始分析...</span>
+              <span class="progress-percent"></span>
+            </div>
+            <div class="progress-bar-container">
+              <div id="analysisProgressBar" class="progress-bar"></div>
+            </div>
+          </div>
         </div>
         
         <div id="analysisContent" class="ai-result-container">

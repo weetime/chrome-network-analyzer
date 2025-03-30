@@ -100,6 +100,33 @@
   font-weight: 600;
 }
 
+/* 标签页选择器样式 */
+.tab-selector-wrapper {
+  margin-left: auto;
+}
+
+.tab-selector {
+  padding: 4px 8px;
+  border-radius: var(--card-radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  min-width: 180px;
+  transition: all 0.2s ease;
+}
+
+.tab-selector:hover {
+  border-color: var(--accent-color);
+}
+
+.tab-selector:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+}
+
 /* AI头部样式 */
 .ai-header {
   display: flex;
@@ -184,6 +211,40 @@
   margin-top: 15px;
   color: var(--text-color);
   font-size: 14px;
+}
+
+/* 进度条样式 */
+.progress-container {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 20px;
+}
+
+.progress-status {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+.progress-bar-container {
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-color), var(--primary-btn));
+  border-radius: 4px;
+  transition: width 0.3s ease-in-out;
+}
+
+.progress-bar.progress-complete {
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
 }
 
 /* 流式输出光标样式 */

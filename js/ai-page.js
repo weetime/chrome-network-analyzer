@@ -914,7 +914,7 @@ async function initTabSelector() {
     currentOption.className = 'dropdown-option selected';
     currentOption.dataset.value = 'current';
     currentOption.dataset.domain = currentDomain;
-    currentOption.title = currentDomainUrl || I18n.getText('currentTab') || '当前标签页';
+    currentOption.title = currentDomainUrl;
     currentOption.innerHTML = `<span class="tab-domain">${displayDomain}</span>`;
     dropdownOptions.appendChild(currentOption);
     

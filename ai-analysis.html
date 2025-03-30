@@ -30,47 +30,58 @@
         <h3 data-i18n="aiAnalysis">网络请求 AI 性能分析</h3>
       </div>
       
-      <!-- 页面和数据信息 -->
-      <div class="info-summary">
-        <div class="info-summary-item url-item">
-          <span class="domain-url" id="domainUrl">--</span>
-        </div>
-        <div class="info-summary-item">
-          <span data-i18n="totalRequests">总请求数</span>: <span id="totalRequestsValue" class="highlight-text">--</span>
-        </div>
-        
-        <!-- 控制区域 -->
-        <div class="control-area">
-          <!-- 标签页选择器 -->
-          <div class="tab-selector-wrapper">
-            <select id="tabSelector" class="tab-selector">
-              <option value="current" data-i18n="currentTab">当前标签页</option>
-            </select>
+      <!-- 信息控制面板 -->
+      <div class="info-panel">
+        <!-- URL和基本统计信息 -->
+        <div class="info-summary">
+          <div class="info-summary-item url-item">
+            <span class="domain-url" id="domainUrl">--</span>
           </div>
           
-          <!-- 运行分析按钮 -->
-          <button id="runAiAnalysisBtn" class="ai-run-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-            <span data-i18n="runAnalysis">运行分析</span>
-          </button>
+          <div class="stats-overview">
+            <div class="stat-badge">
+              <span data-i18n="totalRequests">总请求数</span>: <span id="totalRequestsValue" class="highlight-text">--</span>
+            </div>
+            <div class="stat-badge">
+              <span data-i18n="avgResponse">平均响应时间</span>: <span id="avgResponseTimeValue">--</span>
+            </div>
+            <div class="stat-badge">
+              <span data-i18n="slowestRequest">最慢请求</span>: <span id="slowestRequestValue">--</span>
+            </div>
+          </div>
+          
+          <!-- 标签页选择和运行分析 -->
+          <div class="control-area">
+            <div class="tab-selector-wrapper">
+              <select id="tabSelector" class="tab-selector">
+                <option value="current" data-i18n="currentTab">当前标签页</option>
+              </select>
+            </div>
+            
+            <button id="runAiAnalysisBtn" class="ai-run-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span data-i18n="runAnalysis">运行分析</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- 进度条区域 -->
+        <div id="analysisProgress" class="progress-container">
+          <div class="progress-status">
+            <span id="analysisProgressText">开始分析...</span>
+            <span class="progress-percent"></span>
+          </div>
+          <div class="progress-bar-container">
+            <div id="analysisProgressBar" class="progress-bar"></div>
+          </div>
         </div>
       </div>
       
+      <!-- 分析内容区域 -->
       <div id="aiAnalysisContent" class="ai-content">
-        <div id="analysisLoading" class="ai-loading">
-          <!-- 进度条 -->
-          <div id="analysisProgress" class="progress-container">
-            <div class="progress-status">
-              <span id="analysisProgressText">开始分析...</span>
-              <span class="progress-percent"></span>
-            </div>
-            <div class="progress-bar-container">
-              <div id="analysisProgressBar" class="progress-bar"></div>
-            </div>
-          </div>
-        </div>
+        <div id="analysisLoading" class="ai-loading"></div>
         
         <div id="analysisContent" class="ai-result-container">
           <div id="analysisText" class="ai-result code-block">
@@ -112,62 +123,7 @@
             </button>
           </div>
         </div>
-        
-        <!-- AI分析使用提示（内嵌版本） -->
-        <div class="tips-section">
-          <details>
-            <summary data-i18n="aiTips">AI 分析使用提示</summary>
-            <div class="tips-content">
-              <ul class="tips-list">
-                <li data-i18n="aiTip1">AI分析能够识别网络性能瓶颈，并提供优化建议</li>
-                <li data-i18n="aiTip2">分析结果基于当前捕获的网络请求数据，请确保有足够的请求样本</li>
-                <li data-i18n="aiTip3">您可以在扩展设置中配置偏好的AI提供商和API密钥</li>
-                <li data-i18n="aiTip4">分析过程视请求量和响应而定，可能需要几秒钟时间</li>
-              </ul>
-              
-              <h4 class="tips-subtitle" data-i18n="optimizationTips">优化建议</h4>
-              <ul class="tips-list optimization-list">
-                <li data-i18n="optimizationTip1">合并小型资源文件，减少HTTP请求次数</li>
-                <li data-i18n="optimizationTip2">启用图片懒加载，优先加载可视区域内容</li>
-                <li data-i18n="optimizationTip3">使用HTTP/2协议可以并行处理多个请求</li>
-                <li data-i18n="optimizationTip4">设置合理的缓存策略，减少重复请求</li>
-                <li data-i18n="optimizationTip5">压缩JS和CSS文件，减少传输体积</li>
-              </ul>
-            </div>
-          </details>
-        </div>
       </div>
-    </div>
-    
-    <!-- 数据概览区域 - 放在AI分析下方不那么显眼的位置 -->
-    <div class="data-details-container card">
-      <details>
-        <summary class="data-summary-toggle" data-i18n="dataOverview">数据概览</summary>
-        <div class="data-details-content">
-          <div class="stats-grid" id="statsOverview">
-            <div class="stat-item">
-              <div class="stat-label" data-i18n="totalRequests">总请求数</div>
-              <div class="stat-value" id="totalRequestsValue2">--</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label" data-i18n="totalLoadTime">总加载时间</div>
-              <div class="stat-value" id="totalLoadTimeValue">--</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label" data-i18n="avgResponse">平均响应时间</div>
-              <div class="stat-value" id="avgResponseTimeValue">--</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label" data-i18n="slowestRequest">最慢请求</div>
-              <div class="stat-value" id="slowestRequestValue">--</div>
-            </div>
-            <div class="stat-item requestsCount">
-              <div class="stat-label" data-i18n="requestsCount">请求统计</div>
-              <div class="stat-value" id="requestsCount"><span class="highlight-text">0</span></div>
-            </div>
-          </div>
-        </div>
-      </details>
     </div>
   </div>
 

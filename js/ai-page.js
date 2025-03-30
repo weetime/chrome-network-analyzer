@@ -153,7 +153,7 @@ async function runAiAnalysis() {
   // 重置并显示进度条，隐藏内容和错误
   elements.progressBar.style.width = '0%';
   elements.progressText.textContent = I18n.getText('analysisStarting') || '开始分析...';
-  elements.loading.style.display = 'flex';
+  elements.loading.style.display = 'block';
   elements.progress.style.display = 'block';
   elements.text.style.display = 'block'; // 使文本元素可见，以便流式显示结果
   elements.text.innerHTML = '<div class="stream-cursor"></div>'; // 添加一个闪烁光标

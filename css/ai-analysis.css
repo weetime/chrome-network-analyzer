@@ -174,30 +174,124 @@
   pointer-events: none;
 }
 
-.tab-selector {
-  padding: 8px 30px 8px 12px;
+/* 自定义下拉选择器样式 */
+.custom-dropdown {
+  position: relative;
+  min-width: 200px;
+  user-select: none;
+  z-index: 10;
+}
+
+.dropdown-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
   border-radius: var(--card-radius);
   border: 1px solid var(--border-color);
   background-color: var(--card-bg);
   color: var(--text-color);
   font-size: 14px;
   cursor: pointer;
-  outline: none;
-  min-width: 200px;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
   transition: all 0.2s ease;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.tab-selector:hover {
+#selectedTabText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  font-weight: 500;
+}
+
+.dropdown-selected:hover {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 1px rgba(var(--accent-color-rgb), 0.2);
 }
 
-.tab-selector:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+.dropdown-selected svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.dropdown-selected.active svg {
+  transform: rotate(180deg);
+}
+
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid transparent;
+  z-index: 100;
+  transition: all 0.3s ease;
+  opacity: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-options.active {
+  max-height: 300px;
+  opacity: 1;
+  border-color: var(--border-color);
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(var(--border-color-rgb), 0.3);
+}
+
+.dropdown-option:last-child {
+  border-bottom: none;
+}
+
+.dropdown-option:hover {
+  background-color: var(--stats-bg);
+  color: var(--accent-color);
+}
+
+.dropdown-option.selected {
+  background-color: rgba(var(--accent-color-rgb), 0.1);
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.dropdown-option .tab-domain {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.dropdown-option .tab-title {
+  font-size: 12px;
+  color: var(--stats-label);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-option:hover .tab-domain {
+  color: var(--accent-color);
+}
+
+.dropdown-option.selected .tab-domain {
+  color: var(--accent-color);
 }
 
 /* 运行按钮样式 */
@@ -276,6 +370,7 @@
   flex: 1;
   min-height: 350px;
   position: relative;
+  overflow: auto;
 }
 
 /* 加载中状态 */
@@ -471,7 +566,7 @@ body.tech-bg {
   justify-content: center;
   background: var(--bg-color);
   background-image: linear-gradient(to bottom, rgba(0, 30, 60, 0.05), transparent);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .content-wrapper {
@@ -481,24 +576,27 @@ body.tech-bg {
   max-width: 1000px;
   padding: 15px;
   box-sizing: border-box;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  height: auto;
+  overflow: visible;
 }
 
 /* 下载选项下拉菜单 */
 .download-dropdown {
   position: absolute;
   z-index: 1000;
+  max-height: 90vh;
 }
 
 .download-dropdown-content {
   display: flex;
   flex-direction: column;
   min-width: 180px;
+  max-height: 80vh;
   background-color: var(--card-bg);
   border-radius: var(--card-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+  overflow-y: auto;
   border: 1px solid var(--border-color);
 }
 

@@ -445,10 +445,43 @@ function createDownloadDropdown() {
 // 定位下拉菜单
 function positionDropdown(dropdown, anchor) {
   const rect = anchor.getBoundingClientRect();
+  
+  // 计算最佳显示位置
+  let top = rect.bottom + window.scrollY + 5;
+  let left = rect.left + window.scrollX;
+  
+  // 检查是否超出页面底部
+  const dropdownHeight = 200; // 估计高度
+  const windowHeight = window.innerHeight;
+  const windowBottom = window.scrollY + windowHeight;
+  
+  // 如果下拉菜单会超出底部，则显示在按钮上方
+  if (top + dropdownHeight > windowBottom) {
+    top = rect.top + window.scrollY - dropdownHeight - 5;
+  }
+  
+  // 确保不会超出页面左侧
+  if (left < 10) {
+    left = 10;
+  }
+  
+  // 确保不会超出页面右侧
+  const dropdownWidth = 200; // 估计宽度
+  if (left + dropdownWidth > document.documentElement.clientWidth - 10) {
+    left = document.documentElement.clientWidth - dropdownWidth - 10;
+  }
+  
   dropdown.style.position = 'absolute';
-  dropdown.style.top = `${rect.bottom + window.scrollY + 5}px`;
-  dropdown.style.left = `${rect.left + window.scrollX}px`;
+  dropdown.style.top = `${top}px`;
+  dropdown.style.left = `${left}px`;
+  dropdown.style.zIndex = '2000'; // 确保更高的z-index
+  
   document.body.appendChild(dropdown);
+  
+  // 滚动到下拉菜单可见
+  setTimeout(() => {
+    dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
 }
 
 // 设置下载按钮监听器
@@ -832,21 +865,58 @@ async function loadTabData(tabId) {
 
 // 初始化标签页选择器
 async function initTabSelector() {
-  const tabSelector = document.getElementById('tabSelector');
-  if (!tabSelector) return;
+  const tabSelectorWrapper = document.querySelector('.tab-selector-wrapper');
+  if (!tabSelectorWrapper) return;
   
   try {
+    // 获取当前页面的域名
+    const currentDomainUrl = document.getElementById('domainUrl')?.textContent;
+    let currentDomain = '';
+    let displayDomain = I18n.getText('currentTab') || '当前标签页';
+    
+    try {
+      if (currentDomainUrl && currentDomainUrl !== '--') {
+        const url = new URL(currentDomainUrl);
+        currentDomain = url.hostname;
+        // 设置显示用的域名（简短版本）
+        displayDomain = currentDomain;
+      }
+    } catch (e) {
+      console.error('解析当前域名出错:', e);
+    }
+    
+    // 创建自定义下拉菜单元素
+    tabSelectorWrapper.innerHTML = '';
+    const customDropdown = document.createElement('div');
+    customDropdown.className = 'custom-dropdown';
+    
+    const dropdownSelected = document.createElement('div');
+    dropdownSelected.className = 'dropdown-selected';
+    dropdownSelected.innerHTML = `
+      <span id="selectedTabText" title="${currentDomainUrl || ''}">${displayDomain}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    `;
+    
+    const dropdownOptions = document.createElement('div');
+    dropdownOptions.className = 'dropdown-options';
+    
+    customDropdown.appendChild(dropdownSelected);
+    customDropdown.appendChild(dropdownOptions);
+    tabSelectorWrapper.appendChild(customDropdown);
+    
     // 获取所有标签页
     const tabs = await chrome.tabs.query({});
     
-    // 清空现有选项
-    tabSelector.innerHTML = '';
-    
     // 添加当前选项
-    const currentOption = document.createElement('option');
-    currentOption.value = 'current';
-    currentOption.textContent = I18n.getText('currentTab') || '当前标签页';
-    tabSelector.appendChild(currentOption);
+    const currentOption = document.createElement('div');
+    currentOption.className = 'dropdown-option selected';
+    currentOption.dataset.value = 'current';
+    currentOption.dataset.domain = currentDomain;
+    currentOption.title = currentDomainUrl || I18n.getText('currentTab') || '当前标签页';
+    currentOption.innerHTML = `<span class="tab-domain">${displayDomain}</span>`;
+    dropdownOptions.appendChild(currentOption);
     
     // 获取授权域名列表
     const authorizedDomains = await getAuthorizedDomains();
@@ -866,19 +936,28 @@ async function initTabSelector() {
           
           // 只添加授权域名或本地开发地址
           if (isAuthorizedDomain(domain, authorizedDomains) || isLocalhost(domain)) {
-            const option = document.createElement('option');
-            option.value = tab.id;
+            // 截取标题长度，仅显示有意义的部分
+            const title = tab.title || '';
+            const shortTitle = truncateTitle(title, domain);
             
-            // 获取显示名称 (使用域名或标题的一部分)
-            let displayName = domain;
+            const option = document.createElement('div');
+            option.className = 'dropdown-option';
+            option.dataset.value = tab.id;
+            option.dataset.domain = domain;
+            option.title = `${domain} - ${tab.title || ''}`;
             
-            // 截取标题长度
-            const title = tab.title && tab.title.length > 30 
-              ? tab.title.substring(0, 27) + '...'
-              : (tab.title || 'Unknown');
+            // 使用更简洁的显示形式
+            option.innerHTML = `<span class="tab-domain">${domain}</span>`;
+            if (shortTitle) {
+              option.innerHTML += `<span class="tab-title">${shortTitle}</span>`;
+            }
             
-            option.textContent = `${displayName} - ${title}`;
-            authorizedTabs.push(option);
+            authorizedTabs.push({
+              element: option,
+              domain: domain.toLowerCase(),
+              tabId: tab.id,
+              matchesCurrent: currentDomain && domain.toLowerCase() === currentDomain.toLowerCase()
+            });
           }
         }
       } catch (e) {
@@ -888,21 +967,62 @@ async function initTabSelector() {
     });
     
     // 按域名排序并添加到选择器
-    authorizedTabs.sort((a, b) => a.textContent.localeCompare(b.textContent));
-    authorizedTabs.forEach(option => tabSelector.appendChild(option));
+    authorizedTabs.sort((a, b) => a.domain.localeCompare(b.domain));
+    
+    // 查找是否有匹配当前域名的标签页
+    const matchingTab = authorizedTabs.find(tab => tab.matchesCurrent);
+    
+    authorizedTabs.forEach(tab => {
+      dropdownOptions.appendChild(tab.element);
+      
+      // 如果找到匹配当前域名的标签页，自动选中它
+      if (matchingTab && tab.tabId === matchingTab.tabId) {
+        // 取消当前选中的样式
+        currentOption.classList.remove('selected');
+        // 添加选中样式
+        tab.element.classList.add('selected');
+        // 由于我们默认已经显示当前域名，不需要额外更新选中文本
+        // 加载匹配标签页的数据
+        loadTabData(tab.tabId);
+      }
+    });
     
     // 如果没有授权的标签页，显示一条信息
     if (authorizedTabs.length === 0) {
-      const noAuthOption = document.createElement('option');
-      noAuthOption.value = '';
-      noAuthOption.disabled = true;
+      const noAuthOption = document.createElement('div');
+      noAuthOption.className = 'dropdown-option disabled';
       noAuthOption.textContent = I18n.getText('noAuthorizedTabs') || '没有其他授权的标签页';
-      tabSelector.appendChild(noAuthOption);
+      dropdownOptions.appendChild(noAuthOption);
     }
     
-    // 监听选择变化事件
-    tabSelector.addEventListener('change', async (e) => {
-      const selectedTabId = e.target.value;
+    // 点击显示/隐藏下拉菜单
+    dropdownSelected.addEventListener('click', () => {
+      dropdownSelected.classList.toggle('active');
+      dropdownOptions.classList.toggle('active');
+    });
+    
+    // 点击选项后关闭下拉菜单
+    dropdownOptions.addEventListener('click', async (e) => {
+      const option = e.target.closest('.dropdown-option');
+      if (!option || option.classList.contains('disabled')) return;
+      
+      // 更新选中状态
+      dropdownOptions.querySelectorAll('.dropdown-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      option.classList.add('selected');
+      
+      // 更新显示文本 - 只显示域名部分
+      const domain = option.dataset.domain || option.querySelector('.tab-domain')?.textContent || '';
+      document.getElementById('selectedTabText').textContent = domain;
+      document.getElementById('selectedTabText').title = option.title || domain;
+      
+      // 关闭下拉菜单
+      dropdownSelected.classList.remove('active');
+      dropdownOptions.classList.remove('active');
+      
+      // 处理选中的值
+      const selectedTabId = option.dataset.value;
       
       if (selectedTabId === 'current') {
         // 获取当前活动标签页
@@ -916,9 +1036,33 @@ async function initTabSelector() {
       }
     });
     
+    // 点击其他地方关闭下拉菜单
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.custom-dropdown')) {
+        dropdownSelected.classList.remove('active');
+        dropdownOptions.classList.remove('active');
+      }
+    });
+    
   } catch (error) {
     console.error('初始化标签页选择器出错:', error);
   }
+}
+
+// 辅助函数：截取标题，避免重复显示域名
+function truncateTitle(title, domain) {
+  if (!title) return '';
+  
+  // 移除域名部分，避免重复
+  let shortTitle = title.replace(domain, '').trim();
+  shortTitle = shortTitle.replace(/^[-–—\s|]*/, '').trim(); // 移除开头的分隔符
+  
+  // 如果标题过长，截取
+  if (shortTitle.length > 20) {
+    shortTitle = shortTitle.substring(0, 18) + '...';
+  }
+  
+  return shortTitle;
 }
 
 // 检查域名是否为授权域名

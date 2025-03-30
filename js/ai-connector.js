@@ -18,13 +18,20 @@ const AI_PROVIDERS = {
       'https://api.openaiapi.com/v1/chat/completions',
       'https://api.aiproxy.io/v1/chat/completions'
     ],
-    buildRequest: (model, messages, maxTokens) => ({
+    buildRequest: (model, messages, maxTokens, stream = false) => ({
       model: model,
       messages: messages,
       max_tokens: maxTokens,
-      temperature: 0.3
+      temperature: 0.3,
+      stream: stream
     }),
     extractResponse: (data) => data.choices[0].message.content,
+    extractStreamResponse: (data) => {
+      if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+        return data.choices[0].delta.content;
+      }
+      return "";
+    },
     buildHeaders: (apiKey, isProxy = false) => isProxy ? 
       {
         'Content-Type': 'application/json',
@@ -46,7 +53,7 @@ const AI_PROVIDERS = {
     },
     defaultModel: 'claude-3-sonnet',
     defaultApiUrl: 'https://api.anthropic.com/v1/messages',
-    buildRequest: (model, systemPrompt, userContent, maxTokens) => ({
+    buildRequest: (model, systemPrompt, userContent, maxTokens, stream = false) => ({
       model: model,
       system: systemPrompt,
       messages: [
@@ -55,9 +62,16 @@ const AI_PROVIDERS = {
           content: userContent
         }
       ],
-      max_tokens: maxTokens
+      max_tokens: maxTokens,
+      stream: stream
     }),
     extractResponse: (data) => data.content[0].text,
+    extractStreamResponse: (data) => {
+      if (data.delta && data.delta.text) {
+        return data.delta.text;
+      }
+      return "";
+    },
     buildHeaders: (apiKey) => ({
       'Content-Type': 'application/json',
       'x-api-key': apiKey,
@@ -74,13 +88,20 @@ const AI_PROVIDERS = {
     },
     defaultModel: 'deepseek-chat',
     defaultApiUrl: 'https://api.deepseek.com/v1/chat/completions',
-    buildRequest: (model, messages, maxTokens) => ({
+    buildRequest: (model, messages, maxTokens, stream = false) => ({
       model: model,
       messages: messages,
       max_tokens: maxTokens,
-      temperature: 0.3
+      temperature: 0.3,
+      stream: stream
     }),
     extractResponse: (data) => data.choices[0].message.content,
+    extractStreamResponse: (data) => {
+      if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+        return data.choices[0].delta.content;
+      }
+      return "";
+    },
     buildHeaders: (apiKey) => ({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`
@@ -494,10 +515,282 @@ function formatNetworkDataForAI(requestsData, statistics) {
   return summary;
 }
 
+// 新增流式数据处理函数
+/**
+ * 处理流式响应数据
+ * @param {ReadableStream} stream - 返回的流数据
+ * @param {Function} onChunk - 处理每个数据块的回调
+ * @param {string} provider - AI提供商
+ * @returns {Promise<string>} 完整的响应文本
+ */
+async function handleStreamResponse(stream, onChunk, provider) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let completeText = "";
+  
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      // 解码返回的数据
+      const chunk = decoder.decode(value, { stream: true });
+      
+      // 处理数据行（处理SSE格式）
+      const lines = chunk.split("\n").filter(line => line.trim() !== "");
+      
+      for (const line of lines) {
+        // 跳过非数据行
+        if (!line.startsWith("data:")) continue;
+        
+        // 提取数据部分
+        const dataContent = line.slice(5).trim();
+        
+        // 如果是 [DONE] 标记，处理结束
+        if (dataContent === "[DONE]") continue;
+        
+        try {
+          // 解析JSON数据
+          const data = JSON.parse(dataContent);
+          
+          // 根据不同提供商提取文本内容
+          const providerKey = provider.toUpperCase();
+          let textChunk = "";
+          
+          if (AI_PROVIDERS[providerKey]) {
+            textChunk = AI_PROVIDERS[providerKey].extractStreamResponse(data);
+          }
+          
+          if (textChunk) {
+            completeText += textChunk;
+            // 调用回调函数，实时处理返回的数据
+            if (onChunk) onChunk(textChunk, completeText);
+          }
+        } catch (error) {
+          console.warn("Error parsing SSE data:", error, dataContent);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Stream reading error:", error);
+    throw error;
+  } finally {
+    reader.releaseLock();
+  }
+  
+  return completeText;
+}
+
+/**
+ * 流式发送数据到OpenAI API
+ */
+async function streamOpenAI(analysisData, apiKey, model, maxTokens, options = {}, onChunk) {
+  try {
+    // 选择模型
+    const modelId = AI_PROVIDERS.OPENAI.models[model] || AI_PROVIDERS.OPENAI.models[AI_PROVIDERS.OPENAI.defaultModel];
+    
+    // 添加语言指令
+    const language = options?.language || 'en';
+    const languageInstructions = language === 'zh' 
+      ? '请用中文回答，并对以下网络性能数据进行分析。' 
+      : 'Please respond in English and analyze the following network performance data.';
+    
+    // 创建提示和用户消息
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues. ${languageInstructions}`
+      },
+      {
+        role: 'user',
+        content: `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`
+      }
+    ];
+    
+    // 构建请求体，启用流式传输
+    const requestBody = AI_PROVIDERS.OPENAI.buildRequest(modelId, messages, maxTokens, true);
+    
+    // 获取API端点
+    const endpoint = {
+      url: getApiUrl('OPENAI'),
+      headers: AI_PROVIDERS.OPENAI.buildHeaders(apiKey, false),
+      name: 'Custom OpenAI API'
+    };
+    
+    // 发送请求
+    const response = await fetch(
+      endpoint.url,
+      {
+        method: 'POST',
+        headers: endpoint.headers,
+        body: JSON.stringify(requestBody)
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+    }
+    
+    // 处理流式响应
+    const completeText = await handleStreamResponse(response.body, onChunk, 'OPENAI');
+    
+    return {
+      analysis: completeText,
+      model: model,
+      provider: `OpenAI (via ${endpoint.name})`
+    };
+  } catch (error) {
+    console.error('Error in OpenAI stream:', error);
+    throw error;
+  }
+}
+
+/**
+ * 流式发送数据到Anthropic API
+ */
+async function streamAnthropic(analysisData, apiKey, model, maxTokens, options = {}, onChunk) {
+  try {
+    // 选择模型
+    const modelId = AI_PROVIDERS.ANTHROPIC.models[model] || AI_PROVIDERS.ANTHROPIC.models[AI_PROVIDERS.ANTHROPIC.defaultModel];
+    
+    // 添加语言指令
+    const language = options?.language || 'en';
+    const languageInstructions = language === 'zh' 
+      ? '请用中文回答，并对以下网络性能数据进行分析。' 
+      : 'Please respond in English and analyze the following network performance data.';
+    
+    // 为Claude API格式化消息
+    const systemPrompt = `You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues. ${languageInstructions}`;
+    const userContent = `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`;
+    
+    // 构建请求体，启用流式传输
+    const requestBody = AI_PROVIDERS.ANTHROPIC.buildRequest(modelId, systemPrompt, userContent, maxTokens, true);
+    
+    // 获取API端点
+    const apiUrl = getApiUrl('ANTHROPIC');
+    
+    // 发送请求
+    const response = await fetch(
+      apiUrl,
+      {
+        method: 'POST',
+        headers: AI_PROVIDERS.ANTHROPIC.buildHeaders(apiKey),
+        body: JSON.stringify(requestBody)
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+    }
+    
+    // 处理流式响应
+    const completeText = await handleStreamResponse(response.body, onChunk, 'ANTHROPIC');
+    
+    return {
+      analysis: completeText,
+      model: model,
+      provider: 'Anthropic'
+    };
+  } catch (error) {
+    console.error('Error in Anthropic stream:', error);
+    throw error;
+  }
+}
+
+/**
+ * 流式发送数据到Deepseek API
+ */
+async function streamDeepseek(analysisData, apiKey, model, maxTokens, options = {}, onChunk) {
+  try {
+    // 选择模型
+    const modelId = AI_PROVIDERS.DEEPSEEK.models[model] || AI_PROVIDERS.DEEPSEEK.models[AI_PROVIDERS.DEEPSEEK.defaultModel];
+    
+    // 添加语言指令
+    const language = options?.language || 'en';
+    const languageInstructions = language === 'zh' 
+      ? '请用中文回答，并对以下网络性能数据进行分析。' 
+      : 'Please respond in English and analyze the following network performance data.';
+    
+    // 创建提示和用户消息
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a network performance analysis expert. Analyze the following web performance data and provide insights, recommendations for improvement, and identify critical performance issues. ${languageInstructions}`
+      },
+      {
+        role: 'user',
+        content: `Please analyze this network performance data from Chrome Network Analyzer:\n\n${JSON.stringify(analysisData, null, 2)}`
+      }
+    ];
+    
+    // 构建请求体，启用流式传输
+    const requestBody = AI_PROVIDERS.DEEPSEEK.buildRequest(modelId, messages, maxTokens, true);
+    
+    // 获取API端点
+    const apiUrl = getApiUrl('DEEPSEEK');
+    
+    // 发送请求
+    const response = await fetch(
+      apiUrl,
+      {
+        method: 'POST',
+        headers: AI_PROVIDERS.DEEPSEEK.buildHeaders(apiKey),
+        body: JSON.stringify(requestBody)
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: { message: response.statusText } }));
+      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+    }
+    
+    // 处理流式响应
+    const completeText = await handleStreamResponse(response.body, onChunk, 'DEEPSEEK');
+    
+    return {
+      analysis: completeText,
+      model: model,
+      provider: 'Deepseek'
+    };
+  } catch (error) {
+    console.error('Error in Deepseek stream:', error);
+    throw error;
+  }
+}
+
+/**
+ * 根据提供商以流模式发送数据到指定AI
+ * @param {object} analysisData - 网络分析数据
+ * @param {string} provider - AI提供商标识
+ * @param {string} apiKey - API密钥
+ * @param {string} model - 模型名称
+ * @param {object} options - 附加选项
+ * @param {number} maxTokens - 最大token数
+ * @param {Function} onChunk - 处理每个数据块的回调
+ * @returns {Promise<object>} 分析结果
+ */
+async function streamToAI(analysisData, provider, apiKey, model, options = {}, maxTokens = 2000, onChunk) {
+  const providerKey = provider.toUpperCase();
+  
+  switch (providerKey) {
+    case 'OPENAI':
+      return streamOpenAI(analysisData, apiKey, model, maxTokens, options, onChunk);
+    case 'ANTHROPIC':
+      return streamAnthropic(analysisData, apiKey, model, maxTokens, options, onChunk);
+    case 'DEEPSEEK':
+      return streamDeepseek(analysisData, apiKey, model, maxTokens, options, onChunk);
+    default:
+      throw new Error(`Unsupported AI provider for streaming: ${provider}`);
+  }
+}
+
 // Export the AI Connector functionality
 export const AiConnector = {
   // Core functions
   sendToAI,
+  streamToAI,  // 添加新的流式API
   formatNetworkDataForAI,
   setCustomApiUrl,
   
@@ -505,6 +798,9 @@ export const AiConnector = {
   sendToOpenAI,
   sendToAnthropic,
   sendToDeepseek,
+  streamOpenAI,  // 添加流式版本的函数
+  streamAnthropic,
+  streamDeepseek,
   
   // Configuration constants
   AI_PROVIDERS,

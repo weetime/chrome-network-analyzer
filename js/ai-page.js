@@ -848,32 +848,57 @@ async function initTabSelector() {
     currentOption.textContent = I18n.getText('currentTab') || '当前标签页';
     tabSelector.appendChild(currentOption);
     
-    // 添加其他标签页选项
+    // 获取授权域名列表
+    const authorizedDomains = await getAuthorizedDomains();
+    
+    // 添加其他符合条件的标签页选项
+    const authorizedTabs = [];
+    
     tabs.forEach(tab => {
       // 忽略当前页面
       if (tab.id === chrome.devtools?.inspectedWindow?.tabId) return;
       
-      const option = document.createElement('option');
-      option.value = tab.id;
-      
-      // 获取显示名称 (使用域名或标题的一部分)
-      let displayName = '';
       try {
-        const url = new URL(tab.url);
-        displayName = url.hostname;
+        // 检查标签页是否有URL且是否为授权域名
+        if (tab.url) {
+          const url = new URL(tab.url);
+          const domain = url.hostname;
+          
+          // 只添加授权域名或本地开发地址
+          if (isAuthorizedDomain(domain, authorizedDomains) || isLocalhost(domain)) {
+            const option = document.createElement('option');
+            option.value = tab.id;
+            
+            // 获取显示名称 (使用域名或标题的一部分)
+            let displayName = domain;
+            
+            // 截取标题长度
+            const title = tab.title && tab.title.length > 30 
+              ? tab.title.substring(0, 27) + '...'
+              : (tab.title || 'Unknown');
+            
+            option.textContent = `${displayName} - ${title}`;
+            authorizedTabs.push(option);
+          }
+        }
       } catch (e) {
-        // 如果URL解析失败，使用标题
-        displayName = tab.title || `Tab ${tab.id}`;
+        // 如果URL解析失败，跳过这个标签页
+        console.error('解析标签页URL出错:', e);
       }
-      
-      // 截取标题长度
-      const title = tab.title && tab.title.length > 30 
-        ? tab.title.substring(0, 27) + '...'
-        : (tab.title || 'Unknown');
-      
-      option.textContent = `${displayName} - ${title}`;
-      tabSelector.appendChild(option);
     });
+    
+    // 按域名排序并添加到选择器
+    authorizedTabs.sort((a, b) => a.textContent.localeCompare(b.textContent));
+    authorizedTabs.forEach(option => tabSelector.appendChild(option));
+    
+    // 如果没有授权的标签页，显示一条信息
+    if (authorizedTabs.length === 0) {
+      const noAuthOption = document.createElement('option');
+      noAuthOption.value = '';
+      noAuthOption.disabled = true;
+      noAuthOption.textContent = I18n.getText('noAuthorizedTabs') || '没有其他授权的标签页';
+      tabSelector.appendChild(noAuthOption);
+    }
     
     // 监听选择变化事件
     tabSelector.addEventListener('change', async (e) => {
@@ -885,7 +910,7 @@ async function initTabSelector() {
         if (activeTabs && activeTabs.length > 0) {
           await loadTabData(activeTabs[0].id);
         }
-      } else {
+      } else if (selectedTabId) {
         // 加载选中的标签页数据
         await loadTabData(parseInt(selectedTabId));
       }
@@ -893,5 +918,41 @@ async function initTabSelector() {
     
   } catch (error) {
     console.error('初始化标签页选择器出错:', error);
+  }
+}
+
+// 检查域名是否为授权域名
+function isAuthorizedDomain(domain, authorizedDomains) {
+  if (!domain || !authorizedDomains || !authorizedDomains.length) return false;
+  
+  // 检查完全匹配
+  if (authorizedDomains.includes(domain)) return true;
+  
+  // 检查子域名匹配 (如果authorizedDomains包含 example.com，则 sub.example.com 也是授权的)
+  return authorizedDomains.some(authDomain => {
+    return domain.endsWith('.' + authDomain);
+  });
+}
+
+// 检查是否为本地开发地址
+function isLocalhost(domain) {
+  return domain === 'localhost' || domain === '127.0.0.1' || domain.match(/^192\.168\.\d{1,3}\.\d{1,3}$/);
+}
+
+// 获取授权域名列表
+async function getAuthorizedDomains() {
+  try {
+    // 尝试从存储中获取授权域名列表
+    const result = await chrome.storage.sync.get('authorizedDomains');
+    const domains = result.authorizedDomains || [];
+    
+    // 始终允许常见的开发和测试域名
+    const defaultDomains = ['localhost', '127.0.0.1', 'example.com'];
+    
+    // 合并默认域名和存储的域名，确保无重复
+    return [...new Set([...defaultDomains, ...domains])];
+  } catch (error) {
+    console.error('获取授权域名列表出错:', error);
+    return ['localhost', '127.0.0.1']; // 出错时返回基本本地域名
   }
 }

@@ -144,7 +144,10 @@ async function runAiAnalysis() {
     loading: document.getElementById('analysisLoading'),
     content: document.getElementById('analysisContent'),
     text: document.getElementById('analysisText'),
-    error: document.getElementById('analysisError')
+    error: document.getElementById('analysisError'),
+    progress: document.getElementById('analysisProgress'),
+    progressBar: document.getElementById('analysisProgressBar'),
+    progressText: document.getElementById('analysisProgressText')
   };
   
   if (!elements.loading || !elements.content || !elements.text || !elements.error) {
@@ -152,11 +155,17 @@ async function runAiAnalysis() {
     return;
   }
   
-  // 显示加载中，隐藏内容和错误
+  // 重置并显示进度条，隐藏内容和错误
+  elements.progressBar.style.width = '0%';
+  elements.progressText.textContent = I18n.getText('analysisStarting') || '开始分析...';
   elements.loading.style.display = 'flex';
+  elements.progress.style.display = 'block';
   elements.text.style.display = 'block'; // 使文本元素可见，以便流式显示结果
   elements.text.innerHTML = '<div class="stream-cursor"></div>'; // 添加一个闪烁光标
   elements.error.style.display = 'none';
+  
+  // 模拟数据加载进度
+  updateProgress(10, elements, I18n.getText('dataLoading') || '加载数据...');
   
   // 确保有请求数据
   if (Object.keys(requestsData).length === 0) {
@@ -176,10 +185,14 @@ async function runAiAnalysis() {
     return;
   }
   
+  updateProgress(20, elements, I18n.getText('calculatingStats') || '计算统计数据...');
+  
   // 计算统计数据
   const statistics = calculateStatistics(requestsData);
   
   try {
+    updateProgress(30, elements, I18n.getText('loadingAiConfig') || '加载AI配置...');
+    
     // 获取AI配置
     const config = await getAIConfig();
     
@@ -188,8 +201,11 @@ async function runAiAnalysis() {
       showAnalysisError('未配置API密钥。请在选项页面中配置API密钥。', elements);
       ToastManager.showError(I18n.getText('noApiKeyConfigured') || '未配置API密钥。请在选项页面中配置API密钥。');
       elements.loading.style.display = 'none';
+      elements.progress.style.display = 'none';
       return;
     }
+    
+    updateProgress(40, elements, I18n.getText('preparingData') || '准备分析数据...');
     
     // 更新UI显示AI提供商和模型
     updateAIProviderDisplay(config);
@@ -198,8 +214,26 @@ async function runAiAnalysis() {
     const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
     const currentLanguage = I18n.getCurrentLanguage();
     
+    updateProgress(50, elements, I18n.getText('connectingAi') || '连接到AI服务...');
+    
+    // 创建一个变量跟踪生成进度
+    let generationProgress = 0;
+    const startGenerationPercent = 60;
+    const endGenerationPercent = 95;
+    
     // 使用流式API，定义处理每个数据块的回调函数
     const onChunkReceived = (chunk, fullText) => {
+      // 更新生成进度
+      generationProgress = Math.min(generationProgress + 1, 100);
+      const progressPercent = startGenerationPercent + 
+        (generationProgress / 100) * (endGenerationPercent - startGenerationPercent);
+      
+      updateProgress(
+        progressPercent, 
+        elements, 
+        I18n.getText('generatingAnalysis') || '生成分析报告...'
+      );
+      
       // 格式化并追加新的文本块
       const formattedChunk = formatAnalysisText(chunk);
       
@@ -209,9 +243,6 @@ async function runAiAnalysis() {
       // 当内容增加时，滚动到底部以便用户看到最新内容
       elements.content.scrollTop = elements.content.scrollHeight;
     };
-    
-    // 隐藏加载动画，因为我们现在会看到流式输出
-    elements.loading.style.display = 'none';
     
     // 使用流式API发送请求
     const result = await AiConnector.streamToAI(
@@ -230,10 +261,20 @@ async function runAiAnalysis() {
     // 设置结果的提供商和模型信息
     updateProviderModelInfo(result, config);
     
+    // 完成进度
+    updateProgress(100, elements, I18n.getText('analysisComplete') || '分析完成');
+    
+    // 隐藏进度条和加载区域
+    setTimeout(() => {
+      elements.loading.style.display = 'none';
+      elements.progress.style.display = 'none';
+    }, 500);
+    
   } catch (error) {
     showAnalysisError(`AI分析过程中出错: ${error.message}`, elements);
     ToastManager.showError(`${I18n.getText('aiAnalysisError') || 'AI分析过程中出错'}: ${error.message}`);
     elements.loading.style.display = 'none';
+    elements.progress.style.display = 'none';
   }
 }
 
@@ -729,6 +770,9 @@ async function init() {
     // 初始化AI提供商显示
     await initAIProviderDisplay();
     
+    // 初始化标签页选择器
+    await initTabSelector();
+    
     // 初始化页面数据
     await initPage();
     
@@ -744,3 +788,115 @@ async function init() {
 
 // 在DOM加载完成后初始化页面
 document.addEventListener('DOMContentLoaded', init);
+
+// 更新进度条
+function updateProgress(percent, elements, statusText) {
+  if (!elements.progressBar || !elements.progressText) return;
+  
+  elements.progressBar.style.width = `${percent}%`;
+  elements.progressText.textContent = statusText;
+  
+  // 如果进度接近完成，改变进度条颜色
+  if (percent >= 90) {
+    elements.progressBar.classList.add('progress-complete');
+  } else {
+    elements.progressBar.classList.remove('progress-complete');
+  }
+}
+
+// 获取并加载指定标签页数据
+async function loadTabData(tabId) {
+  try {
+    // 更新当前标签页ID
+    currentTabId = tabId;
+    
+    // 获取标签页信息并显示域名
+    await updateTabInfo(tabId);
+    
+    // 获取网络请求数据
+    await fetchNetworkData();
+    
+    // 更新数据概览
+    updateDataOverview(requestsData);
+    
+    // 更新统计信息
+    if (StatsManager) {
+      StatsManager.updateStatistics();
+    }
+    
+    // 显示成功消息
+    ToastManager.success(I18n.getText('tabDataLoaded') || '已加载标签页数据');
+    
+    return true;
+  } catch (error) {
+    console.error('加载标签页数据出错:', error);
+    ToastManager.showError(`${I18n.getText('tabDataLoadError') || '加载标签页数据出错'}: ${error.message}`);
+    return false;
+  }
+}
+
+// 初始化标签页选择器
+async function initTabSelector() {
+  const tabSelector = document.getElementById('tabSelector');
+  if (!tabSelector) return;
+  
+  try {
+    // 获取所有标签页
+    const tabs = await chrome.tabs.query({});
+    
+    // 清空现有选项
+    tabSelector.innerHTML = '';
+    
+    // 添加当前选项
+    const currentOption = document.createElement('option');
+    currentOption.value = 'current';
+    currentOption.textContent = I18n.getText('currentTab') || '当前标签页';
+    tabSelector.appendChild(currentOption);
+    
+    // 添加其他标签页选项
+    tabs.forEach(tab => {
+      // 忽略当前页面
+      if (tab.id === chrome.devtools?.inspectedWindow?.tabId) return;
+      
+      const option = document.createElement('option');
+      option.value = tab.id;
+      
+      // 获取显示名称 (使用域名或标题的一部分)
+      let displayName = '';
+      try {
+        const url = new URL(tab.url);
+        displayName = url.hostname;
+      } catch (e) {
+        // 如果URL解析失败，使用标题
+        displayName = tab.title || `Tab ${tab.id}`;
+      }
+      
+      // 截取标题长度
+      const title = tab.title && tab.title.length > 30 
+        ? tab.title.substring(0, 27) + '...'
+        : (tab.title || 'Unknown');
+      
+      option.textContent = `${displayName} - ${title}`;
+      tabSelector.appendChild(option);
+    });
+    
+    // 监听选择变化事件
+    tabSelector.addEventListener('change', async (e) => {
+      const selectedTabId = e.target.value;
+      
+      if (selectedTabId === 'current') {
+        // 获取当前活动标签页
+        const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (activeTabs && activeTabs.length > 0) {
+          await loadTabData(activeTabs[0].id);
+        }
+      } else {
+        // 加载选中的标签页数据
+        await loadTabData(parseInt(selectedTabId));
+      }
+    });
+    
+  } catch (error) {
+    console.error('初始化标签页选择器出错:', error);
+  }
+}

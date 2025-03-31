@@ -519,14 +519,17 @@ function formatAnalysisText(text) {
 // 复制分析结果到剪贴板
 function copyAnalysisResults() {
   const analysisText = document.getElementById('analysisText');
-  if (!analysisText || !analysisText.textContent) {
+  if (!analysisText || !analysisText.innerHTML) {
     ToastManager.showError(I18n.getText('noCopyContent') || '没有可复制的分析结果');
     return;
   }
   
-  navigator.clipboard.writeText(analysisText.textContent)
+  // 转换为Markdown格式后复制
+  const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
+  
+  navigator.clipboard.writeText(markdownText)
     .then(() => {
-      ToastManager.success(I18n.getText('copySuccess') || '已复制到剪贴板');
+      ToastManager.success(I18n.getText('copySuccess') || '已复制到剪贴板 (Markdown格式)');
     })
     .catch(err => {
       console.error('复制分析结果失败:', err);

@@ -1,118 +1,184 @@
-# Network Request Analyzer Chrome Extension
+# Network Request Analyzer
 
-This Chrome extension analyzes the timing of all network requests on the current page. It provides detailed information about each request, including:
+<div align="center">
+  <img src="images/icon128.png" alt="Network Request Analyzer Logo" width="128" height="128">
+</div>
 
-- URL
-- Request type (document, stylesheet, script, image, etc.)
-- HTTP method (GET, POST, etc.)
-- Status code
-- Total request time
-- Time to First Byte (TTFB)
-- Performance metrics (P99, P95, P90, P50, Average)
-- AI-powered performance analysis
-- And more...
+🚀 A powerful Chrome extension for analyzing network requests with AI-powered insights!
 
-## Screenshots
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/nbhkalnbmfkedmigpehagkcoocogegcp.svg)](https://chromewebstore.google.com/detail/network-request-analyzer/nbhkalnbmfkedmigpehagkcoocogegcp)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/users/nbhkalnbmfkedmigpehagkcoocogegcp.svg)](https://chromewebstore.google.com/detail/network-request-analyzer/nbhkalnbmfkedmigpehagkcoocogegcp)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/rating/nbhkalnbmfkedmigpehagkcoocogegcp.svg)](https://chromewebstore.google.com/detail/network-request-analyzer/nbhkalnbmfkedmigpehagkcoocogegcp)
 
-The extension supports multiple themes and features:
+## 🌟 Features
 
-### Light Mode
-![Light Mode Screenshot](images/light.jpg)
+### Network Request Analysis
+- Real-time monitoring of all HTTP/HTTPS requests
+- Detailed timing breakdown (DNS, TCP, TLS, TTFB, etc.)
+- Request/response headers and payload inspection
+- Error tracking and analysis
+- Performance metrics and statistics
 
-### Dark Mode
-![Dark Mode Screenshot](images/dark.jpg)
+<div align="center">
+  <img src="images/light.jpg" alt="Network Analysis Light Theme" width="600">
+  <p><em>Network Analysis Interface - Light Theme</em></p>
+</div>
 
-### Fire Dark Theme
-![Fire Dark Screenshot](images/firedark.jpg)
+### AI-Powered Insights
+- Intelligent performance bottleneck detection
+- Security risk assessment
+- Optimization recommendations
+- Pattern recognition and analysis
+- Multiple AI provider support (OpenAI, Anthropic, Deepseek)
 
-### Detail View
-![Request Detail View](images/detail.jpg)
+<div align="center">
+  <img src="images/ai-analysis.jpg" alt="AI Analysis Interface" width="600">
+  <p><em>AI-Powered Analysis Interface</em></p>
+</div>
 
-### AI Analysis
-![AI Analysis View](images/ai-analysis.jpg)
+### Advanced Features
+- Domain-based filtering
+- Custom analysis rules
+- Data export capabilities
+- Theme customization
+- Multi-language support
 
-### Settings
-![Settings Page 1](images/setting_01.jpg)
-![Settings Page 2](images/setting_02.jpg)
+<div align="center">
+  <img src="images/detail.jpg" alt="Request Detail View" width="600">
+  <p><em>Detailed Request Analysis View</em></p>
+</div>
 
-## How It Works
+## 🎨 Themes
 
-Below is a simplified workflow of how the extension captures and analyzes network requests:
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="images/dark.jpg" alt="Dark Theme" width="400">
+        <p><em>Dark Theme</em></p>
+      </td>
+      <td align="center">
+        <img src="images/firedark.jpg" alt="Fire Dark Theme" width="400">
+        <p><em>Fire Dark Theme</em></p>
+      </td>
+    </tr>
+  </table>
+</div>
 
-```mermaid
-graph TD
-    A[User browses website] --> B[Chrome extension activates]
-    B --> C[Extension hooks into Chrome DevTools Protocol]
-    C --> D[Captures all network requests]
-    D --> E[Analyzes timing data]
-    E --> F[Calculates performance metrics]
-    F --> G[Displays results in extension UI]
-    G --> H[User can filter/search requests]
-    G --> I[User can export data as CSV]
-    G --> J[User can run AI analysis on requests]
+## ⚙️ Configuration
+
+Easily customize your experience with our intuitive settings interface:
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="images/setting_01.jpg" alt="Settings Page 1" width="400">
+        <p><em>General Settings</em></p>
+      </td>
+      <td align="center">
+        <img src="images/setting_02.jpg" alt="Settings Page 2" width="400">
+        <p><em>AI Provider Configuration</em></p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+## 🚀 Installation
+
+### Chrome Web Store
+Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/network-request-analyzer/nbhkalnbmfkedmigpehagkcoocogegcp)
+
+### Developer Mode
+1. Clone this repository
+2. Open Chrome Extensions page (chrome://extensions/)
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the project directory
+
+## 🔧 Configuration
+
+### AI Provider Setup
+1. Open extension options
+2. Select your preferred AI provider
+3. Enter your API key
+4. Configure additional provider settings
+
+### Display Settings
+- Theme selection (Light/Dark)
+- Table column customization
+- Statistics display options
+- Language preferences
+
+## 💻 Development
+
+### Prerequisites
+- Node.js 14+
+- Chrome Browser
+
+### Setup
+```bash
+# Install dependencies
+npm install
+
+# Build project
+./build.sh
 ```
 
-## Installation
+### Project Structure
+See [project-structure.md](project-structure.md) for detailed project structure documentation.
 
-1. Download or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" by toggling the switch in the top right corner
-4. Click "Load unpacked" and select the directory containing this extension
-5. The extension should now be installed and visible in your Chrome toolbar
+## 🤝 Contributing
 
-## Usage
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-1. Browse to any website
-2. Click the Network Request Analyzer icon in your Chrome toolbar
-3. View the timing information for all network requests made by the page
-4. Use the search and filter options to find specific requests
-5. View performance metrics like P99, P95, P90, P50, and average response times
-6. Click on any request to view detailed information
-7. Use the "Export CSV" button to download the data for further analysis
-8. Click "AI Analysis" to get AI-powered insights about your network performance
+## 📝 Documentation
 
-## Features
+### User Documentation
+- [Getting Started Guide](docs/user-guide.md#getting-started)
+- [Basic Usage](docs/user-guide.md#basic-usage)
+- [Advanced Features](docs/user-guide.md#advanced-features)
+- [Configuration Guide](docs/user-guide.md#configuration)
+- [Troubleshooting](docs/user-guide.md#troubleshooting)
 
-- Real-time monitoring of all network requests
-- Performance metrics dashboard showing P99, P95, P90, P50, and average response times
-- Filtering by request type and status
-- Search functionality to find specific URLs
-- Color-coding based on request duration (fast, medium, slow)
-- Detailed view of individual requests
-- CSV export for data analysis (includes performance metrics)
-- AI-powered analysis of network performance with insights and recommendations
-- Download analysis reports and data in various formats
+### Developer Documentation
+- [API Reference](docs/api.md)
+- [Development Setup](docs/development.md#development-setup)
+- [Project Structure](project-structure.md)
+- [Contributing Guidelines](docs/development.md#contributing)
+- [Testing Guidelines](docs/development.md#testing-guidelines)
 
-## AI Analysis
+### Additional Resources
+- [Performance Optimization](docs/development.md#performance-optimization)
+- [Security Guidelines](docs/development.md#security-guidelines)
+- [Release Process](docs/development.md#deployment)
+- [Roadmap](roadmap.md)
 
-The extension includes an AI-powered analysis feature that:
+## 🔒 Privacy
 
-- Identifies network performance bottlenecks
-- Provides specific optimization recommendations
-- Analyzes request patterns and suggests improvements
-- Generates comprehensive performance reports
-- Supports multiple AI providers (OpenAI, Anthropic, Deepseek)
-- Customizable API settings
+This extension:
+- Does not collect or use your data for unauthorized purposes
+- Does not sell data to third parties
+- Does not transfer data for purposes unrelated to core functionality
+- Does not use data for credit determination or lending purposes
 
-To use the AI analysis:
-1. Configure your AI API provider and key in the extension settings
-2. Navigate to a website and capture network requests
-3. Click the "AI Analysis" button
-4. View detailed performance insights and recommendations
-5. Download or copy the analysis for sharing
+## 📫 Support
 
-## Performance Metrics
+- GitHub Issues: Bug reports and feature requests
+- Email: weetime001@gmail.com
+- [Troubleshooting Guide](docs/user-guide.md#troubleshooting)
+- [FAQ](docs/user-guide.md#faq)
 
-The extension calculates the following performance metrics:
+## 📄 License
 
-- **P99**: The 99th percentile response time - 99% of requests complete within this time
-- **P95**: The 95th percentile response time
-- **P90**: The 90th percentile response time
-- **P50**: The median response time (50th percentile)
-- **Average**: The average response time of all requests
+MIT License - See [LICENSE](LICENSE) file
 
-These metrics are calculated based on the currently filtered requests, allowing you to analyze performance for specific request types or status codes.
+## 🙏 Acknowledgments
 
-## License
-
-MIT
+- Chrome Extension API
+- AI Service Providers
+- Open Source Community

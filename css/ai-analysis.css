@@ -48,6 +48,19 @@
   margin-bottom: 15px;
 }
 
+.header-container .header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-container .header-left h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
 /* AI分析容器 */
 .ai-container {
   padding: 20px;
@@ -67,22 +80,6 @@
   width: 100%;
   height: 3px;
   background: linear-gradient(90deg, var(--accent-color), var(--primary-btn));
-}
-
-/* AI头部样式 */
-.ai-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.ai-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--accent-color);
-  font-weight: 600;
 }
 
 /* 信息控制面板 */
@@ -636,85 +633,99 @@ body.tech-bg {
 /* 响应式设计 */
 @media (max-width: 1024px) {
   .content-wrapper {
-    padding: 15px;
+    max-width: 90%;
   }
-  
+
   .card {
     padding: 15px;
   }
-  
+
   .header-container {
-    padding: 12px 15px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 }
 
 @media (max-width: 768px) {
   .content-wrapper {
-    padding: 10px;
+    max-width: 95%;
+    padding: 20px 0;
   }
-  
+
   .info-summary {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .stats-overview {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
-  
+
   .control-area {
     width: 100%;
-    flex-direction: row;
-    margin-left: 0;
     justify-content: space-between;
+    margin-left: 0;
+    margin-top: 10px;
   }
-  
+
   .tab-selector-wrapper {
     flex: 1;
     margin-right: 10px;
   }
-  
+
   .tab-selector {
     width: 100%;
   }
-  
+
   .ai-footer {
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
   }
-  
+
   .ai-actions {
-    justify-content: space-between;
     width: 100%;
+    justify-content: flex-start;
   }
 }
 
 @media (max-width: 480px) {
   .content-wrapper {
-    padding: 8px;
+    max-width: 100%;
+    padding: 15px 10px;
   }
-  
+
   .card {
-    padding: 10px;
+    margin-bottom: 15px;
   }
-  
-  .ai-header h3 {
+
+  .header-container .header-left h3 {
     font-size: 16px;
   }
-  
+
   .stats-overview {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .control-area {
     flex-direction: column;
+    align-items: stretch;
   }
-  
+
   .tab-selector-wrapper, 
   .ai-run-btn {
     width: 100%;
-    margin-bottom: 8px;
+    margin-top: 10px;
+  }
+
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ai-options-link {
+    margin-top: 10px;
+    align-self: flex-end;
   }
 }

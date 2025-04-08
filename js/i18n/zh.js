@@ -145,7 +145,6 @@ if (typeof window !== 'undefined') {
     aiTip3: '您可以在扩展设置中配置偏好的AI提供商和API密钥',
     aiTip4: '分析过程视请求量和响应而定，可能需要几秒钟时间',
     aiModelInfo: '分析提供: ',
-    analyzingDomain: '分析域名',
     dataOverview: '数据概览',
     downloadReport: '下载报告',
     downloadData: '下载数据',

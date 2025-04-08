@@ -35,10 +35,7 @@ if (typeof window !== 'undefined') {
     invalidDomainFormat: 'Please enter a valid domain format (e.g., example.com)',
     domainExist: 'Domain already exists',
     domainAddSuccess: 'Domain "{domain}" has been authorized',
-    domainAddFailed: 'Failed to authorize domain "{domain}"',
     domainRemoveSuccess: 'Authorization for domain "{domain}" has been removed',
-    domainRemoveConfirm: 'Are you sure you want to remove authorization for domain "{domain}"?',
-    domainRemoveFailed: 'Failed to remove authorization for domain "{domain}"',
     domainName: 'Domain',
     actions: 'Actions',
     
@@ -49,27 +46,13 @@ if (typeof window !== 'undefined') {
     apiKey: 'API Key',
     model: 'AI Model',
     enterApiKey: 'Enter your API key',
-    saveApiKey: 'Save API Key',
-    apiKeyWarning: 'Note: API key will be saved in local storage.',
     apiUrl: 'Custom API URL',
     enterApiUrl: 'Enter custom API URL if needed',
     showAiAnalysis: 'Automatic Analysis',
     configRequired: 'API key not configured. Please configure API key in settings page.',
     
-    // Interface Settings
-    interfaceSettings: 'Interface Settings',
-    interfaceSettingsDesc: 'Customize interface appearance and behavior',
-    darkThemeDefault: 'Dark Theme',
-    defaultRowCount: 'Default Row Count',
-    
-    // Extension Actions
-    extensionActions: 'Extension Actions',
-    extensionActionsDesc: 'Click the button below to access the extension analysis page.',
-    openExtension: 'Open Extension',
-    
     // Status Messages
     settingsSaved: 'Settings saved',
-    errorOccurred: 'An error occurred',
     
     // Language Settings
     languageSettings: 'Language Settings',
@@ -116,7 +99,6 @@ if (typeof window !== 'undefined') {
     // Statistics
     noData: 'No Data',
     totalRequests: 'Total Requests',
-    totalLoadTime: 'Total Load Time',
     slowestRequest: 'Slowest Request',
     avgResponse: 'Avg Response',
     p50Response: 'P50 Response',
@@ -139,13 +121,7 @@ if (typeof window !== 'undefined') {
     // AI Analysis page
     aiAnalysisTitle: 'Network Request AI Analysis',
     backToMain: 'Back to Home',
-    aiTips: 'AI Analysis Tips',
-    aiTip1: 'AI analysis can identify network performance bottlenecks and provide optimization suggestions',
-    aiTip2: 'Analysis results are based on currently captured network request data, ensure you have sufficient request samples',
-    aiTip3: 'You can configure your preferred AI provider and API key in the extension settings',
-    aiTip4: 'Processing time depends on request volume and response, it may take a few seconds',
     aiModelInfo: 'Analysis by: ',
-    analyzingDomain: 'Analyzing Domain',
     dataOverview: 'Data Overview',
     downloadReport: 'Download Report',
     downloadData: 'Download Data',
@@ -185,14 +161,6 @@ if (typeof window !== 'undefined') {
     copyFailed: 'Copy failed',
     initPageError: 'Error initializing AI analysis page',
     
-    // Optimization Suggestions
-    optimizationTips: 'Optimization Tips',
-    optimizationTip1: 'Combine small resources to reduce HTTP requests',
-    optimizationTip2: 'Enable lazy loading for images to prioritize visible content',
-    optimizationTip3: 'Use HTTP/2 protocol for parallel request processing',
-    optimizationTip4: 'Set appropriate caching strategies to reduce repeat requests',
-    optimizationTip5: 'Compress JS and CSS files to reduce transfer size',
-
     languageChangeMsg: 'Switching to English...',
     
     aiSettingsSaved: 'AI analysis settings saved successfully',

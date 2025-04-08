@@ -142,6 +142,7 @@
 body {
   font-family: 'Roboto Mono', monospace, 'SF Mono', 'Consolas', Arial, sans-serif;
   width: 780px;
+  max-width: 100%;
   min-height: 400px;
   margin: 0;
   padding: 15px;
@@ -216,6 +217,8 @@ h2, h3, h4 {
   position: relative;
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .card:hover {

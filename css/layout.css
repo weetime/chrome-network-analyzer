@@ -13,6 +13,8 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .header-container::before {
@@ -432,4 +434,11 @@
 [data-theme="fireblack"] .table-container + * {
   position: relative;
   z-index: 1;
+}
+
+/* 确保所有容器的宽度一致 */
+.header-container, .stats-container, .controls, .table-container, .request-details, .ai-analysis-container {
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
 }

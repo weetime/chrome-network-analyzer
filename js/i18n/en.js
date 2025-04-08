@@ -48,7 +48,6 @@ if (typeof window !== 'undefined') {
     enterApiKey: 'Enter your API key',
     apiUrl: 'Custom API URL',
     enterApiUrl: 'Enter custom API URL if needed',
-    showAiAnalysis: 'Automatic Analysis',
     configRequired: 'API key not configured. Please configure API key in settings page.',
     
     // Status Messages

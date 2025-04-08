@@ -53,7 +53,6 @@ if (typeof window !== 'undefined') {
     apiKeyWarning: '注意：API密钥将保存在本地存储中。',
     apiUrl: '自定义 API 地址',
     enterApiUrl: '输入自定义 API 地址（可选）',
-    showAiAnalysis: '自动分析',
     configRequired: 'API 密钥未配置。请在设置页面配置 API 密钥。',
     
     // 界面设置

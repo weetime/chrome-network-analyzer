@@ -16,6 +16,7 @@ import { ToastManager } from './toast-manager.js';
 // ================ 全局变量 ================
 let currentTabId = null;
 let requestsData = {};
+let isAnalysisRunning = false;
 
 /**
  * 核心功能：数据获取与分析
@@ -228,6 +229,22 @@ function updateProgress(percent, elements, statusText) {
 // ================ AI分析功能 ================
 // 运行AI分析
 async function runAiAnalysis() {
+  // 如果分析正在进行中，则不允许再次点击
+  if (isAnalysisRunning) {
+    ToastManager.showError('分析正在进行中，请等待完成');
+    return;
+  }
+  
+  // 设置分析状态为运行中
+  isAnalysisRunning = true;
+  
+  // 禁用分析按钮并改变样式
+  const analyzeButton = document.getElementById('runAiAnalysisBtn');
+  if (analyzeButton) {
+    analyzeButton.disabled = true;
+    analyzeButton.classList.add('disabled');
+  }
+  
   // 获取分析元素
   const elements = {
     loading: document.getElementById('analysisLoading'),
@@ -241,28 +258,31 @@ async function runAiAnalysis() {
   
   if (!elements.loading || !elements.content || !elements.text || !elements.error) {
     console.error('未找到所需的AI分析元素');
+    resetAnalysisState();
     return;
   }
   
   // 重置UI状态
   resetAnalysisUI(elements);
   
-  // 确保有请求数据
-  if (!await ensureRequestData(elements)) {
-    return;
-  }
-  
-  updateProgress(20, elements, I18n.getText('calculatingStats'));
-  
-  // 计算统计数据
-  const statistics = calculateStatistics(requestsData);
-  
   try {
+    // 确保有请求数据
+    if (!await ensureRequestData(elements)) {
+      resetAnalysisState();
+      return;
+    }
+    
+    updateProgress(20, elements, I18n.getText('calculatingStats'));
+    
+    // 计算统计数据
+    const statistics = calculateStatistics(requestsData);
+    
     // 获取AI配置并检查
     updateProgress(30, elements, I18n.getText('loadingAiConfig'));
     const config = await getAIConfig();
     
     if (!validateAIConfig(config, elements)) {
+      resetAnalysisState();
       return;
     }
     
@@ -275,6 +295,9 @@ async function runAiAnalysis() {
     
   } catch (error) {
     handleAnalysisError(error, elements);
+  } finally {
+    // 无论成功或失败，都重置分析状态
+    resetAnalysisState();
   }
 }
 
@@ -388,12 +411,23 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
   }, 500);
 }
 
+// 重置分析状态和按钮
+function resetAnalysisState() {
+  isAnalysisRunning = false;
+  const analyzeButton = document.getElementById('runAiAnalysisBtn');
+  if (analyzeButton) {
+    analyzeButton.disabled = false;
+    analyzeButton.classList.remove('disabled');
+  }
+}
+
 // 处理分析错误
 function handleAnalysisError(error, elements) {
   showAnalysisError(`AI分析过程中出错: ${error.message}`, elements);
   ToastManager.showError(`${I18n.getText('aiAnalysisError')}: ${error.message}`);
   elements.loading.style.display = 'none';
   elements.progress.style.display = 'none';
+  resetAnalysisState();
 }
 
 // 获取AI配置

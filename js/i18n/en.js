@@ -161,6 +161,21 @@ if (typeof window !== 'undefined') {
     downloadAll: 'Download All',
     requestsCount: 'Request Count',
     
+    // Analysis process messages
+    tabDataLoaded: 'Tab data loaded',
+    tabDataLoadError: 'Error loading tab data',
+    calculatingStats: 'Calculating statistics...',
+    loadingAiConfig: 'Loading AI configuration...',
+    preparingData: 'Preparing analysis data...',
+    analysisStarting: 'Starting analysis...',
+    dataLoading: 'Loading data...',
+    connectingAi: 'Connecting to AI service...',
+    generatingAnalysis: 'Generating analysis report...',
+    analysisComplete: 'Analysis complete',
+    confirmClear: 'Are you sure you want to clear all network data?',
+    currentTab: 'Current tab',
+    noAuthorizedTabs: 'No other authorized tabs',
+    
     // Notification messages
     noDataAvailable: 'No request data available for analysis',
     noApiKeyConfigured: 'No API key configured. Please configure API key in options page',

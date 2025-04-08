@@ -161,6 +161,21 @@ if (typeof window !== 'undefined') {
     downloadAll: '全部下载',
     requestsCount: '请求统计',
     
+    // 分析过程消息
+    tabDataLoaded: '已加载标签页数据',
+    tabDataLoadError: '加载标签页数据出错',
+    calculatingStats: '计算统计数据...',
+    loadingAiConfig: '加载AI配置...',
+    preparingData: '准备分析数据...',
+    analysisStarting: '开始分析...',
+    dataLoading: '加载数据...',
+    connectingAi: '连接到AI服务...',
+    generatingAnalysis: '生成分析报告...',
+    analysisComplete: '分析完成',
+    confirmClear: '确定要清除所有网络数据吗？',
+    currentTab: '当前标签页',
+    noAuthorizedTabs: '没有其他授权的标签页',
+    
     // 通知消息
     noDataAvailable: '没有可用的请求数据进行分析',
     noApiKeyConfigured: '未配置API密钥。请在选项页面中配置API密钥',

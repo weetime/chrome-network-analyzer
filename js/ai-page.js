@@ -125,12 +125,12 @@ async function loadTabData(tabId) {
     }
     
     // 显示成功消息
-    ToastManager.success(I18n.getText('tabDataLoaded') || '已加载标签页数据');
+    ToastManager.success(I18n.getText('tabDataLoaded'));
     
     return true;
   } catch (error) {
     console.error('加载标签页数据出错:', error);
-    ToastManager.showError(`${I18n.getText('tabDataLoadError') || '加载标签页数据出错'}: ${error.message}`);
+    ToastManager.showError(`${I18n.getText('tabDataLoadError')}: ${error.message}`);
     return false;
   }
 }
@@ -252,14 +252,14 @@ async function runAiAnalysis() {
     return;
   }
   
-  updateProgress(20, elements, I18n.getText('calculatingStats') || '计算统计数据...');
+  updateProgress(20, elements, I18n.getText('calculatingStats'));
   
   // 计算统计数据
   const statistics = calculateStatistics(requestsData);
   
   try {
     // 获取AI配置并检查
-    updateProgress(30, elements, I18n.getText('loadingAiConfig') || '加载AI配置...');
+    updateProgress(30, elements, I18n.getText('loadingAiConfig'));
     const config = await getAIConfig();
     
     if (!validateAIConfig(config, elements)) {
@@ -267,7 +267,7 @@ async function runAiAnalysis() {
     }
     
     // 准备分析数据
-    updateProgress(40, elements, I18n.getText('preparingData') || '准备分析数据...');
+    updateProgress(40, elements, I18n.getText('preparingData'));
     updateAIProviderDisplay(config);
     
     // 发送AI请求并处理结果
@@ -281,7 +281,7 @@ async function runAiAnalysis() {
 // 重置分析UI状态
 function resetAnalysisUI(elements) {
   elements.progressBar.style.width = '0%';
-  elements.progressText.textContent = I18n.getText('analysisStarting') || '开始分析...';
+  elements.progressText.textContent = I18n.getText('analysisStarting');
   elements.loading.style.display = 'block';
   elements.progress.style.display = 'block';
   elements.text.style.display = 'block'; // 使文本元素可见，以便流式显示结果
@@ -289,7 +289,7 @@ function resetAnalysisUI(elements) {
   elements.error.style.display = 'none';
   
   // 模拟数据加载进度
-  updateProgress(10, elements, I18n.getText('dataLoading') || '加载数据...');
+  updateProgress(10, elements, I18n.getText('dataLoading'));
 }
 
 // 确保有请求数据
@@ -317,7 +317,7 @@ async function ensureRequestData(elements) {
 // 验证AI配置
 function validateAIConfig(config, elements) {
   if (!config.apiKey) {
-    const errorMsg = I18n.getText('noApiKeyConfigured') || '未配置API密钥。请在选项页面中配置API密钥。';
+    const errorMsg = I18n.getText('noApiKeyConfigured');
     showAnalysisError(errorMsg, elements);
     ToastManager.showError(errorMsg);
     elements.loading.style.display = 'none';
@@ -330,7 +330,7 @@ function validateAIConfig(config, elements) {
 // 处理AI分析过程
 async function processAIAnalysis(requestsData, statistics, config, elements) {
   // 连接到AI服务
-  updateProgress(50, elements, I18n.getText('connectingAi') || '连接到AI服务...');
+  updateProgress(50, elements, I18n.getText('connectingAi'));
   
   // 格式化数据并准备发送到AI
   const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
@@ -351,7 +351,7 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
     updateProgress(
       progressPercent, 
       elements, 
-      I18n.getText('generatingAnalysis') || '生成分析报告...'
+      I18n.getText('generatingAnalysis')
     );
     
     // 更新显示（替换最后的光标元素）
@@ -379,7 +379,7 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
   updateProviderModelInfo(result, config);
   
   // 完成进度
-  updateProgress(100, elements, I18n.getText('analysisComplete') || '分析完成');
+  updateProgress(100, elements, I18n.getText('analysisComplete'));
   
   // 隐藏进度条和加载区域
   setTimeout(() => {
@@ -391,7 +391,7 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
 // 处理分析错误
 function handleAnalysisError(error, elements) {
   showAnalysisError(`AI分析过程中出错: ${error.message}`, elements);
-  ToastManager.showError(`${I18n.getText('aiAnalysisError') || 'AI分析过程中出错'}: ${error.message}`);
+  ToastManager.showError(`${I18n.getText('aiAnalysisError')}: ${error.message}`);
   elements.loading.style.display = 'none';
   elements.progress.style.display = 'none';
 }
@@ -413,7 +413,7 @@ async function getAIConfig() {
 
 // 显示无数据错误
 function showNoDataError(elements) {
-  const noDataMsg = I18n.getText('noDataAvailable') || '没有可用的请求数据进行分析';
+  const noDataMsg = I18n.getText('noDataAvailable');
   showAnalysisError(noDataMsg, elements);
   ToastManager.showError(noDataMsg);
   elements.loading.style.display = 'none';
@@ -520,7 +520,7 @@ function formatAnalysisText(text) {
 function copyAnalysisResults() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.innerHTML) {
-    ToastManager.showError(I18n.getText('noCopyContent') || '没有可复制的分析结果');
+    ToastManager.showError(I18n.getText('noCopyContent'));
     return;
   }
   
@@ -529,11 +529,11 @@ function copyAnalysisResults() {
   
   navigator.clipboard.writeText(markdownText)
     .then(() => {
-      ToastManager.success(I18n.getText('copySuccess') || '已复制到剪贴板 (Markdown格式)');
+      ToastManager.success(I18n.getText('copySuccess'));
     })
     .catch(err => {
       console.error('复制分析结果失败:', err);
-      ToastManager.showError(`${I18n.getText('copyFailed') || '复制失败'}: ${err.message}`);
+      ToastManager.showError(`${I18n.getText('copyFailed')}: ${err.message}`);
     });
 }
 
@@ -541,7 +541,7 @@ function copyAnalysisResults() {
 function downloadReport() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.textContent) {
-    ToastManager.showError(I18n.getText('downloadFailed') || '下载失败: 没有可下载的分析报告');
+    ToastManager.showError(I18n.getText('downloadFailed'));
     return;
   }
   
@@ -561,7 +561,7 @@ function downloadReport() {
     }
   } catch (error) {
     console.error('下载功能出错:', error);
-    ToastManager.showError(`${I18n.getText('downloadFailed') || '下载失败'}: ${error.message}`);
+    ToastManager.showError(`${I18n.getText('downloadFailed')}: ${error.message}`);
   }
 }
 
@@ -571,11 +571,11 @@ function createDownloadDropdown() {
   dropdown.className = 'download-dropdown';
   dropdown.innerHTML = `
     <div class="download-dropdown-content">
-      <div class="download-header">${I18n.getText('downloadOptions') || '下载选项'}</div>
-      <a href="#" id="downloadReportOnly">${I18n.getText('downloadReportOnly').replace('TXT', 'MD') || '仅下载报告 (MD)'}</a>
-      <a href="#" id="downloadDataJSON">${I18n.getText('downloadDataJSON') || '数据 (JSON)'}</a>
-      <a href="#" id="downloadDataCSV">${I18n.getText('downloadDataCSV') || '数据 (CSV)'}</a>
-      <a href="#" id="downloadAll">${I18n.getText('downloadAll') || '全部下载'}</a>
+      <div class="download-header">${I18n.getText('downloadOptions')}</div>
+      <a href="#" id="downloadReportOnly">${I18n.getText('downloadReportOnly').replace('TXT', 'MD')}</a>
+      <a href="#" id="downloadDataJSON">${I18n.getText('downloadDataJSON')}</a>
+      <a href="#" id="downloadDataCSV">${I18n.getText('downloadDataCSV')}</a>
+      <a href="#" id="downloadAll">${I18n.getText('downloadAll')}</a>
     </div>
   `;
   return dropdown;
@@ -650,7 +650,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
   document.getElementById('downloadReportOnly').addEventListener('click', (e) => {
     e.preventDefault();
     const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
-    downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.md`);
+    downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName')}-${domainName}-${currentDate}.md`);
     closeDropdown();
   });
   
@@ -658,9 +658,9 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
   document.getElementById('downloadDataJSON').addEventListener('click', (e) => {
     e.preventDefault();
     if (requestsData && Object.keys(requestsData).length > 0) {
-      downloadJsonFile(requestsData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`);
+      downloadJsonFile(requestsData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`);
     } else {
-      ToastManager.showError(I18n.getText('noDataAvailable') || '没有可用的请求数据');
+      ToastManager.showError(I18n.getText('noDataAvailable'));
     }
     closeDropdown();
   });
@@ -670,9 +670,9 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
     e.preventDefault();
     if (requestsData && Object.keys(requestsData).length > 0) {
       const csvData = convertRequestsToCSV(requestsData);
-      downloadTextFile(csvData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.csv`);
+      downloadTextFile(csvData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.csv`);
     } else {
-      ToastManager.showError(I18n.getText('noDataAvailable') || '没有可用的请求数据');
+      ToastManager.showError(I18n.getText('noDataAvailable'));
     }
     closeDropdown();
   });
@@ -681,12 +681,12 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
   document.getElementById('downloadAll').addEventListener('click', (e) => {
     e.preventDefault();
     const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
-    downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName') || '网络分析报告'}-${domainName}-${currentDate}.md`);
+    downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName')}-${domainName}-${currentDate}.md`);
     
     if (requestsData && Object.keys(requestsData).length > 0) {
-      downloadJsonFile(requestsData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.json`);
+      downloadJsonFile(requestsData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`);
       const csvData = convertRequestsToCSV(requestsData);
-      downloadTextFile(csvData, `${I18n.getText('dataFileName') || '网络请求数据'}-${domainName}-${currentDate}.csv`);
+      downloadTextFile(csvData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.csv`);
     }
     closeDropdown();
   });
@@ -728,7 +728,7 @@ function downloadFile(blob, filename) {
     URL.revokeObjectURL(url);
   }, 100);
   
-  ToastManager.success(`${I18n.getText('downloadSuccess') || '下载成功'}: ${filename}`);
+  ToastManager.success(`${I18n.getText('downloadSuccess')}: ${filename}`);
 }
 
 // 将HTML格式转换回Markdown
@@ -877,7 +877,7 @@ async function initTabSelector() {
     // 获取当前页面的域名
     const currentDomainUrl = document.getElementById('domainUrl')?.textContent;
     let currentDomain = '';
-    let displayDomain = I18n.getText('currentTab') || '当前标签页';
+    let displayDomain = I18n.getText('currentTab');
     
     try {
       if (currentDomainUrl && currentDomainUrl !== '--') {
@@ -1018,7 +1018,7 @@ async function initTabSelector() {
     if (authorizedTabs.length === 0) {
       const noAuthOption = document.createElement('div');
       noAuthOption.className = 'dropdown-option disabled';
-      noAuthOption.textContent = I18n.getText('noAuthorizedTabs') || '没有其他授权的标签页';
+      noAuthOption.textContent = I18n.getText('noAuthorizedTabs');
       dropdownOptions.appendChild(noAuthOption);
     }
     
@@ -1110,7 +1110,7 @@ async function init() {
     console.log('AI分析页面初始化完成，等待用户点击运行分析');
   } catch (error) {
     console.error('初始化AI分析页面时出错:', error);
-    ToastManager.showError(`${I18n.getText('initPageError') || '初始化AI分析页面时出错'}: ${error.message}`);
+    ToastManager.showError(`${I18n.getText('initPageError')}: ${error.message}`);
   }
 }
 

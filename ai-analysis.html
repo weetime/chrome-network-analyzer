@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="css/ai-analysis.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body class="tech-bg">
+<body class="tech-bg compact-layout">
   <div class="content-wrapper">
     <!-- 头部区域 -->
-    <div class="header-container card">
+    <div class="header-container card compact-card">
       <div class="header-left">
         <a href="#" id="backToMain" class="back-link">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -28,9 +28,9 @@
     </div>
     
     <!-- AI分析主要内容 -->
-    <div class="ai-container card">
+    <div class="ai-container card compact-card">
       <!-- 信息控制面板 -->
-      <div class="info-panel">
+      <div class="info-panel compact-panel">
         <!-- URL和基本统计信息 -->
         <div class="info-summary">
           <div class="info-summary-item url-item">
@@ -77,11 +77,11 @@
       </div>
       
       <!-- 分析内容区域 -->
-      <div id="aiAnalysisContent" class="ai-content">
+      <div id="aiAnalysisContent" class="ai-content compact-content">
         <div id="analysisLoading" class="ai-loading"></div>
         
         <div id="analysisContent" class="ai-result-container">
-          <div id="analysisText" class="ai-result code-block">
+          <div id="analysisText" class="ai-result code-block compact-result">
             <!-- AI analysis results will appear here -->
           </div>
           
@@ -95,7 +95,7 @@
           </div>
         </div>
         
-        <div class="ai-footer">
+        <div class="ai-footer compact-footer">
           <div class="ai-info">
             <span data-i18n="aiModelInfo">分析提供: </span>
             <span id="analysisProvider" class="ai-provider">OpenAI</span>

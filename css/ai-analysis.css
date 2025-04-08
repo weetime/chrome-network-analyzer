@@ -382,6 +382,75 @@
   z-index: 10;
 }
 
+/* 紧凑布局样式 - 新增 */
+.compact-layout .content-wrapper {
+  padding: 10px;
+  max-width: 1000px;
+  min-height: auto;
+}
+
+.compact-card {
+  margin-bottom: 12px;
+  transform: none !important;
+}
+
+.compact-card:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.compact-layout .header-container {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+}
+
+.compact-layout .ai-container {
+  padding: 15px;
+}
+
+.compact-panel {
+  margin: 8px 0;
+  gap: 10px;
+}
+
+.compact-layout .info-summary {
+  padding: 8px 12px;
+  gap: 10px;
+}
+
+.compact-layout .stat-badge {
+  padding: 4px 8px;
+}
+
+.compact-layout .dropdown-selected {
+  padding: 6px 10px;
+}
+
+.compact-layout .ai-run-btn {
+  padding: 6px 12px;
+  height: 32px;
+}
+
+.compact-content {
+  min-height: 300px;
+}
+
+.compact-result {
+  min-height: 250px;
+  padding: 12px;
+  line-height: 1.5;
+}
+
+.compact-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  margin-bottom: 5px;
+}
+
+.compact-layout .action-btn {
+  padding: 5px 10px;
+}
+
 /* fireblack主题的加载效果 */
 @keyframes fire-pulse {
   0% { opacity: 0.4; box-shadow: 0 0 10px rgba(255, 69, 0, 0.5); }
@@ -457,6 +526,11 @@
   scroll-behavior: smooth;
 }
 
+.compact-layout .ai-result-container {
+  min-height: 250px;
+  max-height: calc(100vh - 280px);
+}
+
 .ai-result {
   font-family: 'Roboto Mono', monospace;
   font-size: 14px;
@@ -480,6 +554,11 @@
   color: var(--error-color);
   text-align: center;
   margin: 20px 0;
+}
+
+.compact-layout .ai-error {
+  padding: 12px;
+  margin: 12px 0;
 }
 
 .ai-error svg {
@@ -552,11 +631,24 @@
   padding-bottom: 5px;
 }
 
+.compact-layout .ai-result h2 {
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 16px;
+  padding-bottom: 3px;
+}
+
 .ai-result h3 {
   margin-top: 15px;
   margin-bottom: 8px;
   color: var(--primary-btn);
   font-size: 16px;
+}
+
+.compact-layout .ai-result h3 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-size: 14px;
 }
 
 .ai-result strong {
@@ -572,8 +664,19 @@
   margin: 10px 0;
 }
 
+.compact-layout .ai-result ul, 
+.compact-layout .ai-result ol {
+  padding-left: 15px;
+  margin: 5px 0;
+}
+
 .ai-result ul li, .ai-result ol li {
   margin-bottom: 5px;
+}
+
+.compact-layout .ai-result ul li, 
+.compact-layout .ai-result ol li {
+  margin-bottom: 3px;
 }
 
 .ai-result code {
@@ -628,6 +731,17 @@ body.tech-bg {
   overflow: visible;
 }
 
+/* 紧凑布局的内容包装器调整 */
+.compact-layout {
+  height: auto;
+  min-height: 90vh;
+}
+
+.compact-layout .content-wrapper {
+  min-height: auto;
+  height: auto;
+}
+
 /* 下载选项下拉菜单 */
 .download-dropdown {
   position: absolute;
@@ -656,6 +770,11 @@ body.tech-bg {
   border-bottom: 1px solid var(--border-color);
 }
 
+.compact-layout .download-header {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
 .download-dropdown-content a {
   display: block;
   padding: 10px 15px;
@@ -663,6 +782,11 @@ body.tech-bg {
   color: var(--text-color);
   font-size: 13px;
   transition: all 0.2s;
+}
+
+.compact-layout .download-dropdown-content a {
+  padding: 8px 12px;
+  font-size: 12px;
 }
 
 .download-dropdown-content a:hover {
@@ -693,6 +817,10 @@ body.tech-bg {
   .header-container {
     flex-wrap: wrap;
     gap: 10px;
+  }
+  
+  .compact-layout .content-wrapper {
+    max-width: 95%;
   }
 }
 
@@ -737,6 +865,18 @@ body.tech-bg {
     width: 100%;
     justify-content: flex-start;
   }
+  
+  .compact-layout .content-wrapper {
+    padding: 12px 0;
+  }
+  
+  .compact-layout .info-summary {
+    gap: 8px;
+  }
+  
+  .compact-layout .control-area {
+    margin-top: 8px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -777,5 +917,22 @@ body.tech-bg {
   .ai-options-link {
     margin-top: 10px;
     align-self: flex-end;
+  }
+  
+  .compact-layout .card {
+    margin-bottom: 10px;
+  }
+  
+  .compact-layout .header-container .header-left h3 {
+    font-size: 15px;
+  }
+  
+  .compact-layout .ai-options-link {
+    margin-top: 8px;
+  }
+  
+  .compact-layout .tab-selector-wrapper, 
+  .compact-layout .ai-run-btn {
+    margin-top: 8px;
   }
 }

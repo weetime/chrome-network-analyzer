@@ -611,32 +611,61 @@ function copyAnalysisResults() {
 // 下载分析报告和数据
 function downloadReport() {
   const analysisText = document.getElementById('analysisText');
-  if (!analysisText || !analysisText.textContent) {
-    ToastManager.showError(I18n.getText('downloadFailed'));
+  const domainUrl = document.getElementById('domainUrl').textContent;
+  
+  // 如果没有分析结果，显示错误
+  if (!analysisText.innerHTML.trim()) {
+    ToastManager.showError(I18n.getText('noAnalysisResultsToDownload'));
     return;
   }
   
-  try {
-    // 获取域名和时间信息
-    const domainName = document.getElementById('currentDomain')?.textContent || 'unknown-domain';
-    const currentDate = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-    
-    // 创建下载选项菜单
-    const dropdown = createDownloadDropdown();
-    
-    // 添加到页面并定位在按钮下方
-    const downloadBtn = document.getElementById('downloadReportBtn');
-    if (downloadBtn) {
-      positionDropdown(dropdown, downloadBtn);
-      setupDownloadListeners(dropdown, analysisText, domainName, currentDate);
-    }
-  } catch (error) {
-    console.error('下载功能出错:', error);
-    ToastManager.showError(`${I18n.getText('downloadFailed')}: ${error.message}`);
+  // 提取域名
+  const domain = extractDomain(domainUrl);
+  const currentDate = formatDate(new Date());
+  
+  // 创建并显示下拉菜单
+  const dropdown = createDownloadDropdown();
+  document.body.appendChild(dropdown);
+  
+  // 定位下拉菜单
+  const anchor = document.getElementById('downloadReportBtn');
+  positionDropdown(dropdown, anchor);
+  
+  // 设置下载选项事件监听器
+  setupDownloadListeners(dropdown, analysisText, domain, currentDate);
+}
+
+// 点击外部区域关闭下拉菜单
+function closeDropdownOnOutsideClick(e) {
+  if (!e.target.closest('#downloadReportBtn')) {
+    closeDropdown();
   }
 }
 
-// 创建下载选项菜单
+// 提取域名
+function extractDomain(url) {
+  if (!url) return 'unknown-domain';
+  try {
+    // 移除协议和路径，只保留域名部分
+    return url.replace(/^(https?:\/\/)?(www\.)?/i, '').split('/')[0];
+  } catch (error) {
+    console.error('提取域名失败:', error);
+    return 'unknown-domain';
+  }
+}
+
+// 格式化日期为YYYY-MM-DD格式
+function formatDate(date) {
+  if (!date) return 'unknown-date';
+  try {
+    return date.toISOString().split('T')[0];
+  } catch (error) {
+    console.error('格式化日期失败:', error);
+    return 'unknown-date';
+  }
+}
+
+// 创建下载选项下拉菜单
 function createDownloadDropdown() {
   const dropdown = document.createElement('div');
   dropdown.className = 'download-dropdown';
@@ -655,6 +684,20 @@ function createDownloadDropdown() {
 // 定位下拉菜单
 function positionDropdown(dropdown, anchor) {
   const rect = anchor.getBoundingClientRect();
+  
+  // 计算最佳显示位置
+  let top = rect.bottom + window.scrollY + 5;
+  let left = rect.left + window.scrollX;
+  
+  // 检查是否超出页面底部
+  const dropdownHeight = 200; // 估计高度
+  const windowHeight = window.innerHeight;
+  const windowBottom = window.scrollY + windowHeight;
+  
+  // 如果下拉菜单会超出底部，则显示在按钮上方
+  if (top + dropdownHeight > windowBottom) {
+    top = rect.top + window.scrollY - dropdownHeight - 5;
+  }
   
   // 确保不会超出页面左侧
   if (left < 10) {
@@ -692,13 +735,6 @@ function setupDownloadListeners(dropdown, analysisText, domainName, currentDate)
   
   // 设置各下载选项的事件监听器
   setupDownloadOptionListeners(dropdown, analysisText, domainName, currentDate);
-  
-  // 点击外部区域关闭下拉菜单
-  function closeDropdownOnOutsideClick(e) {
-    if (!e.target.closest('#downloadReportBtn')) {
-      closeDropdown();
-    }
-  }
 }
 
 // 设置各下载选项的事件监听器
@@ -779,12 +815,11 @@ function downloadFile(blob, filename) {
   document.body.appendChild(a);
   a.click();
   
-  // 替换HTML标签为Markdown格式
-  markdown = markdown.replace(/<h2>(.*?)<\/h2>/g, '# $1\n\n');
-  markdown = markdown.replace(/<h3>(.*?)<\/h3>/g, '## $1\n\n');
-  markdown = markdown.replace(/<h4>(.*?)<\/h4>/g, '### $1\n\n');
-  markdown = markdown.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
-  markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
+  // 清理
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
   
   ToastManager.success(`${I18n.getText('downloadSuccess')}: ${filename}`);
 }

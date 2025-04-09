@@ -10,28 +10,27 @@
   <link rel="stylesheet" href="css/ai-analysis.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body class="tech-bg">
+<body class="tech-bg compact-layout">
   <div class="content-wrapper">
     <!-- 头部区域 -->
-    <div class="header-container card">
-      <a href="#" id="backToMain" class="back-link">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        <span data-i18n="backToMain">返回主页</span>
-      </a>
+    <div class="header-container card compact-card">
+      <div class="header-left">
+        <a href="#" id="backToMain" class="back-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span data-i18n="backToMain">返回主页</span>
+        </a>
+        <h3 data-i18n="aiAnalysis">网络请求 AI 性能分析</h3>
+      </div>
       <a href="#" id="openOptionsPage" class="ai-options-link" data-i18n="aiSettings">配置 AI 设置</a>
     </div>
     
     <!-- AI分析主要内容 -->
-    <div class="ai-container card">
-      <div class="ai-header">
-        <h3 data-i18n="aiAnalysis">网络请求 AI 性能分析</h3>
-      </div>
-      
+    <div class="ai-container card compact-card">
       <!-- 信息控制面板 -->
-      <div class="info-panel">
+      <div class="info-panel compact-panel">
         <!-- URL和基本统计信息 -->
         <div class="info-summary">
           <div class="info-summary-item url-item">
@@ -62,6 +61,13 @@
               </svg>
               <span data-i18n="runAnalysis">运行分析</span>
             </button>
+            
+            <button id="stopAiAnalysisBtn" class="ai-stop-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              </svg>
+              <span data-i18n="stopAnalysis">停止分析</span>
+            </button>
           </div>
         </div>
         
@@ -78,11 +84,11 @@
       </div>
       
       <!-- 分析内容区域 -->
-      <div id="aiAnalysisContent" class="ai-content">
+      <div id="aiAnalysisContent" class="ai-content compact-content">
         <div id="analysisLoading" class="ai-loading"></div>
         
         <div id="analysisContent" class="ai-result-container">
-          <div id="analysisText" class="ai-result code-block">
+          <div id="analysisText" class="ai-result code-block compact-result">
             <!-- AI analysis results will appear here -->
           </div>
           
@@ -96,7 +102,7 @@
           </div>
         </div>
         
-        <div class="ai-footer">
+        <div class="ai-footer compact-footer">
           <div class="ai-info">
             <span data-i18n="aiModelInfo">分析提供: </span>
             <span id="analysisProvider" class="ai-provider">OpenAI</span>
@@ -104,6 +110,17 @@
             <span id="analysisModel" class="ai-model">GPT-4</span>
           </div>
           <div class="ai-actions">
+            <button id="clearAiCacheBtn" class="action-btn cache-btn" title="清除AI分析缓存">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              <span data-i18n="clearCache">清除缓存</span>
+            </button>
+            
             <button id="downloadReportBtn" class="action-btn download-btn" title="下载分析报告和数据">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>

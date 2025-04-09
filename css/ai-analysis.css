@@ -48,6 +48,19 @@
   margin-bottom: 15px;
 }
 
+.header-container .header-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-container .header-left h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
 /* AI分析容器 */
 .ai-container {
   padding: 20px;
@@ -67,22 +80,6 @@
   width: 100%;
   height: 3px;
   background: linear-gradient(90deg, var(--accent-color), var(--primary-btn));
-}
-
-/* AI头部样式 */
-.ai-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.ai-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: var(--accent-color);
-  font-weight: 600;
 }
 
 /* 信息控制面板 */
@@ -294,28 +291,58 @@
   color: var(--accent-color);
 }
 
-/* 运行按钮样式 */
+/* 运行分析按钮 */
 .ai-run-btn {
+  background-color: var(--primary-btn);
+  color: var(--btn-text);
+  border: none;
+  border-radius: var(--card-radius);
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: var(--card-radius);
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  height: 36px;
-  white-space: nowrap;
+  gap: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.ai-run-btn svg {
+  transition: transform 0.2s ease;
 }
 
 .ai-run-btn:hover {
-  background-color: var(--accent-color-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--neon-glow);
+  background-color: var(--primary-btn-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 停止分析按钮 */
+.ai-stop-btn {
+  background-color: var(--error-color);
+  color: var(--btn-text);
+  border: none;
+  border-radius: var(--card-radius);
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: none; /* 默认隐藏 */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.ai-stop-btn:hover {
+  background-color: #d32f2f; /* 更深的红色 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ai-stop-btn svg {
+  transition: transform 0.2s ease;
 }
 
 .ai-options-link {
@@ -385,6 +412,125 @@
   z-index: 10;
 }
 
+/* 紧凑布局样式 - 新增 */
+.compact-layout .content-wrapper {
+  padding: 10px;
+  max-width: 1000px;
+  min-height: auto;
+}
+
+.compact-card {
+  margin-bottom: 12px;
+  transform: none !important;
+}
+
+.compact-card:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.compact-layout .header-container {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+}
+
+.compact-layout .ai-container {
+  padding: 15px;
+}
+
+.compact-panel {
+  margin: 8px 0;
+  gap: 10px;
+}
+
+.compact-layout .info-summary {
+  padding: 8px 12px;
+  gap: 10px;
+}
+
+.compact-layout .stat-badge {
+  padding: 4px 8px;
+}
+
+.compact-layout .dropdown-selected {
+  padding: 6px 10px;
+}
+
+.compact-layout .ai-run-btn {
+  padding: 6px 12px;
+  height: 32px;
+}
+
+.compact-content {
+  min-height: 300px;
+}
+
+.compact-result {
+  min-height: 250px;
+  padding: 12px;
+  line-height: 1.5;
+}
+
+.compact-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  margin-bottom: 5px;
+}
+
+.compact-layout .action-btn {
+  padding: 5px 10px;
+}
+
+/* fireblack主题的加载效果 */
+@keyframes fire-pulse {
+  0% { opacity: 0.4; box-shadow: 0 0 10px rgba(255, 69, 0, 0.5); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px rgba(255, 69, 0, 0.8), 0 0 30px rgba(255, 165, 0, 0.6); }
+  100% { opacity: 0.4; box-shadow: 0 0 10px rgba(255, 69, 0, 0.5); }
+}
+
+@keyframes fire-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+[data-theme="fireblack"] .ai-loading {
+  background-color: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 69, 0, 0.3);
+  animation: fire-pulse 2.5s infinite ease-in-out;
+}
+
+[data-theme="fireblack"] .ai-loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(255, 69, 0, 0.7), 
+    rgba(255, 165, 0, 0.8), 
+    rgba(255, 69, 0, 0.7));
+  background-size: 200% 200%;
+  animation: fire-glow 3s infinite ease-in-out;
+}
+
+[data-theme="fireblack"] .ai-loading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(255, 165, 0, 0.8), 
+    rgba(255, 69, 0, 0.7), 
+    rgba(255, 165, 0, 0.8));
+  background-size: 200% 200%;
+  animation: fire-glow 3s infinite ease-in-out reverse;
+}
+
 /* 流式输出光标样式 */
 @keyframes blink {
   0%, 100% { opacity: 1; }
@@ -410,6 +556,11 @@
   scroll-behavior: smooth;
 }
 
+.compact-layout .ai-result-container {
+  min-height: 250px;
+  max-height: calc(100vh - 280px);
+}
+
 .ai-result {
   font-family: 'Roboto Mono', monospace;
   font-size: 14px;
@@ -433,6 +584,11 @@
   color: var(--error-color);
   text-align: center;
   margin: 20px 0;
+}
+
+.compact-layout .ai-error {
+  padding: 12px;
+  margin: 12px 0;
 }
 
 .ai-error svg {
@@ -466,33 +622,55 @@
   gap: 10px;
 }
 
+/* 操作按钮 */
 .action-btn {
+  background-color: var(--secondary-btn);
+  border: none;
+  border-radius: var(--btn-radius);
+  color: var(--btn-text);
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: white;
-  border: none;
-  border-radius: var(--card-radius);
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
 }
 
+.action-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.action-btn:hover svg {
+  transform: scale(1.1);
+}
+
+/* 复制按钮 */
 .action-btn.copy-btn {
-  background-color: var(--primary-btn);
+  background-color: var(--info-color);
 }
 
 .action-btn.copy-btn:hover {
-  background-color: var(--primary-btn-hover);
+  background-color: var(--info-color-hover);
 }
 
+/* 下载按钮 */
 .action-btn.download-btn {
-  background-color: var(--accent-color);
+  background-color: var(--success-color);
 }
 
 .action-btn.download-btn:hover {
-  background-color: var(--accent-color-hover);
+  background-color: var(--success-color-hover);
+}
+
+/* 清除缓存按钮 */
+.action-btn.cache-btn {
+  background-color: var(--warning-color);
+}
+
+.action-btn.cache-btn:hover {
+  background-color: var(--warning-color-hover);
 }
 
 /* 格式化分析结果中的markdown样式 */
@@ -505,11 +683,24 @@
   padding-bottom: 5px;
 }
 
+.compact-layout .ai-result h2 {
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 16px;
+  padding-bottom: 3px;
+}
+
 .ai-result h3 {
   margin-top: 15px;
   margin-bottom: 8px;
   color: var(--primary-btn);
   font-size: 16px;
+}
+
+.compact-layout .ai-result h3 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-size: 14px;
 }
 
 .ai-result strong {
@@ -525,8 +716,19 @@
   margin: 10px 0;
 }
 
+.compact-layout .ai-result ul, 
+.compact-layout .ai-result ol {
+  padding-left: 15px;
+  margin: 5px 0;
+}
+
 .ai-result ul li, .ai-result ol li {
   margin-bottom: 5px;
+}
+
+.compact-layout .ai-result ul li, 
+.compact-layout .ai-result ol li {
+  margin-bottom: 3px;
 }
 
 .ai-result code {
@@ -581,6 +783,17 @@ body.tech-bg {
   overflow: visible;
 }
 
+/* 紧凑布局的内容包装器调整 */
+.compact-layout {
+  height: auto;
+  min-height: 90vh;
+}
+
+.compact-layout .content-wrapper {
+  min-height: auto;
+  height: auto;
+}
+
 /* 下载选项下拉菜单 */
 .download-dropdown {
   position: absolute;
@@ -609,6 +822,11 @@ body.tech-bg {
   border-bottom: 1px solid var(--border-color);
 }
 
+.compact-layout .download-header {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
 .download-dropdown-content a {
   display: block;
   padding: 10px 15px;
@@ -616,6 +834,11 @@ body.tech-bg {
   color: var(--text-color);
   font-size: 13px;
   transition: all 0.2s;
+}
+
+.compact-layout .download-dropdown-content a {
+  padding: 8px 12px;
+  font-size: 12px;
 }
 
 .download-dropdown-content a:hover {
@@ -636,85 +859,132 @@ body.tech-bg {
 /* 响应式设计 */
 @media (max-width: 1024px) {
   .content-wrapper {
-    padding: 15px;
+    max-width: 90%;
   }
-  
+
   .card {
     padding: 15px;
   }
-  
+
   .header-container {
-    padding: 12px 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .compact-layout .content-wrapper {
+    max-width: 95%;
   }
 }
 
 @media (max-width: 768px) {
   .content-wrapper {
-    padding: 10px;
+    max-width: 95%;
+    padding: 20px 0;
   }
-  
+
   .info-summary {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .stats-overview {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
-  
+
   .control-area {
     width: 100%;
-    flex-direction: row;
-    margin-left: 0;
     justify-content: space-between;
+    margin-left: 0;
+    margin-top: 10px;
   }
-  
+
   .tab-selector-wrapper {
     flex: 1;
     margin-right: 10px;
   }
-  
+
   .tab-selector {
     width: 100%;
   }
-  
+
   .ai-footer {
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+  }
+
+  .ai-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
   
-  .ai-actions {
-    justify-content: space-between;
-    width: 100%;
+  .compact-layout .content-wrapper {
+    padding: 12px 0;
+  }
+  
+  .compact-layout .info-summary {
+    gap: 8px;
+  }
+  
+  .compact-layout .control-area {
+    margin-top: 8px;
   }
 }
 
 @media (max-width: 480px) {
   .content-wrapper {
-    padding: 8px;
+    max-width: 100%;
+    padding: 15px 10px;
   }
-  
+
   .card {
-    padding: 10px;
+    margin-bottom: 15px;
   }
-  
-  .ai-header h3 {
+
+  .header-container .header-left h3 {
     font-size: 16px;
   }
-  
+
   .stats-overview {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .control-area {
     flex-direction: column;
+    align-items: stretch;
   }
-  
+
   .tab-selector-wrapper, 
   .ai-run-btn {
     width: 100%;
-    margin-bottom: 8px;
+    margin-top: 10px;
+  }
+
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ai-options-link {
+    margin-top: 10px;
+    align-self: flex-end;
+  }
+  
+  .compact-layout .card {
+    margin-bottom: 10px;
+  }
+  
+  .compact-layout .header-container .header-left h3 {
+    font-size: 15px;
+  }
+  
+  .compact-layout .ai-options-link {
+    margin-top: 8px;
+  }
+  
+  .compact-layout .tab-selector-wrapper, 
+  .compact-layout .ai-run-btn {
+    margin-top: 8px;
   }
 }

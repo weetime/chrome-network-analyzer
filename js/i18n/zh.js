@@ -53,7 +53,6 @@ if (typeof window !== 'undefined') {
     apiKeyWarning: '注意：API密钥将保存在本地存储中。',
     apiUrl: '自定义 API 地址',
     enterApiUrl: '输入自定义 API 地址（可选）',
-    showAiAnalysis: '自动分析',
     configRequired: 'API 密钥未配置。请在设置页面配置 API 密钥。',
     
     // 界面设置
@@ -145,7 +144,6 @@ if (typeof window !== 'undefined') {
     aiTip3: '您可以在扩展设置中配置偏好的AI提供商和API密钥',
     aiTip4: '分析过程视请求量和响应而定，可能需要几秒钟时间',
     aiModelInfo: '分析提供: ',
-    analyzingDomain: '分析域名',
     dataOverview: '数据概览',
     downloadReport: '下载报告',
     downloadData: '下载数据',
@@ -161,6 +159,23 @@ if (typeof window !== 'undefined') {
     downloadAll: '全部下载',
     requestsCount: '请求统计',
     
+    // 分析过程消息
+    tabDataLoaded: '已加载标签页数据',
+    tabDataLoadError: '加载标签页数据出错',
+    calculatingStats: '计算统计数据...',
+    loadingAiConfig: '加载AI配置...',
+    preparingData: '准备分析数据...',
+    checkingCache: '检查缓存状态...',
+    analysisStarting: '开始分析...',
+    dataLoading: '加载数据...',
+    connectingAi: '连接到AI服务...',
+    generatingAnalysis: '生成分析报告...',
+    analysisComplete: '分析完成',
+    analysisCancelled: '分析已取消',
+    confirmClear: '确定要清除所有网络数据吗？',
+    currentTab: '当前标签页',
+    noAuthorizedTabs: '没有其他授权的标签页',
+    
     // 通知消息
     noDataAvailable: '没有可用的请求数据进行分析',
     noApiKeyConfigured: '未配置API密钥。请在选项页面中配置API密钥',
@@ -169,6 +184,8 @@ if (typeof window !== 'undefined') {
     copySuccess: '已复制到剪贴板',
     copyFailed: '复制失败',
     initPageError: '初始化AI分析页面时出错',
+    cacheClearSuccess: 'AI分析缓存已清除',
+    cacheClearError: '清除缓存失败',
     
     // 优化建议
     optimizationTips: '优化建议',
@@ -191,6 +208,10 @@ if (typeof window !== 'undefined') {
     lightTheme: '浅色主题',
     darkTheme: '深色主题',
     fireBlackTheme: '火焰黑主题',
+    
+    // 按钮文本
+    stopAnalysis: '停止分析',
+    clearCache: '清除缓存',
   };
 }
 

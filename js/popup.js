@@ -212,7 +212,7 @@ function exportData() {
 
 // Clear network request data
 function clearData() {
-  const confirmMsg = I18n.getText('confirmClear') || 'Are you sure you want to clear all network data?';
+  const confirmMsg = I18n.getText('confirmClear');
   
   // 创建自定义确认对话框
   const confirmDialog = document.createElement('div');
@@ -221,8 +221,8 @@ function clearData() {
     <div class="confirm-content">
       <div class="confirm-message">${confirmMsg}</div>
       <div class="confirm-buttons">
-        <button class="cancel-btn">${I18n.getText('cancel') || 'Cancel'}</button>
-        <button class="confirm-btn">${I18n.getText('confirm') || 'Confirm'}</button>
+        <button class="cancel-btn">${I18n.getText('cancel')}</button>
+        <button class="confirm-btn">${I18n.getText('confirm')}</button>
       </div>
     </div>
   `;

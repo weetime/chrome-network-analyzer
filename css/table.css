@@ -126,6 +126,13 @@ th.sort-desc .sort-icon {
 [data-theme="fireblack"] .table-container {
   max-height: 220px;
   height: 220px;
+  width: 100% !important;
+  box-sizing: border-box;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  overflow-x: hidden;
 }
 
 /* 黑暗主题表格样式 */
@@ -139,6 +146,8 @@ th.sort-desc .sort-icon {
   border-color: #3d2c00;
   height: 220px;
   max-height: 220px;
+  width: 100% !important;
+  box-sizing: border-box;
   overflow-y: auto !important;
   transform: translate3d(0,0,0);
   -webkit-transform: translate3d(0,0,0);

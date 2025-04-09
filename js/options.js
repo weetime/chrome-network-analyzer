@@ -369,7 +369,6 @@ function saveAISettings() {
   const aiModel = document.getElementById('aiModel').value;
   const apiKey = document.getElementById('aiApiKey').value;
   const apiUrl = document.getElementById('aiApiUrl').value;
-  const autoAnalysis = document.getElementById('autoAnalysis').checked;
   
   // 更新API URL设置（如果有）
   if (apiUrl) {
@@ -382,8 +381,7 @@ function saveAISettings() {
     aiProvider: aiProvider,
     aiModel: aiModel,
     apiKey: apiKey,
-    apiUrl: apiUrl,
-    autoAnalysis: autoAnalysis
+    apiUrl: apiUrl
   }, function() {
     ToastManager.success(I18n.getText('aiSettingsSaved'));
     // 移除保存按钮的脉冲效果
@@ -396,12 +394,11 @@ function saveAISettings() {
  * 加载AI设置
  */
 function loadAISettings() {
-  chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey', 'autoAnalysis'], function(result) {
+  chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], function(result) {
     const aiProviderSelect = document.getElementById('aiProvider');
     const aiModelSelect = document.getElementById('aiModel');
     const apiKeyInput = document.getElementById('aiApiKey');
     const apiUrlInput = document.getElementById('aiApiUrl');
-    const autoAnalysisCheckbox = document.getElementById('autoAnalysis');
     
     // 设置AI提供商
     if (result.aiProvider) {
@@ -427,9 +424,6 @@ function loadAISettings() {
     if (result.apiUrl) {
       apiUrlInput.value = result.apiUrl;
     }
-    
-    // 设置自动分析选项
-    autoAnalysisCheckbox.checked = result.autoAnalysis || false;
   });
 }
 

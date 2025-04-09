@@ -61,6 +61,13 @@
               </svg>
               <span data-i18n="runAnalysis">运行分析</span>
             </button>
+            
+            <button id="stopAiAnalysisBtn" class="ai-stop-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              </svg>
+              <span data-i18n="stopAnalysis">停止分析</span>
+            </button>
           </div>
         </div>
         
@@ -103,6 +110,17 @@
             <span id="analysisModel" class="ai-model">GPT-4</span>
           </div>
           <div class="ai-actions">
+            <button id="clearAiCacheBtn" class="action-btn cache-btn" title="清除AI分析缓存">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              <span data-i18n="clearCache">清除缓存</span>
+            </button>
+            
             <button id="downloadReportBtn" class="action-btn download-btn" title="下载分析报告和数据">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>

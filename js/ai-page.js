@@ -17,6 +17,7 @@ import { ToastManager } from './toast-manager.js';
 let currentTabId = null;
 let requestsData = {};
 let isAnalysisRunning = false;
+let abortController = null; // 添加中断控制器
 
 /**
  * 核心功能：数据获取与分析
@@ -238,11 +239,21 @@ async function runAiAnalysis() {
   // 设置分析状态为运行中
   isAnalysisRunning = true;
   
+  // 创建新的中断控制器
+  abortController = new AbortController();
+  
   // 禁用分析按钮并改变样式
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
+  // 添加停止分析按钮
+  const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
+  
   if (analyzeButton) {
     analyzeButton.disabled = true;
     analyzeButton.classList.add('disabled');
+  }
+  
+  if (stopAnalysisButton) {
+    stopAnalysisButton.style.display = 'inline-block';
   }
   
   // 获取分析元素
@@ -290,14 +301,31 @@ async function runAiAnalysis() {
     updateProgress(40, elements, I18n.getText('preparingData'));
     updateAIProviderDisplay(config);
     
+    // 检查缓存状态
+    updateProgress(45, elements, I18n.getText('checkingCache'));
+    
     // 发送AI请求并处理结果
     await processAIAnalysis(requestsData, statistics, config, elements);
     
   } catch (error) {
-    handleAnalysisError(error, elements);
+    // 检查是否是用户取消的请求
+    if (error.name === 'AbortError' || error.message.includes('aborted')) {
+      showAnalysisError(I18n.getText('analysisCancelled'), elements);
+      ToastManager.showInfo(I18n.getText('analysisCancelled'));
+    } else {
+      handleAnalysisError(error, elements);
+    }
   } finally {
     // 无论成功或失败，都重置分析状态
     resetAnalysisState();
+  }
+}
+
+// 停止进行中的AI分析
+function stopAiAnalysis() {
+  if (abortController && isAnalysisRunning) {
+    abortController.abort();
+    console.log('用户取消了AI分析');
   }
 }
 
@@ -384,7 +412,7 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
     elements.content.scrollTop = elements.content.scrollHeight;
   };
   
-  // 使用流式API发送请求
+  // 使用流式API发送请求，传入中断信号
   const result = await AiConnector.streamToAI(
     analysisData,
     config.provider,
@@ -392,7 +420,8 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
     config.model,
     {language: currentLanguage},
     2000, // 最大tokens
-    onChunkReceived // 回调函数
+    onChunkReceived, // 回调函数
+    abortController.signal // 添加中断信号
   );
   
   // 流式处理完成后，确保完整显示最终结果
@@ -414,10 +443,18 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
 // 重置分析状态和按钮
 function resetAnalysisState() {
   isAnalysisRunning = false;
+  abortController = null;
+  
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
+  const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
+  
   if (analyzeButton) {
     analyzeButton.disabled = false;
     analyzeButton.classList.remove('disabled');
+  }
+  
+  if (stopAnalysisButton) {
+    stopAnalysisButton.style.display = 'none';
   }
 }
 
@@ -1185,6 +1222,14 @@ function setupEventHandlers() {
     runAiAnalysisBtn.addEventListener('click', runAiAnalysis);
   }
   
+  // 停止分析按钮
+  const stopAiAnalysisBtn = document.getElementById('stopAiAnalysisBtn');
+  if (stopAiAnalysisBtn) {
+    stopAiAnalysisBtn.addEventListener('click', stopAiAnalysis);
+    // 默认隐藏
+    stopAiAnalysisBtn.style.display = 'none';
+  }
+  
   // 复制结果按钮
   const copyAnalysisBtn = document.getElementById('copyAnalysisBtn');
   if (copyAnalysisBtn) {
@@ -1195,6 +1240,19 @@ function setupEventHandlers() {
   const downloadReportBtn = document.getElementById('downloadReportBtn');
   if (downloadReportBtn) {
     downloadReportBtn.addEventListener('click', downloadReport);
+  }
+  
+  // 清除缓存按钮
+  const clearCacheBtn = document.getElementById('clearAiCacheBtn');
+  if (clearCacheBtn) {
+    clearCacheBtn.addEventListener('click', async () => {
+      try {
+        await AiConnector.clearAnalysisCache();
+        ToastManager.success(I18n.getText('cacheClearSuccess'));
+      } catch (error) {
+        ToastManager.showError(`${I18n.getText('cacheClearError')}: ${error.message}`);
+      }
+    });
   }
   
   // 打开设置页面

@@ -2,6 +2,9 @@
  * AI-Connector - Handles sending network analysis data to AI models
  */
 
+// 导入AI缓存管理器
+import { AiCacheManager } from './ai-cache-manager.js';
+
 // AI Model Providers Configuration
 const AI_PROVIDERS = {
   // OpenAI configuration
@@ -113,6 +116,8 @@ const AI_PROVIDERS = {
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000;
 const REQUEST_TIMEOUT = 30000;
+const STREAM_TIMEOUT = 60000; // 流式响应超时时间（60秒）
+const STREAM_CHUNK_TIMEOUT = 10000; // 每个数据块之间的最大超时时间（10秒）
 
 // 存储用户自定义API URL的设置对象
 let userApiSettings = {
@@ -515,23 +520,43 @@ function formatNetworkDataForAI(requestsData, statistics) {
   return summary;
 }
 
-// 新增流式数据处理函数
 /**
  * 处理流式响应数据
  * @param {ReadableStream} stream - 返回的流数据
  * @param {Function} onChunk - 处理每个数据块的回调
  * @param {string} provider - AI提供商
+ * @param {AbortController} [abortController] - 可选的中断控制器
  * @returns {Promise<string>} 完整的响应文本
  */
-async function handleStreamResponse(stream, onChunk, provider) {
+async function handleStreamResponse(stream, onChunk, provider, abortController) {
   const reader = stream.getReader();
   const decoder = new TextDecoder("utf-8");
   let completeText = "";
+  let lastChunkTime = Date.now();
+  
+  // 设置整体超时
+  const timeoutId = setTimeout(() => {
+    if (abortController) {
+      console.warn(`Stream response timeout after ${STREAM_TIMEOUT}ms`);
+      abortController.abort();
+    }
+  }, STREAM_TIMEOUT);
   
   try {
     while (true) {
+      // 检查数据块间隔超时
+      const chunkTimeSinceLastUpdate = Date.now() - lastChunkTime;
+      if (chunkTimeSinceLastUpdate > STREAM_CHUNK_TIMEOUT) {
+        console.warn(`No data received for ${STREAM_CHUNK_TIMEOUT}ms, aborting stream`);
+        if (abortController) abortController.abort();
+        throw new Error(`Stream stalled: No data received for ${STREAM_CHUNK_TIMEOUT}ms`);
+      }
+      
       const { done, value } = await reader.read();
       if (done) break;
+      
+      // 更新最后数据块时间
+      lastChunkTime = Date.now();
       
       // 解码返回的数据
       const chunk = decoder.decode(value, { stream: true });
@@ -572,9 +597,15 @@ async function handleStreamResponse(stream, onChunk, provider) {
       }
     }
   } catch (error) {
+    // 如果是中断错误，添加更多上下文
+    if (error.name === 'AbortError') {
+      error.message = `Stream aborted: ${error.message || 'Request was manually cancelled or timed out'}`;
+    }
+    
     console.error("Stream reading error:", error);
     throw error;
   } finally {
+    clearTimeout(timeoutId);
     reader.releaseLock();
   }
   
@@ -584,7 +615,7 @@ async function handleStreamResponse(stream, onChunk, provider) {
 /**
  * 流式发送数据到OpenAI API
  */
-async function streamOpenAI(analysisData, apiKey, model, maxTokens, options = {}, onChunk) {
+async function streamOpenAI(analysisData, apiKey, model, maxTokens, options = {}, onChunk, abortController) {
   try {
     // 选择模型
     const modelId = AI_PROVIDERS.OPENAI.models[model] || AI_PROVIDERS.OPENAI.models[AI_PROVIDERS.OPENAI.defaultModel];
@@ -633,7 +664,7 @@ async function streamOpenAI(analysisData, apiKey, model, maxTokens, options = {}
     }
     
     // 处理流式响应
-    const completeText = await handleStreamResponse(response.body, onChunk, 'OPENAI');
+    const completeText = await handleStreamResponse(response.body, onChunk, 'OPENAI', abortController);
     
     return {
       analysis: completeText,
@@ -649,7 +680,7 @@ async function streamOpenAI(analysisData, apiKey, model, maxTokens, options = {}
 /**
  * 流式发送数据到Anthropic API
  */
-async function streamAnthropic(analysisData, apiKey, model, maxTokens, options = {}, onChunk) {
+async function streamAnthropic(analysisData, apiKey, model, maxTokens, options = {}, onChunk, abortController) {
   try {
     // 选择模型
     const modelId = AI_PROVIDERS.ANTHROPIC.models[model] || AI_PROVIDERS.ANTHROPIC.models[AI_PROVIDERS.ANTHROPIC.defaultModel];
@@ -686,7 +717,7 @@ async function streamAnthropic(analysisData, apiKey, model, maxTokens, options =
     }
     
     // 处理流式响应
-    const completeText = await handleStreamResponse(response.body, onChunk, 'ANTHROPIC');
+    const completeText = await handleStreamResponse(response.body, onChunk, 'ANTHROPIC', abortController);
     
     return {
       analysis: completeText,
@@ -702,7 +733,7 @@ async function streamAnthropic(analysisData, apiKey, model, maxTokens, options =
 /**
  * 流式发送数据到Deepseek API
  */
-async function streamDeepseek(analysisData, apiKey, model, maxTokens, options = {}, onChunk) {
+async function streamDeepseek(analysisData, apiKey, model, maxTokens, options = {}, onChunk, abortController) {
   try {
     // 选择模型
     const modelId = AI_PROVIDERS.DEEPSEEK.models[model] || AI_PROVIDERS.DEEPSEEK.models[AI_PROVIDERS.DEEPSEEK.defaultModel];
@@ -747,7 +778,7 @@ async function streamDeepseek(analysisData, apiKey, model, maxTokens, options = 
     }
     
     // 处理流式响应
-    const completeText = await handleStreamResponse(response.body, onChunk, 'DEEPSEEK');
+    const completeText = await handleStreamResponse(response.body, onChunk, 'DEEPSEEK', abortController);
     
     return {
       analysis: completeText,
@@ -761,28 +792,114 @@ async function streamDeepseek(analysisData, apiKey, model, maxTokens, options = 
 }
 
 /**
- * 根据提供商以流模式发送数据到指定AI
+ * 流式发送数据到AI API，支持缓存和中断
  * @param {object} analysisData - 网络分析数据
- * @param {string} provider - AI提供商标识
+ * @param {string} provider - AI提供商
  * @param {string} apiKey - API密钥
  * @param {string} model - 模型名称
- * @param {object} options - 附加选项
+ * @param {object} options - 附加选项，如语言设置
  * @param {number} maxTokens - 最大token数
  * @param {Function} onChunk - 处理每个数据块的回调
+ * @param {AbortSignal} signal - 可选的中断信号
  * @returns {Promise<object>} 分析结果
  */
-async function streamToAI(analysisData, provider, apiKey, model, options = {}, maxTokens = 2000, onChunk) {
+async function streamToAI(analysisData, provider, apiKey, model, options = {}, maxTokens = 2000, onChunk, signal) {
   const providerKey = provider.toUpperCase();
+  const language = options?.language || 'en';
   
-  switch (providerKey) {
-    case 'OPENAI':
-      return streamOpenAI(analysisData, apiKey, model, maxTokens, options, onChunk);
-    case 'ANTHROPIC':
-      return streamAnthropic(analysisData, apiKey, model, maxTokens, options, onChunk);
-    case 'DEEPSEEK':
-      return streamDeepseek(analysisData, apiKey, model, maxTokens, options, onChunk);
-    default:
-      throw new Error(`Unsupported AI provider for streaming: ${provider}`);
+  // 检查是否有中断信号
+  if (signal && signal.aborted) {
+    throw new Error('Request aborted by user before starting');
+  }
+  
+  // 尝试从缓存获取结果
+  try {
+    const cachedResult = await AiCacheManager.getCachedAnalysis(
+      provider, 
+      model, 
+      analysisData, 
+      language
+    );
+    
+    if (cachedResult) {
+      console.log('Using cached AI analysis result');
+      
+      // 如果有回调函数，模拟流式响应
+      if (onChunk && typeof onChunk === 'function') {
+        // 分块发送缓存结果以模拟流式响应
+        const chunkSize = 100;
+        let sentText = "";
+        
+        for (let i = 0; i < cachedResult.analysis.length; i += chunkSize) {
+          // 检查是否中断
+          if (signal && signal.aborted) {
+            throw new Error('Request aborted by user during cache streaming');
+          }
+          
+          const chunk = cachedResult.analysis.substring(i, i + chunkSize);
+          sentText += chunk;
+          onChunk(chunk, sentText);
+          
+          // 添加小延迟使其看起来像流式传输
+          await new Promise(resolve => setTimeout(resolve, 10));
+        }
+      }
+      
+      return cachedResult;
+    }
+  } catch (cacheError) {
+    console.warn('Error checking cache:', cacheError);
+    // 继续执行，不让缓存错误影响主流程
+  }
+  
+  // 创建中断控制器
+  const abortController = new AbortController();
+  
+  // 如果传入了信号，则连接它
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      abortController.abort();
+    });
+  }
+  
+  try {
+    let result;
+    
+    switch (providerKey) {
+      case 'OPENAI':
+        result = await streamOpenAI(analysisData, apiKey, model, maxTokens, options, onChunk, abortController);
+        break;
+      case 'ANTHROPIC':
+        result = await streamAnthropic(analysisData, apiKey, model, maxTokens, options, onChunk, abortController);
+        break;
+      case 'DEEPSEEK':
+        result = await streamDeepseek(analysisData, apiKey, model, maxTokens, options, onChunk, abortController);
+        break;
+      default:
+        throw new Error(`Unsupported AI provider for streaming: ${provider}`);
+    }
+    
+    // 缓存成功的结果
+    try {
+      await AiCacheManager.cacheAnalysisResult(
+        provider,
+        model,
+        analysisData,
+        language,
+        result
+      );
+    } catch (cacheSaveError) {
+      console.warn('Error saving to cache:', cacheSaveError);
+      // 不让缓存错误影响返回结果
+    }
+    
+    return result;
+  } catch (error) {
+    // 如果是中断错误，添加更详细的上下文
+    if (error.name === 'AbortError') {
+      throw new Error(`AI analysis aborted: ${error.message || 'Request was cancelled or timed out'}`);
+    }
+    throw error;
   }
 }
 
@@ -801,6 +918,10 @@ export const AiConnector = {
   streamOpenAI,  // 添加流式版本的函数
   streamAnthropic,
   streamDeepseek,
+  
+  // Cache management
+  clearAnalysisCache: AiCacheManager.clearCache,
+  getCacheStats: AiCacheManager.getCacheStats,
   
   // Configuration constants
   AI_PROVIDERS,

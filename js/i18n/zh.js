@@ -165,11 +165,13 @@ if (typeof window !== 'undefined') {
     calculatingStats: '计算统计数据...',
     loadingAiConfig: '加载AI配置...',
     preparingData: '准备分析数据...',
+    checkingCache: '检查缓存状态...',
     analysisStarting: '开始分析...',
     dataLoading: '加载数据...',
     connectingAi: '连接到AI服务...',
     generatingAnalysis: '生成分析报告...',
     analysisComplete: '分析完成',
+    analysisCancelled: '分析已取消',
     confirmClear: '确定要清除所有网络数据吗？',
     currentTab: '当前标签页',
     noAuthorizedTabs: '没有其他授权的标签页',
@@ -182,6 +184,8 @@ if (typeof window !== 'undefined') {
     copySuccess: '已复制到剪贴板',
     copyFailed: '复制失败',
     initPageError: '初始化AI分析页面时出错',
+    cacheClearSuccess: 'AI分析缓存已清除',
+    cacheClearError: '清除缓存失败',
     
     // 优化建议
     optimizationTips: '优化建议',
@@ -204,6 +208,10 @@ if (typeof window !== 'undefined') {
     lightTheme: '浅色主题',
     darkTheme: '深色主题',
     fireBlackTheme: '火焰黑主题',
+    
+    // 按钮文本
+    stopAnalysis: '停止分析',
+    clearCache: '清除缓存',
   };
 }
 

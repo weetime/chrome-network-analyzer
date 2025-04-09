@@ -291,28 +291,58 @@
   color: var(--accent-color);
 }
 
-/* 运行按钮样式 */
+/* 运行分析按钮 */
 .ai-run-btn {
+  background-color: var(--primary-btn);
+  color: var(--btn-text);
+  border: none;
+  border-radius: var(--card-radius);
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: var(--card-radius);
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  height: 36px;
-  white-space: nowrap;
+  gap: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.ai-run-btn svg {
+  transition: transform 0.2s ease;
 }
 
 .ai-run-btn:hover {
-  background-color: var(--accent-color-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--neon-glow);
+  background-color: var(--primary-btn-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 停止分析按钮 */
+.ai-stop-btn {
+  background-color: var(--error-color);
+  color: var(--btn-text);
+  border: none;
+  border-radius: var(--card-radius);
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: none; /* 默认隐藏 */
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.ai-stop-btn:hover {
+  background-color: #d32f2f; /* 更深的红色 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ai-stop-btn svg {
+  transition: transform 0.2s ease;
 }
 
 .ai-options-link {
@@ -592,33 +622,55 @@
   gap: 10px;
 }
 
+/* 操作按钮 */
 .action-btn {
+  background-color: var(--secondary-btn);
+  border: none;
+  border-radius: var(--btn-radius);
+  color: var(--btn-text);
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: white;
-  border: none;
-  border-radius: var(--card-radius);
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
 }
 
+.action-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.action-btn:hover svg {
+  transform: scale(1.1);
+}
+
+/* 复制按钮 */
 .action-btn.copy-btn {
-  background-color: var(--primary-btn);
+  background-color: var(--info-color);
 }
 
 .action-btn.copy-btn:hover {
-  background-color: var(--primary-btn-hover);
+  background-color: var(--info-color-hover);
 }
 
+/* 下载按钮 */
 .action-btn.download-btn {
-  background-color: var(--accent-color);
+  background-color: var(--success-color);
 }
 
 .action-btn.download-btn:hover {
-  background-color: var(--accent-color-hover);
+  background-color: var(--success-color-hover);
+}
+
+/* 清除缓存按钮 */
+.action-btn.cache-btn {
+  background-color: var(--warning-color);
+}
+
+.action-btn.cache-btn:hover {
+  background-color: var(--warning-color-hover);
 }
 
 /* 格式化分析结果中的markdown样式 */

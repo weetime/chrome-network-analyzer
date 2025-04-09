@@ -142,11 +142,13 @@ if (typeof window !== 'undefined') {
     calculatingStats: 'Calculating statistics...',
     loadingAiConfig: 'Loading AI configuration...',
     preparingData: 'Preparing analysis data...',
+    checkingCache: 'Checking cache status...',
     analysisStarting: 'Starting analysis...',
     dataLoading: 'Loading data...',
     connectingAi: 'Connecting to AI service...',
     generatingAnalysis: 'Generating analysis report...',
     analysisComplete: 'Analysis complete',
+    analysisCancelled: 'Analysis cancelled',
     confirmClear: 'Are you sure you want to clear all network data?',
     currentTab: 'Current tab',
     noAuthorizedTabs: 'No other authorized tabs',
@@ -159,6 +161,8 @@ if (typeof window !== 'undefined') {
     copySuccess: 'Copied to clipboard',
     copyFailed: 'Copy failed',
     initPageError: 'Error initializing AI analysis page',
+    cacheClearSuccess: 'AI analysis cache cleared',
+    cacheClearError: 'Failed to clear cache',
     
     languageChangeMsg: 'Switching to English...',
     
@@ -173,6 +177,10 @@ if (typeof window !== 'undefined') {
     lightTheme: 'Light Theme',
     darkTheme: 'Dark Theme',
     fireBlackTheme: 'Fire Black Theme',
+    
+    // Button Text
+    stopAnalysis: 'Stop Analysis',
+    clearCache: 'Clear Cache',
   };
 }
 

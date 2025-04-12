@@ -56,28 +56,17 @@ function generateDataFingerprint(data) {
   }
   
   try {
-    const components = [];
+    // 从data中提取statistics数据
+    const statistics = data.statistics || {};
     
-    // Safely access nested properties
-    if (data.request && data.request.url) {
-      components.push(data.request.url);
-    }
+    // 将statistics对象转换为字符串并计算MD5
+    const statsString = JSON.stringify(statistics);
     
-    if (data.request && data.request.method) {
-      components.push(data.request.method);
-    }
+    // 使用内置的hashString函数生成MD5类似的哈希值
+    // 注意：这里使用简化的哈希方法，实际MD5需要引入专门的库
+    const fingerprint = hashString(statsString);
     
-    // If request body exists and is not undefined
-    if (data.request && data.request.postData && data.request.postData.text) {
-      components.push(data.request.postData.text);
-    }
-    
-    // If responses exist and aren't empty
-    if (data.responses && data.responses.length) {
-      // ... existing code ...
-    }
-    
-    // ... existing code ...
+    return fingerprint;
   } catch (error) {
     console.error('Error creating data fingerprint:', error);
     return 'error-fingerprint';

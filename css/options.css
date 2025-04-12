@@ -1065,4 +1065,3 @@ input:checked + .toggle-slider:before {
   background: linear-gradient(to bottom, #ff7700, #ff9900);
   box-shadow: inset 0 0 6px rgba(255, 120, 0, 0.5);
 }
-}

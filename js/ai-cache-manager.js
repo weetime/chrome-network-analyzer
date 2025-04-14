@@ -1,9 +1,9 @@
 /**
- * AI Cache Manager - 处理AI分析结果缓存
+ * AI缓存管理器 - 处理AI分析结果缓存
  * 提供分析结果的缓存和检索功能，避免重复分析相同数据
  */
 
-// 缓存配置
+// 缓存配置常量
 const CACHE_CONFIG = {
   // 缓存过期时间（毫秒）
   EXPIRATION_TIME: 60 * 60 * 1000, // 1小时
@@ -38,10 +38,9 @@ async function initCache() {
 /**
  * 生成用于缓存的键
  * 使用提供商、模型、数据特征和语言创建唯一键
- * Returns an object containing the cache key and the data fingerprint.
+ * @returns {Object} 包含缓存键和数据指纹的对象
  */
 async function generateCacheKey(provider, model, data, language) {
-  // 从data中提取特征信息以创建指纹
   const dataFingerprint = await generateDataFingerprint(data);
   const cacheKey = `${provider}_${model}_${language}_${dataFingerprint}`;
   return { cacheKey, fingerprint: dataFingerprint };
@@ -50,52 +49,46 @@ async function generateCacheKey(provider, model, data, language) {
 /**
  * 生成数据指纹 (SHA-256)
  * 从分析数据中提取关键特征以创建唯一标识符
+ * @returns {string} 数据指纹哈希值
  */
 async function generateDataFingerprint(data) {
-  // If data is undefined or null, return a default fingerprint
+  // 处理空数据情况
   if (!data) {
     return 'empty-data';
   }
   
-  // 检查 crypto API 的可用性
+  // 检查加密API可用性
   if (!window.crypto || !window.crypto.subtle || !window.crypto.subtle.digest) {
-    console.error('Crypto API not available in this context');
+    console.error('当前环境不支持加密API');
     return 'crypto-unavailable';
   }
   
   try {
-    // 从data中提取statistics数据
+    // 提取统计数据并序列化
     const statistics = data.statistics || {};
     const statsString = JSON.stringify(statistics);
 
-    // Encode the string into a Uint8Array
+    // 编码为Uint8Array
     const encoder = new TextEncoder();
     const dataArray = encoder.encode(statsString);
 
-    // Calculate the SHA-256 hash (更安全且更广泛支持的算法)
+    // 计算SHA-256哈希
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataArray);
 
-    // Convert the ArrayBuffer to a hex string
+    // 转换为十六进制字符串
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const fingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     
-    console.log('fingerprint', fingerprint);
     return fingerprint;
   } catch (error) {
-    console.error('Error creating data fingerprint (SHA-256):', error);
-    // 记录详细错误信息以便调试
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
-    // Provide a distinct fingerprint for errors during hashing
-    return 'error-sha256-fingerprint'; 
+    console.error('生成数据指纹失败:', error);
+    return 'error-fingerprint'; 
   }
 }
 
 /**
  * 获取缓存的分析结果
+ * @returns {Object|null} 缓存的分析结果或null
  */
 async function getCachedAnalysis(provider, model, data, language) {
   await initCache();
@@ -113,7 +106,7 @@ async function getCachedAnalysis(provider, model, data, language) {
     return null;
   }
   
-  // 更新访问时间
+  // 更新最后访问时间
   cachedItem.lastAccessed = Date.now();
   await saveCache();
   
@@ -122,13 +115,13 @@ async function getCachedAnalysis(provider, model, data, language) {
 
 /**
  * 缓存分析结果
- * 将AI分析的结果保存到缓存中
+ * @returns {boolean} 缓存操作是否成功
  */
 async function cacheAnalysisResult(provider, model, data, language, result) {
   await initCache();
   
   if (!data || !result) {
-    console.warn('Attempted to cache with undefined data or result');
+    console.warn('尝试缓存undefined数据或结果');
     return false;
   }
   
@@ -141,8 +134,8 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
       result: JSON.parse(JSON.stringify(result)), // 创建深拷贝以避免引用问题
       fingerprint,
       timestamp,
-      expiration: Date.now() + CACHE_CONFIG.EXPIRATION_TIME,
-      lastAccessed: Date.now()
+      expiration: timestamp + CACHE_CONFIG.EXPIRATION_TIME,
+      lastAccessed: timestamp
     };
     
     // 如果缓存条目超过最大数量，清理最旧的条目
@@ -150,10 +143,9 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
     
     // 保存缓存到存储
     await saveCache();
-    console.log(`AI analysis result cached with key: ${cacheKey}`);
     return true;
   } catch (error) {
-    console.error('Error caching analysis result:', error);
+    console.error('缓存分析结果失败:', error);
     return false;
   }
 }
@@ -210,6 +202,7 @@ async function saveCache() {
 
 /**
  * 清除所有缓存
+ * @returns {boolean} 操作是否成功
  */
 async function clearCache() {
   cacheData = {};
@@ -219,6 +212,7 @@ async function clearCache() {
 
 /**
  * 获取缓存统计信息
+ * @returns {Object} 缓存统计数据
  */
 async function getCacheStats() {
   await initCache();
@@ -236,7 +230,7 @@ async function getCacheStats() {
   };
 }
 
-// 导出函数
+// 导出API接口
 export const AiCacheManager = {
   getCachedAnalysis,
   cacheAnalysisResult,

@@ -1,8 +1,8 @@
 /**
- * AI 分析页面脚本 - 处理独立的AI分析页面功能
+ * AI Analysis Page Script - Handles standalone AI analysis page functionality
  */
 
-// ================ 导入依赖模块 ================
+// ================ Import Dependencies ================
 import { I18n } from './i18n.js';
 import './i18n/zh.js';
 import './i18n/en.js';
@@ -13,49 +13,49 @@ import { StatsManager } from './stats-manager.js';
 import { RequestDetailsManager } from './request-details-manager.js';
 import { ToastManager } from './toast-manager.js';
 
-// ================ 全局变量 ================
+// ================ Global Variables ================
 let currentTabId = null;
 let requestsData = {};
 let isAnalysisRunning = false;
-let abortController = null; // 添加中断控制器
+let abortController = null; // Add abort controller
 
 /**
- * 核心功能：数据获取与分析
+ * Core Functions: Data Retrieval and Analysis
  */
 
-// ================ 页面数据初始化 ================
-// 获取当前标签页ID和网络请求数据
+// ================ Page Data Initialization ================
+// Get current tab ID and network request data
 async function initPage() {
   try {
-    // 获取URL参数中的tabId
+    // Get tabId from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     currentTabId = parseInt(urlParams.get('tabId'));
     
     if (!currentTabId) {
-      // 如果没有提供tabId，获取当前活动标签页
+      // If no tabId provided, get current active tab
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tabs && tabs.length > 0) {
         currentTabId = tabs[0].id;
       } else {
-        console.error('无法确定要分析的标签页');
+        console.error('Unable to determine which tab to analyze');
         return;
       }
     }
     
-    // 获取当前标签页信息以显示域名
+    // Get current tab information to display domain
     if (currentTabId) {
       await updateTabInfo(currentTabId);
     }
     
-    // 获取网络请求数据
+    // Get network request data
     await fetchNetworkData();
     
-    // 更新数据概览
+    // Update data overview
     updateDataOverview(requestsData);
     
-    // 更新统计信息
+    // Update statistics
     if (StatsManager) {
-      // 初始化统计模块
+      // Initialize statistics module
       await StatsManager.init({
         containerId: 'statsContainer',
         getRequestData: () => requestsData
@@ -64,13 +64,13 @@ async function initPage() {
       StatsManager.updateStatistics();
     }
   } catch (error) {
-    console.error('初始化页面时出错:', error);
-    ToastManager.showError('初始化页面时出错: ' + error.message);
+    console.error('Error initializing page:', error);
+    ToastManager.showError('Error initializing page: ' + error.message);
   }
 }
 
-// ================ 数据获取与处理 ================
-// 从后台脚本获取网络请求数据
+// ================ Data Retrieval and Processing ================
+// Get network request data from background script
 async function fetchNetworkData() {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
@@ -85,14 +85,14 @@ async function fetchNetworkData() {
           requestsData = response.requestData;
           resolve(requestsData);
         } else {
-          reject(new Error('未能获取网络请求数据'));
+          reject(new Error('Failed to get network request data'));
         }
       }
     );
   });
 }
 
-// 获取并更新当前标签页信息
+// Get and update current tab information
 async function updateTabInfo(tabId) {
   try {
     const tab = await chrome.tabs.get(tabId);
@@ -102,51 +102,51 @@ async function updateTabInfo(tabId) {
       if (urlElement) urlElement.textContent = tab.url;
     }
   } catch (error) {
-    console.error('获取标签页信息出错:', error);
+    console.error('Error getting tab information:', error);
   }
 }
 
-// 获取并加载指定标签页数据
+// Get and load data for specified tab
 async function loadTabData(tabId) {
   try {
-    // 更新当前标签页ID
+    // Update current tab ID
     currentTabId = tabId;
     
-    // 获取标签页信息并显示域名
+    // Get tab information and display domain
     await updateTabInfo(tabId);
     
-    // 获取网络请求数据
+    // Get network request data
     await fetchNetworkData();
     
-    // 更新数据概览
+    // Update data overview
     updateDataOverview(requestsData);
     
-    // 更新统计信息
+    // Update statistics
     if (StatsManager) {
       StatsManager.updateStatistics();
     }
     
-    // 显示成功消息
+    // Show success message
     ToastManager.success(I18n.getText('tabDataLoaded'));
     
     return true;
   } catch (error) {
-    console.error('加载标签页数据出错:', error);
+    console.error('Error loading tab data:', error);
     ToastManager.showError(`${I18n.getText('tabDataLoadError')}: ${error.message}`);
     return false;
   }
 }
 
-// 更新数据概览区域
+// Update data overview area
 function updateDataOverview(requestsData) {
   const requests = Object.values(requestsData);
   
-  // 更新请求计数
+  // Update request count
   updateElementText('requestsCount', '.highlight-text', requests.length);
   updateElementText('totalRequestsValue', null, requests.length);
   updateElementText('totalRequestsValue2', null, requests.length);
   
-  // 计算性能指标
+  // Calculate performance metrics
   const validRequests = requests.filter(req => req.totalTime);
   if (validRequests.length === 0) return;
   
@@ -155,18 +155,18 @@ function updateDataOverview(requestsData) {
   const slowestRequest = validRequests.reduce((prev, current) => 
     (prev.totalTime > current.totalTime) ? prev : current, { totalTime: 0 });
   
-  // 更新UI
+  // Update UI
   updateElementText('totalLoadTimeValue', null, totalLoadTime > 0 ? `${Math.round(totalLoadTime)}ms` : '--');
   updateElementText('avgResponseTimeValue', null, avgResponseTime > 0 ? `${Math.round(avgResponseTime)}ms` : '--');
   updateElementText('slowestRequestValue', null, slowestRequest.totalTime > 0 ? `${Math.round(slowestRequest.totalTime)}ms` : '--');
 }
 
-// 计算统计数据
+// Calculate statistics
 function calculateStatistics(requestsData) {
   const requests = Object.values(requestsData);
   const validRequests = requests.filter(req => req.totalTime);
   
-  // 如果没有有效请求，返回空统计
+  // If no valid requests, return empty statistics
   if (validRequests.length === 0) {
     return {
       totalRequests: requests.length,
@@ -176,13 +176,13 @@ function calculateStatistics(requestsData) {
     };
   }
   
-  // 计算关键指标
+  // Calculate key metrics
   const totalLoadTime = validRequests.reduce((sum, req) => sum + req.totalTime, 0);
   const averageLoadTime = totalLoadTime / validRequests.length;
   const errorCount = requests.filter(req => req.error || (req.status && req.status >= 400)).length;
   const errorRate = (errorCount / requests.length) * 100;
   
-  // 计算p95响应时间
+  // Calculate p95 response time
   const times = validRequests.map(req => req.totalTime).sort((a, b) => a - b);
   const index = Math.floor(times.length * 0.95);
   const p95LoadTime = times[index] || 0;
@@ -195,7 +195,7 @@ function calculateStatistics(requestsData) {
   };
 }
 
-// 辅助函数：更新元素文本
+// Helper function: Update element text
 function updateElementText(id, selector, value) {
   const element = document.getElementById(id);
   if (!element) return;
@@ -208,14 +208,14 @@ function updateElementText(id, selector, value) {
   }
 }
 
-// 更新进度条
+// Update progress bar
 function updateProgress(percent, elements, statusText) {
   if (!elements.progressBar || !elements.progressText) return;
   
   elements.progressBar.style.width = `${percent}%`;
   elements.progressText.textContent = statusText;
   
-  // 如果进度接近完成，改变进度条颜色
+  // If progress is nearing completion, change progress bar color
   if (percent >= 90) {
     elements.progressBar.classList.add('progress-complete');
   } else {
@@ -224,27 +224,27 @@ function updateProgress(percent, elements, statusText) {
 }
 
 /**
- * AI分析功能
+ * AI Analysis Functionality
  */
 
-// ================ AI分析功能 ================
-// 运行AI分析
+// ================ AI Analysis Functionality ================
+// Run AI Analysis
 async function runAiAnalysis() {
-  // 如果分析正在进行中，则不允许再次点击
+  // If analysis is already running, do not allow clicking again
   if (isAnalysisRunning) {
-    ToastManager.showError('分析正在进行中，请等待完成');
+    ToastManager.showError('Analysis is already running, please wait for completion');
     return;
   }
   
-  // 设置分析状态为运行中
+  // Set analysis status to running
   isAnalysisRunning = true;
   
-  // 创建新的中断控制器
+  // Create new abort controller
   abortController = new AbortController();
   
-  // 禁用分析按钮并改变样式
+  // Disable analysis button and change style
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
-  // 添加停止分析按钮
+  // Add stop analysis button
   const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
   
   if (analyzeButton) {
@@ -256,7 +256,7 @@ async function runAiAnalysis() {
     stopAnalysisButton.style.display = 'inline-block';
   }
   
-  // 获取分析元素
+  // Get analysis elements
   const elements = {
     loading: document.getElementById('analysisLoading'),
     content: document.getElementById('analysisContent'),
@@ -268,16 +268,16 @@ async function runAiAnalysis() {
   };
   
   if (!elements.loading || !elements.content || !elements.text || !elements.error) {
-    console.error('未找到所需的AI分析元素');
+    console.error('Required AI analysis elements not found');
     resetAnalysisState();
     return;
   }
   
-  // 重置UI状态
+  // Reset UI state
   resetAnalysisUI(elements);
   
   try {
-    // 确保有请求数据
+    // Ensure there is request data
     if (!await ensureRequestData(elements)) {
       resetAnalysisState();
       return;
@@ -285,10 +285,10 @@ async function runAiAnalysis() {
     
     updateProgress(20, elements, I18n.getText('calculatingStats'));
     
-    // 计算统计数据
+    // Calculate statistics
     const statistics = calculateStatistics(requestsData);
     
-    // 获取AI配置并检查
+    // Get AI configuration and check
     updateProgress(30, elements, I18n.getText('loadingAiConfig'));
     const config = await getAIConfig();
     
@@ -297,18 +297,18 @@ async function runAiAnalysis() {
       return;
     }
     
-    // 准备分析数据
+    // Prepare analysis data
     updateProgress(40, elements, I18n.getText('preparingData'));
     updateAIProviderDisplay(config);
     
-    // 检查缓存状态
+    // Check cache status
     updateProgress(45, elements, I18n.getText('checkingCache'));
     
-    // 发送AI请求并处理结果
+    // Send AI request and process result
     await processAIAnalysis(requestsData, statistics, config, elements);
     
   } catch (error) {
-    // 检查是否是用户取消的请求
+    // Check if the request was canceled by the user
     if (error.name === 'AbortError' || error.message.includes('aborted')) {
       showAnalysisError(I18n.getText('analysisCancelled'), elements);
       ToastManager.showInfo(I18n.getText('analysisCancelled'));
@@ -316,34 +316,34 @@ async function runAiAnalysis() {
       handleAnalysisError(error, elements);
     }
   } finally {
-    // 无论成功或失败，都重置分析状态
+    // Regardless of success or failure, reset analysis state
     resetAnalysisState();
   }
 }
 
-// 停止进行中的AI分析
+// Stop running AI Analysis
 function stopAiAnalysis() {
   if (abortController && isAnalysisRunning) {
     abortController.abort();
-    console.log('用户取消了AI分析');
+    console.log('User canceled AI analysis');
   }
 }
 
-// 重置分析UI状态
+// Reset analysis UI state
 function resetAnalysisUI(elements) {
   elements.progressBar.style.width = '0%';
   elements.progressText.textContent = I18n.getText('analysisStarting');
   elements.loading.style.display = 'block';
   elements.progress.style.display = 'block';
-  elements.text.style.display = 'block'; // 使文本元素可见，以便流式显示结果
-  elements.text.innerHTML = '<div class="stream-cursor"></div>'; // 添加一个闪烁光标
+  elements.text.style.display = 'block'; // Make text element visible for streaming display
+  elements.text.innerHTML = '<div class="stream-cursor"></div>'; // Add a blinking cursor
   elements.error.style.display = 'none';
   
-  // 模拟数据加载进度
+  // Simulate data loading progress
   updateProgress(10, elements, I18n.getText('dataLoading'));
 }
 
-// 确保有请求数据
+// Ensure there is request data
 async function ensureRequestData(elements) {
   if (Object.keys(requestsData).length === 0) {
     try {
@@ -356,7 +356,7 @@ async function ensureRequestData(elements) {
     }
   }
   
-  // 如果仍然没有数据，显示错误
+  // If still no data, show error
   if (Object.keys(requestsData).length === 0) {
     showNoDataError(elements);
     return false;
@@ -365,7 +365,7 @@ async function ensureRequestData(elements) {
   return true;
 }
 
-// 验证AI配置
+// Validate AI configuration
 function validateAIConfig(config, elements) {
   if (!config.apiKey) {
     const errorMsg = I18n.getText('noApiKeyConfigured');
@@ -378,23 +378,23 @@ function validateAIConfig(config, elements) {
   return true;
 }
 
-// 处理AI分析过程
+// Process AI Analysis process
 async function processAIAnalysis(requestsData, statistics, config, elements) {
-  // 连接到AI服务
+  // Connect to AI service
   updateProgress(50, elements, I18n.getText('connectingAi'));
   
-  // 格式化数据并准备发送到AI
+  // Format data and prepare to send to AI
   const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
   const currentLanguage = I18n.getCurrentLanguage();
   
-  // 创建一个变量跟踪生成进度
+  // Create a variable to track generation progress
   let generationProgress = 0;
   const startGenerationPercent = 60;
   const endGenerationPercent = 95;
   
-  // 使用流式API，定义处理每个数据块的回调函数
+  // Use streaming API, define callback function for processing each data block
   const onChunkReceived = (chunk, fullText) => {
-    // 更新生成进度
+    // Update generation progress
     generationProgress = Math.min(generationProgress + 1, 100);
     const progressPercent = startGenerationPercent + 
       (generationProgress / 100) * (endGenerationPercent - startGenerationPercent);
@@ -405,42 +405,42 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
       I18n.getText('generatingAnalysis')
     );
     
-    // 更新显示（替换最后的光标元素）
+    // Update display (replace last cursor element)
     elements.text.innerHTML = formatAnalysisText(fullText) + '<div class="stream-cursor"></div>';
     
-    // 当内容增加时，滚动到底部以便用户看到最新内容
+    // When content increases, scroll to bottom for user to see latest content
     elements.content.scrollTop = elements.content.scrollHeight;
   };
   
-  // 使用流式API发送请求，传入中断信号
+  // Use streaming API to send request, pass abort signal
   const result = await AiConnector.streamToAI(
     analysisData,
     config.provider,
     config.apiKey,
     config.model,
     {language: currentLanguage},
-    2000, // 最大tokens
-    onChunkReceived, // 回调函数
-    abortController.signal // 添加中断信号
+    2000, // Max tokens
+    onChunkReceived, // Callback function
+    abortController.signal // Add abort signal
   );
   
-  // 流式处理完成后，确保完整显示最终结果
+  // Streaming processing completed, ensure final result is fully displayed
   elements.text.innerHTML = formatAnalysisText(result.analysis);
   
-  // 设置结果的提供商和模型信息
+  // Set result provider and model information
   updateProviderModelInfo(result, config);
   
-  // 完成进度
+  // Complete progress
   updateProgress(100, elements, I18n.getText('analysisComplete'));
   
-  // 隐藏进度条和加载区域
+  // Hide progress bar and loading area
   setTimeout(() => {
     elements.loading.style.display = 'none';
     elements.progress.style.display = 'none';
   }, 500);
 }
 
-// 重置分析状态和按钮
+// Reset analysis state and buttons
 function resetAnalysisState() {
   isAnalysisRunning = false;
   abortController = null;
@@ -458,16 +458,16 @@ function resetAnalysisState() {
   }
 }
 
-// 处理分析错误
+// Handle analysis error
 function handleAnalysisError(error, elements) {
-  showAnalysisError(`AI分析过程中出错: ${error.message}`, elements);
+  showAnalysisError(`AI analysis error: ${error.message}`, elements);
   ToastManager.showError(`${I18n.getText('aiAnalysisError')}: ${error.message}`);
   elements.loading.style.display = 'none';
   elements.progress.style.display = 'none';
   resetAnalysisState();
 }
 
-// 获取AI配置
+// Get AI configuration
 async function getAIConfig() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], (result) => {
@@ -482,7 +482,7 @@ async function getAIConfig() {
   });
 }
 
-// 显示无数据错误
+// Show no data error
 function showNoDataError(elements) {
   const noDataMsg = I18n.getText('noDataAvailable');
   showAnalysisError(noDataMsg, elements);
@@ -490,27 +490,27 @@ function showNoDataError(elements) {
   elements.loading.style.display = 'none';
 }
 
-// 更新提供商和模型信息
+// Update provider and model information
 function updateProviderModelInfo(result, config) {
-  // 处理provider信息
-  let provider = result.provider || '未知提供商';
+  // Handle provider information
+  let provider = result.provider || 'Unknown provider';
   if (provider.includes('(')) {
     provider = provider.split('(')[0].trim();
   }
   
-  // 优先使用用户配置
+  // Prefer user configuration
   if (config && config.provider) {
     provider = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
   }
   
-  const model = config && config.model ? config.model : (result.model || '未知模型');
+  const model = config && config.model ? config.model : (result.model || 'Unknown model');
   
-  // 设置模型和提供商信息
+  // Set model and provider information
   updateElementText('analysisModel', null, model);
   updateElementText('analysisProvider', null, provider);
 }
 
-// 更新AI提供商和模型显示
+// Update AI provider and model display
 function updateAIProviderDisplay(config) {
   const analysisProvider = document.getElementById('analysisProvider');
   const analysisModel = document.getElementById('analysisModel');
@@ -522,20 +522,20 @@ function updateAIProviderDisplay(config) {
   }
 }
 
-// 显示分析结果（保留兼容性，但流式API会直接更新内容）
+// Display analysis result (keep compatibility, but streaming API will directly update content)
 function displayAnalysisResult(result, config, elements) {
-  // 隐藏加载中，显示内容
+  // Hide loading, show content
   elements.loading.style.display = 'none';
   elements.text.style.display = 'block';
   
-  // 设置分析文本
+  // Set analysis text
   elements.text.innerHTML = formatAnalysisText(result.analysis);
   
-  // 更新提供商和模型信息
+  // Update provider and model information
   updateProviderModelInfo(result, config);
 }
 
-// 显示错误信息
+// Show error information
 function showAnalysisError(message, elements) {
   if (!elements) {
     elements = {
@@ -547,47 +547,47 @@ function showAnalysisError(message, elements) {
   }
   
   if (!elements.loading || !elements.text || !elements.error || !elements.errorText) {
-    console.error('未找到所需的AI分析元素');
+    console.error('Required AI analysis elements not found');
     return;
   }
   
-  // 隐藏加载和内容，显示错误
+  // Hide loading and content, show error
   elements.loading.style.display = 'none';
   elements.text.style.display = 'none';
   elements.error.style.display = 'block';
   
-  // 设置错误信息
+  // Set error information
   elements.errorText.textContent = message;
 }
 
-// 使用类似Markdown的格式格式化分析文本
+// Use similar Markdown format to format analysis text
 function formatAnalysisText(text) {
   if (!text) return '';
   
-  // 转换换行符为HTML换行
+  // Convert newline characters to HTML newlines
   let formatted = text.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
   
-  // 转换标题
+  // Convert titles
   formatted = formatted.replace(/#{3,6} (.+?)(?:<br>|$)/g, '<h4>$1</h4>');
   formatted = formatted.replace(/## (.+?)(?:<br>|$)/g, '<h3>$1</h3>');
   formatted = formatted.replace(/# (.+?)(?:<br>|$)/g, '<h2>$1</h2>');
   
-  // 转换格式化文本
+  // Convert formatted text
   formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
   
-  // 转换列表
+  // Convert lists
   formatted = formatted.replace(/- (.+?)(?:<br>|$)/g, '• $1<br>');
   
   return formatted;
 }
 
 /**
- * 导出功能
+ * Export Functionality
  */
 
-// ================ 导出功能 ================
-// 复制分析结果到剪贴板
+// ================ Export Functionality ================
+// Copy analysis results to clipboard
 function copyAnalysisResults() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.innerHTML) {
@@ -595,7 +595,7 @@ function copyAnalysisResults() {
     return;
   }
   
-  // 转换为Markdown格式后复制
+  // Copy to clipboard in Markdown format
   const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
   
   navigator.clipboard.writeText(markdownText)
@@ -603,69 +603,69 @@ function copyAnalysisResults() {
       ToastManager.success(I18n.getText('copySuccess'));
     })
     .catch(err => {
-      console.error('复制分析结果失败:', err);
+      console.error('Failed to copy analysis results:', err);
       ToastManager.showError(`${I18n.getText('copyFailed')}: ${err.message}`);
     });
 }
 
-// 下载分析报告和数据
+// Download analysis report and data
 function downloadReport() {
   const analysisText = document.getElementById('analysisText');
   const domainUrl = document.getElementById('domainUrl').textContent;
   
-  // 如果没有分析结果，显示错误
+  // If no analysis results, show error
   if (!analysisText.innerHTML.trim()) {
     ToastManager.showError(I18n.getText('noAnalysisResultsToDownload'));
     return;
   }
   
-  // 提取域名
+  // Extract domain
   const domain = extractDomain(domainUrl);
   const currentDate = formatDate(new Date());
   
-  // 创建并显示下拉菜单
+  // Create and show dropdown menu
   const dropdown = createDownloadDropdown();
   document.body.appendChild(dropdown);
   
-  // 定位下拉菜单
+  // Position dropdown menu
   const anchor = document.getElementById('downloadReportBtn');
   positionDropdown(dropdown, anchor);
   
-  // 设置下载选项事件监听器
+  // Set download option event listeners
   setupDownloadListeners(dropdown, analysisText, domain, currentDate);
 }
 
-// 点击外部区域关闭下拉菜单
+// Click outside area to close dropdown menu
 function closeDropdownOnOutsideClick(e) {
   if (!e.target.closest('#downloadReportBtn')) {
     closeDropdown();
   }
 }
 
-// 提取域名
+// Extract domain
 function extractDomain(url) {
   if (!url) return 'unknown-domain';
   try {
-    // 移除协议和路径，只保留域名部分
+    // Remove protocol and path, keep domain part
     return url.replace(/^(https?:\/\/)?(www\.)?/i, '').split('/')[0];
   } catch (error) {
-    console.error('提取域名失败:', error);
+    console.error('Failed to extract domain:', error);
     return 'unknown-domain';
   }
 }
 
-// 格式化日期为YYYY-MM-DD格式
+// Format date as YYYY-MM-DD format
 function formatDate(date) {
   if (!date) return 'unknown-date';
   try {
     return date.toISOString().split('T')[0];
   } catch (error) {
-    console.error('格式化日期失败:', error);
+    console.error('Failed to format date:', error);
     return 'unknown-date';
   }
 }
 
-// 创建下载选项下拉菜单
+// Create download option dropdown menu
 function createDownloadDropdown() {
   const dropdown = document.createElement('div');
   dropdown.className = 'download-dropdown';
@@ -681,31 +681,31 @@ function createDownloadDropdown() {
   return dropdown;
 }
 
-// 定位下拉菜单
+// Position dropdown menu
 function positionDropdown(dropdown, anchor) {
   const rect = anchor.getBoundingClientRect();
   
-  // 计算最佳显示位置
+  // Calculate best display position
   let top = rect.bottom + window.scrollY + 5;
   let left = rect.left + window.scrollX;
   
-  // 检查是否超出页面底部
-  const dropdownHeight = 200; // 估计高度
+  // Check if it exceeds bottom of page
+  const dropdownHeight = 200; // Estimated height
   const windowHeight = window.innerHeight;
   const windowBottom = window.scrollY + windowHeight;
   
-  // 如果下拉菜单会超出底部，则显示在按钮上方
+  // If dropdown menu would exceed bottom, show above button
   if (top + dropdownHeight > windowBottom) {
     top = rect.top + window.scrollY - dropdownHeight - 5;
   }
   
-  // 确保不会超出页面左侧
+  // Ensure it doesn't exceed left side
   if (left < 10) {
     left = 10;
   }
   
-  // 确保不会超出页面右侧
-  const dropdownWidth = 200; // 估计宽度
+  // Ensure it doesn't exceed right side
+  const dropdownWidth = 200; // Estimated width
   if (left + dropdownWidth > document.documentElement.clientWidth - 10) {
     left = document.documentElement.clientWidth - dropdownWidth - 10;
   }
@@ -713,33 +713,33 @@ function positionDropdown(dropdown, anchor) {
   dropdown.style.position = 'absolute';
   dropdown.style.top = `${top}px`;
   dropdown.style.left = `${left}px`;
-  dropdown.style.zIndex = '2000'; // 确保更高的z-index
+  dropdown.style.zIndex = '2000'; // Ensure higher z-index
   
   document.body.appendChild(dropdown);
   
-  // 滚动到下拉菜单可见
+  // Scroll to dropdown menu visible
   setTimeout(() => {
     dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 100);
 }
 
-// 设置下载按钮监听器
+// Set download button listeners
 function setupDownloadListeners(dropdown, analysisText, domainName, currentDate) {
-  // 点击其他地方关闭下拉菜单
+  // Click other areas to close dropdown menu
   document.addEventListener('click', closeDropdownOnOutsideClick);
   
-  // 防止点击下拉菜单本身时关闭
+  // Prevent clicking dropdown menu itself to close
   dropdown.addEventListener('click', (e) => {
     e.stopPropagation();
   });
   
-  // 设置各下载选项的事件监听器
+  // Set event listeners for each download option
   setupDownloadOptionListeners(dropdown, analysisText, domainName, currentDate);
 }
 
-// 设置各下载选项的事件监听器
+// Set event listeners for each download option
 function setupDownloadOptionListeners(dropdown, analysisText, domainName, currentDate) {
-  // 下载报告按钮
+  // Download report button
   document.getElementById('downloadReportOnly').addEventListener('click', (e) => {
     e.preventDefault();
     const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
@@ -747,7 +747,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
     closeDropdown();
   });
   
-  // 下载JSON数据按钮
+  // Download JSON data button
   document.getElementById('downloadDataJSON').addEventListener('click', (e) => {
     e.preventDefault();
     if (requestsData && Object.keys(requestsData).length > 0) {
@@ -758,7 +758,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
     closeDropdown();
   });
   
-  // 下载CSV数据按钮
+  // Download CSV data button
   document.getElementById('downloadDataCSV').addEventListener('click', (e) => {
     e.preventDefault();
     if (requestsData && Object.keys(requestsData).length > 0) {
@@ -770,7 +770,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
     closeDropdown();
   });
   
-  // 下载全部按钮
+  // Download all button
   document.getElementById('downloadAll').addEventListener('click', (e) => {
     e.preventDefault();
     const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
@@ -785,7 +785,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
   });
 }
 
-// 关闭下拉菜单函数
+// Close dropdown menu function
 function closeDropdown() {
   const dropdown = document.querySelector('.download-dropdown');
   if (dropdown) {
@@ -794,7 +794,7 @@ function closeDropdown() {
   }
 }
 
-// 下载文件相关函数
+// Download file related functions
 function downloadTextFile(text, filename) {
   downloadFile(new Blob([text], {type: 'text/plain'}), filename);
 }
@@ -815,7 +815,7 @@ function downloadFile(blob, filename) {
   document.body.appendChild(a);
   a.click();
   
-  // 清理
+  // Clean up
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
@@ -824,26 +824,26 @@ function downloadFile(blob, filename) {
   ToastManager.success(`${I18n.getText('downloadSuccess')}: ${filename}`);
 }
 
-// 将HTML格式转换回Markdown
+// Convert HTML to Markdown
 function convertHtmlToMarkdown(html) {
   if (!html) return '';
   
   let markdown = html;
   
-  // 替换HTML标签为Markdown格式
+  // Replace HTML tags with Markdown format
   markdown = markdown.replace(/<h2>(.*?)<\/h2>/g, '# $1\n\n');
   markdown = markdown.replace(/<h3>(.*?)<\/h3>/g, '## $1\n\n');
   markdown = markdown.replace(/<h4>(.*?)<\/h4>/g, '### $1\n\n');
   markdown = markdown.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
   markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
   
-  // 替换列表项
+  // Replace list items
   markdown = markdown.replace(/• (.*?)<br>/g, '- $1\n');
   
-  // 替换换行
+  // Replace newlines
   markdown = markdown.replace(/<br>/g, '\n');
   
-  // 清理可能的HTML实体
+  // Clean up possible HTML entities
   markdown = markdown.replace(/&nbsp;/g, ' ');
   markdown = markdown.replace(/&amp;/g, '&');
   markdown = markdown.replace(/&lt;/g, '<');
@@ -852,12 +852,12 @@ function convertHtmlToMarkdown(html) {
   return markdown;
 }
 
-// 将请求数据转换为CSV格式
+// Convert requests data to CSV format
 function convertRequestsToCSV(requestsData) {
   const requests = Object.values(requestsData);
   if (requests.length === 0) return '';
   
-  // CSV头部
+  // CSV headers
   const headers = [
     'URL', 'Type', 'Method', 'Status', 
     'Total Time (ms)', 'TTFB (ms)', 'Domain',
@@ -865,10 +865,10 @@ function convertRequestsToCSV(requestsData) {
     'Protocol', 'Priority', 'Cache Control'
   ];
   
-  // 创建CSV内容
+  // Create CSV content
   let csvContent = headers.join(',') + '\n';
   
-  // 转义CSV字段
+  // Escape CSV fields
   const escapeCSV = (field) => {
     if (field === null || field === undefined) return '';
     const str = String(field);
@@ -878,7 +878,7 @@ function convertRequestsToCSV(requestsData) {
     return str;
   };
   
-  // 添加每个请求的行
+  // Add each request's row
   requests.forEach(req => {
     const row = [
       escapeCSV(req.url),
@@ -901,19 +901,19 @@ function convertRequestsToCSV(requestsData) {
 }
 
 /**
- * 域名和授权管理
+ * Domain and Authorization Management
  */
 
-// ================ 域名和授权管理 ================
-// 辅助函数：截取标题，避免重复显示域名
+// ================ Domain and Authorization Management ================
+// Helper function: Truncate title, avoid repeated display of domain
 function truncateTitle(title, domain) {
   if (!title) return '';
   
-  // 移除域名部分，避免重复
+  // Remove domain part, avoid repeated
   let shortTitle = title.replace(domain, '').trim();
-  shortTitle = shortTitle.replace(/^[-–—\s|]*/, '').trim(); // 移除开头的分隔符
+  shortTitle = shortTitle.replace(/^[-–—\s|]*/, '').trim(); // Remove leading separators
   
-  // 如果标题过长，截取
+  // If title is too long, truncate
   if (shortTitle.length > 20) {
     shortTitle = shortTitle.substring(0, 18) + '...';
   }
@@ -921,53 +921,53 @@ function truncateTitle(title, domain) {
   return shortTitle;
 }
 
-// 检查域名是否为授权域名
+// Check if domain is authorized domain
 function isAuthorizedDomain(domain, authorizedDomains) {
   if (!domain || !authorizedDomains || !authorizedDomains.length) return false;
   
-  // 检查完全匹配
+  // Check exact match
   if (authorizedDomains.includes(domain)) return true;
   
-  // 检查子域名匹配 (如果authorizedDomains包含 example.com，则 sub.example.com 也是授权的)
+  // Check subdomain match (if authorizedDomains contains example.com, then sub.example.com is also authorized)
   return authorizedDomains.some(authDomain => {
     return domain.endsWith('.' + authDomain);
   });
 }
 
-// 检查是否为本地开发地址
+// Check if it's local development address
 function isLocalhost(domain) {
   return domain === 'localhost' || domain === '127.0.0.1' || domain.match(/^192\.168\.\d{1,3}\.\d{1,3}$/);
 }
 
-// 获取授权域名列表
+// Get authorized domain list
 async function getAuthorizedDomains() {
   try {
-    // 尝试从存储中获取授权域名列表
+    // Try to get authorized domain list from storage
     const result = await chrome.storage.sync.get('authorizedDomains');
     const domains = result.authorizedDomains || [];
     
-    // 始终允许常见的开发和测试域名
+    // Always allow common development and test domains
     const defaultDomains = ['localhost', '127.0.0.1', 'example.com'];
     
-    // 合并默认域名和存储的域名，确保无重复
+    // Merge default domains and stored domains, ensure no duplicates
     return [...new Set([...defaultDomains, ...domains])];
   } catch (error) {
-    console.error('获取授权域名列表出错:', error);
-    return ['localhost', '127.0.0.1']; // 出错时返回基本本地域名
+    console.error('Error getting authorized domain list:', error);
+    return ['localhost', '127.0.0.1']; // Return basic local domain if error
   }
 }
 
 /**
- * 初始化和设置
+ * Initialization and Setup
  */
 
-// 初始化标签页选择器
+// Initialize tab selector
 async function initTabSelector() {
   const tabSelectorWrapper = document.querySelector('.tab-selector-wrapper');
   if (!tabSelectorWrapper) return;
   
   try {
-    // 获取当前页面的域名
+    // Get current page's domain
     const currentDomainUrl = document.getElementById('domainUrl')?.textContent;
     let currentDomain = '';
     let displayDomain = I18n.getText('currentTab');
@@ -976,29 +976,29 @@ async function initTabSelector() {
       if (currentDomainUrl && currentDomainUrl !== '--') {
         const url = new URL(currentDomainUrl);
         currentDomain = url.hostname;
-        // 设置显示用的域名（简短版本）
+        // Set display domain for use (short version)
         displayDomain = currentDomain;
       }
     } catch (e) {
-      console.error('解析当前域名出错:', e);
+      console.error('Error parsing current domain:', e);
     }
     
-    // 创建自定义下拉菜单元素
+    // Create custom dropdown menu element
     tabSelectorWrapper.innerHTML = '';
     const customDropdown = document.createElement('div');
     customDropdown.className = 'custom-dropdown';
     
-    // 获取所有标签页
+    // Get all tabs
     const tabs = await chrome.tabs.query({});
     
-    // 获取授权域名列表
+    // Get authorized domain list
     const authorizedDomains = await getAuthorizedDomains();
     
-    // 创建标签页选项数据结构
+    // Create tab page option data structure
     const authorizedTabs = [];
     let hasMatchingTab = false;
     
-    // 处理当前标签页
+    // Handle current tab
     const currentTab = {
       element: document.createElement('div'),
       domain: currentDomain.toLowerCase(),
@@ -1013,20 +1013,20 @@ async function initTabSelector() {
     currentTab.element.title = currentDomainUrl;
     currentTab.element.innerHTML = `<span class="tab-domain">${displayDomain}</span>`;
     
-    // 添加其他符合条件的标签页选项
+    // Add other tabs that meet conditions
     tabs.forEach(tab => {
-      // 忽略当前页面
+      // Ignore current page
       if (tab.id === chrome.devtools?.inspectedWindow?.tabId) return;
       
       try {
-        // 检查标签页是否有URL且是否为授权域名
+        // Check if tab has URL and whether it's authorized domain
         if (tab.url) {
           const url = new URL(tab.url);
           const domain = url.hostname;
           
-          // 只添加授权域名或本地开发地址
+          // Only add authorized domain or local development address
           if (isAuthorizedDomain(domain, authorizedDomains) || isLocalhost(domain)) {
-            // 截取标题长度，仅显示有意义的部分
+            // Truncate title length, only display meaningful part
             const title = tab.title || '';
             const shortTitle = truncateTitle(title, domain);
             
@@ -1036,7 +1036,7 @@ async function initTabSelector() {
             option.dataset.domain = domain;
             option.title = `${domain} - ${tab.title || ''}`;
             
-            // 使用更简洁的显示形式
+            // Use more concise display form
             option.innerHTML = `<span class="tab-domain">${domain}</span>`;
             if (shortTitle) {
               option.innerHTML += `<span class="tab-title">${shortTitle}</span>`;
@@ -1044,7 +1044,7 @@ async function initTabSelector() {
             
             const matchesCurrent = currentDomain && domain.toLowerCase() === currentDomain.toLowerCase();
             
-            // 如果找到匹配当前域名的标签页，标记它
+            // If find matching tab for current domain, mark it
             if (matchesCurrent) {
               hasMatchingTab = true;
             }
@@ -1059,23 +1059,23 @@ async function initTabSelector() {
           }
         }
       } catch (e) {
-        // 如果URL解析失败，跳过这个标签页
-        console.error('解析标签页URL出错:', e);
+        // If URL parsing fails, skip this tab
+        console.error('Error parsing tab URL:', e);
       }
     });
     
-    // 按域名排序
+    // Sort by domain
     authorizedTabs.sort((a, b) => a.domain.localeCompare(b.domain));
     
-    // 查找匹配当前域名的标签页
+    // Find matching tab for current domain
     const matchingTab = authorizedTabs.find(tab => tab.matchesCurrent);
     
-    // 创建下拉选择框的显示部分
+    // Create dropdown selected display part
     const dropdownSelected = document.createElement('div');
     dropdownSelected.className = 'dropdown-selected';
     
-    // 如果有匹配的标签页，使用它的域名作为显示文本
-    // 否则使用当前标签页的域名
+    // If there's matching tab, use its domain as display text
+    // Otherwise use current tab's domain
     const selectedTab = matchingTab || currentTab;
     
     dropdownSelected.innerHTML = `
@@ -1088,10 +1088,10 @@ async function initTabSelector() {
     const dropdownOptions = document.createElement('div');
     dropdownOptions.className = 'dropdown-options';
     
-    // 添加所有选项到下拉列表
+    // Add all options to dropdown list
     dropdownOptions.appendChild(currentTab.element);
     
-    // 设置当前选项为选中状态，除非有匹配的标签页
+    // Set current option as selected unless there's matching tab
     if (!hasMatchingTab) {
       currentTab.element.classList.add('selected');
     }
@@ -1099,15 +1099,15 @@ async function initTabSelector() {
     authorizedTabs.forEach(tab => {
       dropdownOptions.appendChild(tab.element);
       
-      // 如果这是匹配当前域名的标签页，标记为选中
+      // If this is matching tab for current domain, mark as selected
       if (tab.matchesCurrent) {
         tab.element.classList.add('selected');
-        // 加载匹配标签页的数据
+        // Load matching tab data
         loadTabData(tab.tabId);
       }
     });
     
-    // 如果没有授权的标签页，显示一条信息
+    // If no authorized tabs, show one information
     if (authorizedTabs.length === 0) {
       const noAuthOption = document.createElement('div');
       noAuthOption.className = 'dropdown-option disabled';
@@ -1115,53 +1115,53 @@ async function initTabSelector() {
       dropdownOptions.appendChild(noAuthOption);
     }
     
-    // 添加下拉元素到DOM
+    // Add dropdown element to DOM
     customDropdown.appendChild(dropdownSelected);
     customDropdown.appendChild(dropdownOptions);
     tabSelectorWrapper.appendChild(customDropdown);
     
-    // 点击显示/隐藏下拉菜单
+    // Click to show/hide dropdown menu
     dropdownSelected.addEventListener('click', () => {
       dropdownSelected.classList.toggle('active');
       dropdownOptions.classList.toggle('active');
     });
     
-    // 点击选项后关闭下拉菜单
+    // Click option to close dropdown menu
     dropdownOptions.addEventListener('click', async (e) => {
       const option = e.target.closest('.dropdown-option');
       if (!option || option.classList.contains('disabled')) return;
       
-      // 更新选中状态
+      // Update selected state
       dropdownOptions.querySelectorAll('.dropdown-option').forEach(opt => {
         opt.classList.remove('selected');
       });
       option.classList.add('selected');
       
-      // 更新显示文本 - 只显示域名部分
+      // Update display text - only display domain part
       const domain = option.dataset.domain || option.querySelector('.tab-domain')?.textContent || '';
       document.getElementById('selectedTabText').textContent = domain;
       document.getElementById('selectedTabText').title = option.title || domain;
       
-      // 关闭下拉菜单
+      // Close dropdown menu
       dropdownSelected.classList.remove('active');
       dropdownOptions.classList.remove('active');
       
-      // 处理选中的值
+      // Handle selected value
       const selectedTabId = option.dataset.value;
       
       if (selectedTabId === 'current') {
-        // 获取当前活动标签页
+        // Get current active tab
         const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
         if (activeTabs && activeTabs.length > 0) {
           await loadTabData(activeTabs[0].id);
         }
       } else if (selectedTabId) {
-        // 加载选中的标签页数据
+        // Load selected tab data
         await loadTabData(parseInt(selectedTabId));
       }
     });
     
-    // 点击其他地方关闭下拉菜单
+    // Click other areas to close dropdown menu
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.custom-dropdown')) {
         dropdownSelected.classList.remove('active');
@@ -1170,44 +1170,44 @@ async function initTabSelector() {
     });
     
   } catch (error) {
-    console.error('初始化标签页选择器出错:', error);
+    console.error('Error initializing tab selector:', error);
   }
 }
 
-// 在DOM加载完成后初始化页面
+// On DOM load completed, initialize page
 document.addEventListener('DOMContentLoaded', init);
 
-// 初始化页面
+// Initialize page
 async function init() {
   try {
     console.log('Initializing AI analysis page...');
     
-    // 初始化主题管理器
+    // Initialize theme manager
     ThemeManager.init();
     
-    // 初始化国际化
+    // Initialize internationalization
     await initI18n();
     
-    // 初始化AI提供商显示
+    // Initialize AI provider display
     await initAIProviderDisplay();
     
-    // 初始化标签页选择器
+    // Initialize tab selector
     await initTabSelector();
     
-    // 初始化页面数据
+    // Initialize page data
     await initPage();
     
-    // 设置事件处理程序
+    // Set event handlers
     setupEventHandlers();
     
-    console.log('AI分析页面初始化完成，等待用户点击运行分析');
+    console.log('AI analysis page initialized, waiting for user to click run analysis');
   } catch (error) {
-    console.error('初始化AI分析页面时出错:', error);
+    console.error('Error initializing AI analysis page:', error);
     ToastManager.showError(`${I18n.getText('initPageError')}: ${error.message}`);
   }
 }
 
-// 初始化国际化
+// Initialize internationalization
 async function initI18n() {
   try {
     await I18n.init();
@@ -1217,73 +1217,71 @@ async function initI18n() {
   }
 }
 
-// 初始化AI提供商和模型显示
+// Initialize AI provider and model display
 async function initAIProviderDisplay() {
   try {
     const config = await getAIConfig();
     updateAIProviderDisplay(config);
   } catch (error) {
-    console.error('初始化AI提供商显示出错:', error);
+    console.error('Error initializing AI provider display:', error);
   }
 }
 
-// 设置事件处理程序
+// Set event handlers
 function setupEventHandlers() {
-  // 返回主页按钮
+  // Back to main page button
   const backToMainBtn = document.getElementById('backToMain');
   if (backToMainBtn) {
     backToMainBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.close(); // 关闭当前标签页
+      window.close(); // Close current tab
     });
   }
   
-  // 运行分析按钮
+  // Run analysis button
   const runAiAnalysisBtn = document.getElementById('runAiAnalysisBtn');
   if (runAiAnalysisBtn) {
     runAiAnalysisBtn.addEventListener('click', runAiAnalysis);
   }
   
-  // 停止分析按钮
+  // Stop analysis button
   const stopAiAnalysisBtn = document.getElementById('stopAiAnalysisBtn');
   if (stopAiAnalysisBtn) {
     stopAiAnalysisBtn.addEventListener('click', stopAiAnalysis);
-    // 默认隐藏
+    // Default hidden
     stopAiAnalysisBtn.style.display = 'none';
   }
   
-  // 复制结果按钮
+  // Copy results button
   const copyAnalysisBtn = document.getElementById('copyAnalysisBtn');
   if (copyAnalysisBtn) {
     copyAnalysisBtn.addEventListener('click', copyAnalysisResults);
   }
   
-  // 下载报告和数据按钮
+  // Download report and data button
   const downloadReportBtn = document.getElementById('downloadReportBtn');
   if (downloadReportBtn) {
     downloadReportBtn.addEventListener('click', downloadReport);
   }
   
-  // 清除缓存按钮
+  // Clear cache button
   const clearCacheBtn = document.getElementById('clearAiCacheBtn');
   if (clearCacheBtn) {
-    clearCacheBtn.addEventListener('click', async () => {
-      try {
-        await AiConnector.clearAnalysisCache();
-        ToastManager.success(I18n.getText('cacheClearSuccess'));
-      } catch (error) {
-        ToastManager.showError(`${I18n.getText('cacheClearError')}: ${error.message}`);
-      }
+    clearCacheBtn.addEventListener('click', () => {
+      AiConnector.clearCache();
+      ToastManager.success(I18n.getText('aiCacheCleared'));
     });
   }
   
-  // 打开设置页面
+  // Open settings page
   const openOptionsPage = document.getElementById('openOptionsPage');
   if (openOptionsPage) {
     openOptionsPage.addEventListener('click', (e) => {
       e.preventDefault();
       if (chrome.runtime.openOptionsPage) {
         chrome.runtime.openOptionsPage();
+      } else {
+        window.open(chrome.runtime.getURL('options.html'));
       }
     });
   }

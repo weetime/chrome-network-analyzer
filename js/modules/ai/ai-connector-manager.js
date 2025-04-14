@@ -9,17 +9,17 @@ import { AiAnthropicConnector } from './ai-anthropic-connector.js';
 import { AiDeepseekConnector } from './ai-deepseek-connector.js';
 
 /**
- * 根据提供商发送数据到指定AI
- * @param {object} analysisData - 网络分析数据
- * @param {string} provider - AI提供商标识
- * @param {string} apiKey - API密钥
- * @param {string} model - 模型名称
- * @param {object|number} options - 附加选项或最大token数
- * @param {number} maxTokens - 最大token数
- * @returns {Promise<object>} 分析结果
+ * Send data to the specified AI based on provider
+ * @param {object} analysisData - Network analysis data
+ * @param {string} provider - AI provider identifier
+ * @param {string} apiKey - API key
+ * @param {string} model - Model name
+ * @param {object|number} options - Additional options or max tokens
+ * @param {number} maxTokens - Maximum number of tokens
+ * @returns {Promise<object>} Analysis result
  */
 async function sendToAI(analysisData, provider, apiKey, model, options = {}, maxTokens = 2000) {
-  // 处理参数兼容性（如果第5个参数是数字，则它是旧版API中的maxTokens）
+  // Handle parameter compatibility (if the 5th parameter is a number, it's maxTokens in the old API)
   if (typeof options === 'number') {
     maxTokens = options;
     options = {};
@@ -40,27 +40,27 @@ async function sendToAI(analysisData, provider, apiKey, model, options = {}, max
 }
 
 /**
- * 流式发送数据到AI API，支持缓存和中断
- * @param {object} analysisData - 网络分析数据
- * @param {string} provider - AI提供商
- * @param {string} apiKey - API密钥
- * @param {string} model - 模型名称
- * @param {object} options - 附加选项，如语言设置
- * @param {number} maxTokens - 最大token数
- * @param {Function} onChunk - 处理每个数据块的回调
- * @param {AbortSignal} signal - 可选的中断信号
- * @returns {Promise<object>} 分析结果
+ * Stream data to AI API, with support for caching and aborting
+ * @param {object} analysisData - Network analysis data
+ * @param {string} provider - AI provider
+ * @param {string} apiKey - API key
+ * @param {string} model - Model name
+ * @param {object} options - Additional options, such as language settings
+ * @param {number} maxTokens - Maximum number of tokens
+ * @param {Function} onChunk - Callback for handling each data chunk
+ * @param {AbortSignal} signal - Optional abort signal
+ * @returns {Promise<object>} Analysis result
  */
 async function streamToAI(analysisData, provider, apiKey, model, options = {}, maxTokens = 2000, onChunk, signal) {
   const providerKey = provider.toUpperCase();
   const language = options?.language || 'en';
   
-  // 检查是否有中断信号
+  // Check if abort signal is present
   if (signal && signal.aborted) {
     throw new Error('Request aborted by user before starting');
   }
   
-  // 尝试从缓存获取结果
+  // Try to get result from cache
   try {
     const cachedResult = await AiCacheManager.getCachedAnalysis(
       provider, 
@@ -72,14 +72,14 @@ async function streamToAI(analysisData, provider, apiKey, model, options = {}, m
     if (cachedResult) {
       console.log('Using cached AI analysis result');
       
-      // 如果有回调函数，模拟流式响应
+      // If callback function exists, simulate streaming response
       if (onChunk && typeof onChunk === 'function') {
-        // 分块发送缓存结果以模拟流式响应
+        // Send cached result in chunks to simulate streaming
         const chunkSize = 100;
         let sentText = "";
         
         for (let i = 0; i < cachedResult.analysis.length; i += chunkSize) {
-          // 检查是否中断
+          // Check for abort
           if (signal && signal.aborted) {
             throw new Error('Request aborted by user during cache streaming');
           }
@@ -88,7 +88,7 @@ async function streamToAI(analysisData, provider, apiKey, model, options = {}, m
           sentText += chunk;
           onChunk(chunk, sentText);
           
-          // 添加小延迟使其看起来像流式传输
+          // Add small delay to make it look like streaming
           await new Promise(resolve => setTimeout(resolve, 10));
         }
       }
@@ -97,13 +97,13 @@ async function streamToAI(analysisData, provider, apiKey, model, options = {}, m
     }
   } catch (cacheError) {
     console.warn('Error checking cache:', cacheError);
-    // 继续执行，不让缓存错误影响主流程
+    // Continue execution, don't let cache errors affect main process
   }
   
-  // 创建中断控制器
+  // Create abort controller
   const abortController = new AbortController();
   
-  // 如果传入了信号，则连接它
+  // If signal was passed, connect it
   if (signal) {
     signal.addEventListener('abort', () => {
       abortController.abort();
@@ -127,7 +127,7 @@ async function streamToAI(analysisData, provider, apiKey, model, options = {}, m
         throw new Error(`Unsupported AI provider for streaming: ${provider}`);
     }
     
-    // 缓存成功的结果
+    // Cache successful result
     try {
       await AiCacheManager.cacheAnalysisResult(
         provider,
@@ -138,12 +138,12 @@ async function streamToAI(analysisData, provider, apiKey, model, options = {}, m
       );
     } catch (cacheSaveError) {
       console.warn('Error saving to cache:', cacheSaveError);
-      // 不让缓存错误影响返回结果
+      // Don't let cache errors affect the return result
     }
     
     return result;
   } catch (error) {
-    // 如果是中断错误，添加更详细的上下文
+    // If it's an abort error, add more detailed context
     if (error.name === 'AbortError') {
       throw new Error(`AI analysis aborted: ${error.message || 'Request was cancelled or timed out'}`);
     }

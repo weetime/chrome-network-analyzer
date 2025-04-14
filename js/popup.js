@@ -19,63 +19,63 @@ import { ToastManager } from './toast-manager.js';
 
 // Global variables
 let currentTabId = null;
-let updateInterval = null; // 用于存储更新定时器的ID
+let updateInterval = null; // For storing update timer ID
 
-// 初始化国际化
+// Initialize internationalization
 async function initI18n() {
   try {
-    // 初始化I18n并加载语言包
+    // Initialize I18n and load language packs
     await I18n.init();
     console.log('I18n initialized with language:', I18n.getCurrentLanguage());
     
-    // 确保语言设置应用到页面
+    // Ensure language settings are applied to the page
     I18n.updatePageText();
     
-    // 设置html元素的lang属性，用于CSS选择器匹配
+    // Set html element's lang attribute for CSS selector matching
     document.documentElement.lang = I18n.getCurrentLanguage();
   } catch (error) {
     console.error('Failed to initialize I18n:', error);
   }
 }
 
-// 处理新的网络请求消息
+// Handle new network request messages
 function setupMessageListeners() {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    // 处理请求完成的消息
+    // Handle request completion messages
     if (message.action === "requestCompleted" && message.tabId === currentTabId) {
-      // 获取当前数据
+      // Get current data
       const currentData = TableManager.getRequestData();
-      // 更新特定请求的数据
+      // Update specific request data
       if (currentData) {
         currentData[message.requestId] = message.requestData;
-        // 更新表格
+        // Update table
         TableManager.updateTableData(currentData);
-        // 更新统计信息
+        // Update statistics
         StatsManager.updateStatistics();
         
-        // 确保国际化更新
+        // Ensure internationalization updates
         I18n.updatePageText();
       }
     }
     
-    // 处理请求失败的消息
+    // Handle request failure messages
     if (message.action === "requestFailed" && message.tabId === currentTabId) {
-      // 获取当前数据
+      // Get current data
       const currentData = TableManager.getRequestData();
-      // 更新特定请求的数据
+      // Update specific request data
       if (currentData) {
         currentData[message.requestId] = message.requestData;
-        // 更新表格
+        // Update table
         TableManager.updateTableData(currentData);
-        // 更新统计信息
+        // Update statistics
         StatsManager.updateStatistics();
         
-        // 确保国际化更新
+        // Ensure internationalization updates
         I18n.updatePageText();
       }
     }
     
-    // 需要返回true以保持消息通道开放
+    // Return true to keep message channel open
     return true;
   });
 }
@@ -97,28 +97,28 @@ function requestNetworkData() {
         // Update statistics
         StatsManager.updateStatistics();
         
-        // 确保国际化更新
+        // Ensure internationalization updates
         I18n.updatePageText();
       }
     }
   );
 }
 
-// 将 requestNetworkData 函数设置为全局变量，以便其他模块可以访问
+// Set requestNetworkData function as global variable so other modules can access it
 window.requestNetworkData = requestNetworkData;
 
-// 开始实时更新
+// Start real-time updates
 function startRealTimeUpdates() {
-  // 清除之前的定时器（如果存在）
+  // Clear previous timer (if exists)
   if (updateInterval) {
     clearInterval(updateInterval);
   }
   
-  // 设置新的定时器，每3秒更新一次数据
+  // Set new timer, update data every 3 seconds
   updateInterval = setInterval(requestNetworkData, 3000);
 }
 
-// 停止实时更新
+// Stop real-time updates
 function stopRealTimeUpdates() {
   if (updateInterval) {
     clearInterval(updateInterval);
@@ -152,18 +152,18 @@ function setupControlButtons() {
     analyzeButton.addEventListener('click', AiAnalysisManager.runAiAnalysis);
   }
   
-  // AI分析切换按钮
+  // AI analysis toggle button
   const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
   if (aiAnalysisToggleBtn) {
     aiAnalysisToggleBtn.addEventListener('click', () => {
-      // 打开独立的AI分析页面，并传递当前的tabId参数
+      // Open standalone AI analysis page, and pass current tabId parameter
       chrome.tabs.create({
         url: chrome.runtime.getURL(`ai-analysis.html?tabId=${currentTabId}`)
       });
     });
   }
   
-  // 打开设置页面
+  // Open settings page
   const openOptionsPage = document.getElementById('openOptionsPage');
   if (openOptionsPage) {
     openOptionsPage.addEventListener('click', (e) => {
@@ -180,7 +180,7 @@ function exportData() {
   const requestData = TableManager.getRequestData();
   
   if (Object.keys(requestData).length === 0) {
-    // 没有数据时不显示 toast，直接返回
+    // When no data, don't show toast, just return
     console.log('No data to export');
     return;
   }
@@ -214,7 +214,7 @@ function exportData() {
 function clearData() {
   const confirmMsg = I18n.getText('confirmClear');
   
-  // 创建自定义确认对话框
+  // Create custom confirmation dialog
   const confirmDialog = document.createElement('div');
   confirmDialog.className = 'custom-confirm';
   confirmDialog.innerHTML = `
@@ -229,20 +229,20 @@ function clearData() {
   
   document.body.appendChild(confirmDialog);
   
-  // 添加事件监听器
+  // Add event listeners
   return new Promise(resolve => {
-    // 取消按钮
+    // Cancel button
     confirmDialog.querySelector('.cancel-btn').addEventListener('click', () => {
       document.body.removeChild(confirmDialog);
       resolve(false);
     });
     
-    // 确认按钮
+    // Confirm button
     confirmDialog.querySelector('.confirm-btn').addEventListener('click', () => {
       document.body.removeChild(confirmDialog);
       resolve(true);
       
-      // 执行清除操作
+      // Execute clear operation
       chrome.runtime.sendMessage(
         { action: "clearRequestData", tabId: currentTabId },
         (response) => {
@@ -269,7 +269,7 @@ function clearData() {
               console.error('Error closing request details:', error);
             }
             
-            // 不显示成功消息 toast
+            // Don't show success message toast
             console.log('Data cleared successfully');
           } else if (response && response.error) {
             console.error("Error clearing data:", response.error);
@@ -284,13 +284,13 @@ function clearData() {
 async function initPopup() {
   console.log("Initializing popup...");
   
-  // 初始化国际化支持
+  // Initialize internationalization support
   await initI18n();
   
-  // 初始化主题控制器
+  // Initialize theme controller
   ThemeManager.init();
   
-  // 获取当前活动标签页
+  // Get current active tab
   chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
     if (tabs.length > 0) {
       currentTabId = tabs[0].tabId || tabs[0].id;
@@ -298,7 +298,7 @@ async function initPopup() {
       
       console.log(`Current tab: ${currentTabId}, Domain: ${domain}`);
       
-      // 启动网络数据模块
+      // Start network data module
       await TableManager.init({
         tableId: 'requestsTable',
         bodyId: 'requestsTableBody',
@@ -306,18 +306,18 @@ async function initPopup() {
         requestDetailsManager: RequestDetailsManager
       });
       
-      // 初始化详情管理器
+      // Initialize details manager
       await RequestDetailsManager.init({
         detailsContainerId: 'requestDetails'
       });
       
-      // 初始化统计模块
+      // Initialize statistics module
       await StatsManager.init({
         containerId: 'statsContainer',
         getRequestData: TableManager.getRequestData
       });
       
-      // 初始化AI分析管理器
+      // Initialize AI analysis manager
       await AiAnalysisManager.init({
         containerId: 'aiAnalysisContainer',
         statusId: 'aiAnalysisStatus',
@@ -328,7 +328,7 @@ async function initPopup() {
         tabId: currentTabId
       });
       
-      // 初始化域名身份验证UI
+      // Initialize domain authentication UI
       await DomainAuthUI.init({
         domainListId: 'headerDomainsList',
         switchId: 'headerAuthorizationSwitch',
@@ -336,46 +336,46 @@ async function initPopup() {
         settingsLinkId: 'openDomainSettings'
       });
       
-      // 显示当前域名并检查授权
+      // Display current domain and check authorization
       checkDomainAndLoadData(domain);
     }
   });
   
-  // 设置消息监听器
+  // Set up message listeners
   setupMessageListeners();
   
-  // 设置控制按钮事件监听器
+  // Set up control button event listeners
   setupControlButtons();
   
-  // 启动实时更新
+  // Start real-time updates
   startRealTimeUpdates();
   
-  // 监听弹窗关闭事件
+  // Listen for popup close event
   window.addEventListener('beforeunload', function() {
     stopRealTimeUpdates();
   });
 }
 
-// 检查域名授权并加载数据
+// Check domain authorization and load data
 function checkDomainAndLoadData(domain) {
-  // 使用 setCurrentDomain 方法设置当前域名，该方法会同时更新 UI 显示
+  // Use setCurrentDomain method to set current domain, this method will update UI display simultaneously
   DomainAuthUI.setCurrentDomain(domain).then(isAuthorized => {
     if (isAuthorized) {
-      // 域名已授权，加载网络数据
+      // Domain is authorized, load network data
       console.log(`Domain ${domain} is authorized, loading network data...`);
       requestNetworkData();
       
-      // 显示授权内容
+      // Show authorized content
       document.getElementById('authorizedContent').style.display = 'block';
     } else {
-      // 域名未授权，显示授权表单
+      // Domain is not authorized, show authorization form
       console.log(`Domain ${domain} is not authorized.`);
       
-      // 隐藏授权内容
+      // Hide authorized content
       document.getElementById('authorizedContent').style.display = 'none';
     }
   });
 }
 
-// 在DOM加载完成后初始化弹出窗口
+// Initialize popup when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', initPopup);

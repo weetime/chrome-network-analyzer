@@ -1,62 +1,62 @@
 /**
- * Network Analyzer 选项页面脚本
+ * Network Analyzer Options Page Script
  */
 
-// 导入所需模块
+// Import required modules
 import { I18n } from './i18n.js';
 import './i18n/zh.js';
 import './i18n/en.js';
 import { ToastManager } from './toast-manager.js';
 import { AiConnector } from './ai-connector.js';
 
-// 定义全局变量
+// Define global variables
 let authorizedDomainsList;
 
-// 当DOM加载完成后执行
+// Execute when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', async function() {
-  // 首先初始化I18n
+  // First initialize I18n
   await initI18n();
   
-  // 初始化主题
+  // Initialize theme
   initTheme();
   
-  // 初始化语言
+  // Initialize language
   initLanguage();
   
-  // 初始化域名管理
+  // Initialize domain management
   initDomainManagement();
   
-  // 初始化设置保存
+  // Initialize settings save
   initSettingsSave();
   
-  // 初始化侧边栏导航
+  // Initialize sidebar navigation
   initSidebarNav();
   
-  // 初始化所有选项卡的表单事件
+  // Initialize form events for all tabs
   initFormEvents();
   
-  // 初始化AI Provider选择器
+  // Initialize AI Provider selector
   initAIProviderSelection();
   
-  // 显示保存的AI设置
+  // Display saved AI settings
   loadAISettings();
   
-  // 初始化扩展程序设置
+  // Initialize extension settings
   initExtensionSettings();
 });
 
 /**
- * 初始化国际化功能
+ * Initialize internationalization functionality
  */
 async function initI18n() {
   try {
-    // 初始化I18n并加载语言包
+    // Initialize I18n and load language packs
     await I18n.init();
     
-    // 获取当前语言
+    // Get current language
     const currentLang = I18n.getCurrentLanguage();
     
-    // 设置语言选择器
+    // Set language selector
     const languageSelect = document.getElementById('languageSelect');
     if (languageSelect) languageSelect.value = currentLang;
     
@@ -67,29 +67,29 @@ async function initI18n() {
 }
 
 /**
- * 初始化主题切换功能
+ * Initialize theme switching functionality
  */
 function initTheme() {
-  // 获取主题单选按钮
+  // Get theme radio buttons
   const themeRadios = document.querySelectorAll('input[name="theme"]');
   
-  // 首先尝试从Chrome Storage获取主题设置
+  // First try to get theme settings from Chrome Storage
   chrome.storage.local.get(['theme'], (result) => {
-    // 获取存储的主题，默认为light
+    // Get stored theme, default to light
     const storedTheme = result.theme || localStorage.getItem('networkAnalyzerTheme') || 'light';
     
-    // 应用存储的主题
+    // Apply stored theme
     document.documentElement.setAttribute('data-theme', storedTheme);
     
-    // 设置对应的单选按钮
-    // 修复大小写问题和特殊主题名称
+    // Set corresponding radio button
+    // Fix case issues and special theme names
     let radioId;
     
-    // 根据主题名称生成正确的ID
+    // Generate correct ID based on theme name
     if (storedTheme === 'fireblack') {
-      radioId = 'themeFireBlack'; // 注意大小写，与HTML中保持一致
+      radioId = 'themeFireBlack'; // Note case, keep consistent with HTML
     } else {
-      // 对于light和dark主题，首字母大写
+      // For light and dark themes, capitalize first letter
       radioId = `theme${storedTheme.charAt(0).toUpperCase() + storedTheme.slice(1)}`;
     }
     
@@ -102,22 +102,22 @@ function initTheme() {
       console.warn('Theme radio button not found:', radioId);
     }
     
-    // 确保localStorage和Chrome Storage同步
+    // Ensure localStorage and Chrome Storage sync
     localStorage.setItem('networkAnalyzerTheme', storedTheme);
-    localStorage.setItem('theme', storedTheme); // 兼容popup.html
+    localStorage.setItem('theme', storedTheme); // Compatible with popup.html
     chrome.storage.local.set({ theme: storedTheme });
   });
   
-  // 为每个主题单选按钮添加事件监听
+  // Add event listener for each theme radio button
   themeRadios.forEach(radio => {
     radio.addEventListener('change', function() {
       if (this.checked) {
         const theme = this.value;
         document.documentElement.setAttribute('data-theme', theme);
         
-        // 同步保存到两个存储位置
+        // Sync save to both storage locations
         localStorage.setItem('networkAnalyzerTheme', theme);
-        localStorage.setItem('theme', theme); // 兼容popup.html
+        localStorage.setItem('theme', theme); // Compatible with popup.html
         chrome.storage.local.set({ theme: theme });
       }
     });
@@ -125,26 +125,26 @@ function initTheme() {
 }
 
 /**
- * 初始化语言选择功能
+ * Initialize language selection functionality
  */
 function initLanguage() {
   const languageSelect = document.getElementById('languageSelect');
   const storedLanguage = localStorage.getItem('networkAnalyzerLanguage') || 'en';
   
-  // 设置已保存的语言
+  // Set saved language
   languageSelect.value = storedLanguage;
   
-  // 只允许中文和英文
+  // Allow only Chinese and English
   if (storedLanguage !== 'en' && storedLanguage !== 'zh') {
     languageSelect.value = 'en';
     localStorage.setItem('networkAnalyzerLanguage', 'en');
   }
   
-  // 语言切换事件
+  // Language change event
   languageSelect.addEventListener('change', function() {
     const language = this.value;
     localStorage.setItem('networkAnalyzerLanguage', language);
-    // 如果语言改变，需要刷新页面以应用新语言
+    // If language changes, page needs to be refreshed to apply new language
     const languageChangeMsg = I18n.getText('languageChangeMsg');
     ToastManager.success(languageChangeMsg);
     setTimeout(() => {
@@ -154,7 +154,7 @@ function initLanguage() {
 }
 
 /**
- * 初始化域名管理功能
+ * Initialize domain management functionality
  */
 function initDomainManagement() {
   authorizedDomainsList = document.getElementById('authorizedDomainsList');
@@ -162,15 +162,15 @@ function initDomainManagement() {
   const newDomainInput = document.getElementById('newDomain');
   const noDomainsMessage = document.querySelector('.no-domains-message');
   
-  // 加载已授权的域名
+  // Load authorized domains
   loadAuthorizedDomains();
   
-  // 添加域名按钮事件
+  // Add domain button event
   addDomainBtn.addEventListener('click', function() {
     addNewDomain();
   });
   
-  // 输入框回车事件
+  // Input enter key event
   newDomainInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
       addNewDomain();
@@ -178,7 +178,7 @@ function initDomainManagement() {
   });
   
   /**
-   * 添加新域名
+   * Add a new domain
    */
   function addNewDomain() {
     const domain = newDomainInput.value.trim();
@@ -188,13 +188,13 @@ function initDomainManagement() {
       return;
     }
     
-    // 验证域名格式
+    // Validate domain format
     if (!isValidDomain(domain)) {
       ToastManager.error(I18n.getText('invalidDomainFormat'));
       return;
     }
     
-    // 检查域名是否已存在
+    // Check if domain already exists
     chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
       const authorizedDomains = result.authorizedDomains || [];
       const headerDomains = result.headerDomainsList || [];
@@ -205,43 +205,43 @@ function initDomainManagement() {
         return;
       }
       
-      // 添加新域名到authorizedDomains
+      // Add new domain to authorizedDomains
       authorizedDomains.push(domain);
       
-      // 同时更新headerDomainsList，确保两处保持同步
+      // Also update headerDomainsList, ensure both are in sync
       headerDomains.push(domain);
       
-      // 保存数据
+      // Save data
       chrome.storage.sync.set({
         authorizedDomains: authorizedDomains,
         headerDomainsList: headerDomains
       }, function() {
-        // 清空输入框
+        // Clear input field
         newDomainInput.value = '';
         
-        // 更新域名列表
+        // Update domain list
         addDomainToList(domain);
-        // 使用域名替换成功消息中的占位符
+        // Replace placeholder in success message with domain
         ToastManager.success(I18n.getText('domainAddSuccess', { domain }) );
         
-        // 隐藏"无域名"消息
+        // Hide "no domains" message
         if (noDomainsMessage) noDomainsMessage.style.display = 'none';
       });
     });
   }
   
   /**
-   * 加载已授权的域名
+   * Load authorized domains
    */
   function loadAuthorizedDomains() {
     chrome.storage.sync.get(['authorizedDomains', 'headerDomainsList'], function(result) {
       const authorizedDomains = result.authorizedDomains || [];
       const headerDomains = result.headerDomainsList || [];
       
-      // 合并并去重domain列表
+      // Merge and deduplicate domain lists
       const allDomains = [...new Set([...authorizedDomains, ...headerDomains])];
       
-      // 清空列表
+      // Clear list
       authorizedDomainsList.innerHTML = '';
       
       if (allDomains.length === 0) {
@@ -249,14 +249,14 @@ function initDomainManagement() {
         return;
       }
       
-      // 添加域名到列表
+      // Add domains to list
       allDomains.forEach(function(domain) {
         addDomainToList(domain);
       });
       
       if (noDomainsMessage) noDomainsMessage.style.display = 'none';
       
-      // 同步两个存储，确保两处数据一致
+      // Sync both storages, ensure data consistency
       chrome.storage.sync.set({
         authorizedDomains: allDomains,
         headerDomainsList: allDomains
@@ -265,20 +265,20 @@ function initDomainManagement() {
   }
   
   /**
-   * 验证域名格式
+   * Validate domain format
    */
   function isValidDomain(domain) {
-    // 基本域名格式验证
+    // Basic domain format validation
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
     return domainRegex.test(domain);
   }
 }
 
 /**
- * 删除域名
+ * Remove a domain
  */
 function removeDomain(domain, listItem) {
-  // 添加移除动画
+  // Add removal animation
   listItem.classList.add('removing');
   
   setTimeout(() => {
@@ -286,32 +286,32 @@ function removeDomain(domain, listItem) {
       const authorizedDomains = result.authorizedDomains || [];
       const headerDomains = result.headerDomainsList || [];
       
-      // 从两个列表中删除域名
+      // Remove domain from both lists
       const newAuthorizedDomains = authorizedDomains.filter(d => d !== domain);
       const newHeaderDomains = headerDomains.filter(d => d !== domain);
       
-      // 保存更新后的数据
+      // Save updated data
       chrome.storage.sync.set({
         authorizedDomains: newAuthorizedDomains,
         headerDomainsList: newHeaderDomains
       }, function() {
-        // 从列表中移除
+        // Remove from list
         listItem.remove();
         
-        // 使用域名替换成功消息中的占位符
+        // Replace placeholder in success message with domain
         ToastManager.success(I18n.getText('domainRemoveSuccess', { domain }) );
         
-        // 如果没有域名，显示"无域名"消息
+        // If no domains, show "no domains" message
         if (newAuthorizedDomains.length === 0 && document.querySelector('.no-domains-message')) {
           document.querySelector('.no-domains-message').style.display = 'block';
         }
         
-        // 通知后台脚本更新域名授权状态
+        // Notify background script to update domain authorization status
         chrome.runtime.sendMessage(
           { action: "removeDomainAuthorization", domain },
           (response) => {
             if (chrome.runtime.lastError) {
-              console.error("通知后台移除域名授权时出错:", chrome.runtime.lastError);
+              console.error("Error notifying background about domain removal:", chrome.runtime.lastError);
             }
           }
         );
@@ -321,14 +321,14 @@ function removeDomain(domain, listItem) {
 }
 
 /**
- * 添加域名到列表
+ * Add domain to list
  */
 function addDomainToList(domain) {
   const li = document.createElement('li');
   li.className = 'domain-item';
   
-  // 使用i18n翻译"删除"按钮
-  const removeText = I18n ? I18n.getText('remove') : '删除';
+  // Use i18n to translate "Remove" button
+  const removeText = I18n ? I18n.getText('remove') : 'Remove';
   
   li.innerHTML = `
     <div class="domain-name">${domain}</div>
@@ -337,18 +337,18 @@ function addDomainToList(domain) {
     </div>
   `;
   
-  // 删除按钮事件
+  // Remove button event
   const removeBtn = li.querySelector('.remove-btn');
   removeBtn.addEventListener('click', function() {
     removeDomain(domain, li);
   });
   
-  // 添加到列表
+  // Add to list
   authorizedDomainsList.appendChild(li);
 }
 
 /**
- * 初始化设置保存
+ * Initialize settings save functionality
  */
 function initSettingsSave() {
   const saveAISettingsBtn = document.getElementById('saveAISettingsBtn');
@@ -356,13 +356,13 @@ function initSettingsSave() {
   if (!saveAISettingsBtn) return;
   
   saveAISettingsBtn.addEventListener('click', function() {
-    // 保存AI设置
+    // Save AI settings
     saveAISettings();
   });
 }
 
 /**
- * 保存AI设置
+ * Save AI settings
  */
 function saveAISettings() {
   const aiProvider = document.getElementById('aiProvider').value;
@@ -370,13 +370,13 @@ function saveAISettings() {
   const apiKey = document.getElementById('aiApiKey').value;
   const apiUrl = document.getElementById('aiApiUrl').value;
   
-  // 更新API URL设置（如果有）
+  // Update API URL settings (if provided)
   if (apiUrl) {
     const providerKey = aiProvider.toUpperCase();
     AiConnector.setCustomApiUrl(providerKey, apiUrl);
   }
   
-  // 保存到Chrome Storage
+  // Save to Chrome Storage
   chrome.storage.sync.set({
     aiProvider: aiProvider,
     aiModel: aiModel,
@@ -384,14 +384,14 @@ function saveAISettings() {
     apiUrl: apiUrl
   }, function() {
     ToastManager.success(I18n.getText('aiSettingsSaved'));
-    // 移除保存按钮的脉冲效果
+    // Remove pulse effect from save button
     const saveButton = document.getElementById('saveAISettingsBtn');
     if (saveButton) saveButton.classList.remove('pulse');
   });
 }
 
 /**
- * 加载AI设置
+ * Load AI settings
  */
 function loadAISettings() {
   chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], function(result) {
@@ -400,27 +400,27 @@ function loadAISettings() {
     const apiKeyInput = document.getElementById('aiApiKey');
     const apiUrlInput = document.getElementById('aiApiUrl');
     
-    // 设置AI提供商
+    // Set AI provider
     if (result.aiProvider) {
       aiProviderSelect.value = result.aiProvider;
-      // 更新对应提供商的模型列表
+      // Update model list for the provider
       updateAIModels(result.aiProvider);
     }
     
-    // 设置AI模型
+    // Set AI model
     if (result.aiModel) {
       aiModelSelect.value = result.aiModel;
     }
     
-    // 设置API密钥
+    // Set API key
     if (result.apiKey) {
       apiKeyInput.value = result.apiKey;
     } else if (result.openaiApiKey) {
-      // 兼容旧版本设置
+      // Backward compatibility for old version settings
       apiKeyInput.value = result.openaiApiKey;
     }
     
-    // 设置API URL
+    // Set API URL
     if (result.apiUrl) {
       apiUrlInput.value = result.apiUrl;
     }
@@ -428,61 +428,61 @@ function loadAISettings() {
 }
 
 /**
- * 初始化侧边栏导航
+ * Initialize sidebar navigation
  */
 function initSidebarNav() {
   const navItems = document.querySelectorAll('.nav-item');
   const contentCards = document.querySelectorAll('.setting-card');
   const contentTitle = document.querySelector('.content-title');
   
-  // 默认选中第一个导航项
+  // Default select first navigation item
   if (navItems.length > 0) {
     navItems[0].classList.add('active');
     
-    // 显示对应的内容卡片
+    // Show corresponding content card
     const targetId = navItems[0].getAttribute('data-target');
     const targetCard = document.getElementById(targetId);
     
     if (targetCard) {
       targetCard.classList.add('active');
       
-      // 更新内容标题
+      // Update content title
       const title = navItems[0].getAttribute('data-title');
       if (contentTitle) contentTitle.textContent = title;
     }
   }
   
-  // 为每个导航项添加点击事件
+  // Add click event for each navigation item
   navItems.forEach(function(item) {
     item.addEventListener('click', function() {
-      // 移除所有活动状态
+      // Remove all active states
       navItems.forEach(i => i.classList.remove('active'));
       contentCards.forEach(c => c.classList.remove('active'));
       
-      // 添加活动状态
+      // Add active state
       this.classList.add('active');
       
-      // 显示对应的内容卡片
+      // Show corresponding content card
       const targetId = this.getAttribute('data-target');
       const targetCard = document.getElementById(targetId);
       
       if (targetCard) {
         targetCard.classList.add('active');
         
-        // 更新内容标题
+        // Update content title
         const title = this.getAttribute('data-title');
         if (contentTitle) contentTitle.textContent = title;
       }
     });
   });
   
-  // 监听窗口大小变化，处理响应式布局
+  // Listen for window size changes, handle responsive layout
   window.addEventListener('resize', handleResponsiveLayout);
   handleResponsiveLayout();
 }
 
 /**
- * 处理响应式布局
+ * Handle responsive layout
  */
 function handleResponsiveLayout() {
   const sidebar = document.querySelector('.sidebar');
@@ -498,13 +498,13 @@ function handleResponsiveLayout() {
 }
 
 /**
- * 初始化所有选项卡的表单事件
+ * Initialize form events for all tabs
  */
 function initFormEvents() {
-  // 监听AI设置表单元素的变化
+  // Listen for changes in AI settings form elements
   document.querySelectorAll('#aiSettings input, #aiSettings select, #aiSettings textarea').forEach(element => {
     element.addEventListener('change', function() {
-      // 显示保存按钮脉冲效果
+      // Show save button pulse effect
       const saveButton = document.getElementById('saveAISettingsBtn');
       if (saveButton) saveButton.classList.add('pulse');
     });
@@ -512,12 +512,12 @@ function initFormEvents() {
 }
 
 /**
- * 初始化扩展程序设置
+ * Initialize extension settings
  */
 function initExtensionSettings() {
   const saveExtensionSettingsBtn = document.getElementById('saveExtensionSettingsBtn');
   
-  // 保存扩展程序设置
+  // Save extension settings
   if (saveExtensionSettingsBtn) {
     saveExtensionSettingsBtn.addEventListener('click', function() {
       saveExtensionSettings();
@@ -526,35 +526,35 @@ function initExtensionSettings() {
 }
 
 /**
- * 保存扩展程序设置
+ * Save extension settings
  */
 function saveExtensionSettings() {
-  // 获取当前选中的主题
+  // Get currently selected theme
   const selectedTheme = document.querySelector('input[name="theme"]:checked');
   const theme = selectedTheme ? selectedTheme.value : 'light';
   
-  // 获取当前选中的语言
+  // Get currently selected language
   const selectedLanguage = document.getElementById('languageSelect');
   const language = selectedLanguage ? selectedLanguage.value : 'en';
   
-  // 保存设置
+  // Save settings
   localStorage.setItem('networkAnalyzerTheme', theme);
   localStorage.setItem('theme', theme);
   localStorage.setItem('networkAnalyzerLanguage', language);
   
-  // 同步到Chrome Storage
+  // Sync to Chrome Storage
   chrome.storage.local.set({ 
     theme: theme,
-    darkThemeDefault: theme === 'dark' // 兼容旧版设置
+    darkThemeDefault: theme === 'dark' // Backward compatibility
   });
   
-  // 显示成功消息
+  // Show success message
   ToastManager.success(I18n.getText('settingsSaved'));
   
-  // 应用设置
+  // Apply settings
   document.documentElement.setAttribute('data-theme', theme);
   
-  // 如果语言改变，需要刷新页面以应用新语言
+  // If language changes, page needs to be refreshed to apply new language
   if (language !== I18n.getCurrentLanguage()) {
     const languageChangeMsg = I18n.getText('languageChangeMsg');
     ToastManager.success(languageChangeMsg);
@@ -565,7 +565,7 @@ function saveExtensionSettings() {
 }
 
 /**
- * 初始化AI Provider选择器
+ * Initialize AI Provider selector
  */
 function initAIProviderSelection() {
   const aiProviderSelect = document.getElementById('aiProvider');
@@ -576,28 +576,28 @@ function initAIProviderSelection() {
     return;
   }
   
-  // 根据选择的提供商更新模型列表
+  // Update model list based on selected provider
   aiProviderSelect.addEventListener('change', function() {
     updateAIModels(this.value);
   });
   
-  // 初始设置模型列表
+  // Initial model list setup
   updateAIModels(aiProviderSelect.value);
 }
 
 /**
- * 根据选择的AI Provider更新模型列表
- * @param {string} provider - 选择的AI提供商
+ * Update AI models list based on selected AI Provider
+ * @param {string} provider - The selected AI provider
  */
 function updateAIModels(provider) {
   const aiModelSelect = document.getElementById('aiModel');
   
-  // 清空当前选项
+  // Clear current options
   aiModelSelect.innerHTML = '';
   
   let models = {};
   
-  // 根据提供商获取模型列表
+  // Get model list based on provider
   switch(provider.toLowerCase()) {
     case 'openai':
       models = AiConnector.AI_PROVIDERS.OPENAI.models;
@@ -612,7 +612,7 @@ function updateAIModels(provider) {
       models = AiConnector.AI_PROVIDERS.OPENAI.models;
   }
   
-  // 添加模型选项
+  // Add model options
   Object.keys(models).forEach(modelKey => {
     const option = document.createElement('option');
     option.value = modelKey;
@@ -620,7 +620,7 @@ function updateAIModels(provider) {
     aiModelSelect.appendChild(option);
   });
   
-  // 选择默认模型
+  // Select default model
   const providerKey = provider.toUpperCase();
   if (AiConnector.AI_PROVIDERS[providerKey] && AiConnector.AI_PROVIDERS[providerKey].defaultModel) {
     aiModelSelect.value = AiConnector.AI_PROVIDERS[providerKey].defaultModel;

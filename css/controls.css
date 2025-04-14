@@ -392,10 +392,17 @@ input:checked + .slider:before {
   color: var(--text-color);
   border-radius: var(--card-radius);
   border: 1px solid var(--border-color);
-  padding: 8px 12px;
+  padding: 6px 10px;
+  width: auto;
+  height: auto;
+  min-width: 38px;
+  min-height: 38px;
   position: relative;
   overflow: visible;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 悬停状态 */
@@ -417,46 +424,67 @@ input:checked + .slider:before {
 }
 
 /* AI图标动画 */
-#aiAnalysisToggleBtn svg {
+#aiAnalysisToggleBtn .ai-star-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  stroke: none;
+  color: var(--text-color);
   transition: all 0.5s ease;
-  filter: drop-shadow(0 0 0 var(--accent-color));
 }
 
-#aiAnalysisToggleBtn:hover svg {
-  transform: translateY(-1px);
-  filter: drop-shadow(0 0 2px var(--accent-color));
+#aiAnalysisToggleBtn:hover .ai-star-icon {
+  color: var(--accent-color);
+  filter: drop-shadow(0 0 3px var(--accent-color));
+  transform: translateY(-1px) rotate(5deg);
+  animation: magic-wand-pulse 2s infinite alternate;
 }
 
-/* 圆点动画 */
-#aiAnalysisToggleBtn svg circle {
-  transition:
-    r 0.6s ease,
-    opacity 0.3s ease;
-}
-
-#aiAnalysisToggleBtn:hover svg circle {
-  animation: pulse-dots 1.5s infinite alternate;
-}
-
-@keyframes pulse-dots {
+@keyframes magic-wand-pulse {
   0% {
-    r: 1;
+    transform: scale(1) rotate(0deg);
   }
   100% {
-    r: 1.5;
+    transform: scale(1.1) rotate(5deg);
   }
 }
 
-/* 路径描边动画 */
-#aiAnalysisToggleBtn:hover svg path:nth-child(2) {
-  animation: trace-path 1.5s linear infinite;
-  stroke-dasharray: 30;
-  stroke-dashoffset: 60;
+/* 火焰主题特殊效果 - 图标 */
+[data-theme='fireblack'] #aiAnalysisToggleBtn .ai-star-icon {
+  color: #ffb700;
 }
 
-@keyframes trace-path {
-  to {
-    stroke-dashoffset: 0;
+[data-theme='fireblack'] #aiAnalysisToggleBtn:hover .ai-star-icon {
+  color: #ff5500;
+  filter: drop-shadow(0 0 8px rgba(255, 85, 0, 0.8));
+  animation: fire-wand-pulse 2s infinite alternate;
+}
+
+@keyframes fire-wand-pulse {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 3px #ff5500);
+  }
+  100% {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 8px #ff9900);
+  }
+}
+
+/* 暗色主题效果 - 图标 */
+[data-theme='dark'] #aiAnalysisToggleBtn:hover .ai-star-icon {
+  filter: drop-shadow(0 0 5px var(--accent-color));
+  animation: dark-wand-pulse 3s infinite alternate;
+}
+
+@keyframes dark-wand-pulse {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 3px var(--accent-color));
+  }
+  100% {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 6px var(--accent-color));
   }
 }
 
@@ -499,15 +527,15 @@ input:checked + .slider:before {
   border-color: var(--accent-color);
 }
 
-/* 灵感动画 */
+/* 魔法光芒效果 */
 #aiAnalysisToggleBtn .tooltip::before {
   content: '✨';
   margin-right: 4px;
   display: inline-block;
-  animation: ai-spark 3s infinite;
+  animation: magic-spark 3s infinite;
 }
 
-@keyframes ai-spark {
+@keyframes magic-spark {
   0%,
   100% {
     transform: scale(1) rotate(0deg);
@@ -516,6 +544,31 @@ input:checked + .slider:before {
   50% {
     transform: scale(1.3) rotate(5deg);
     opacity: 1;
+  }
+}
+
+/* 火焰主题特殊效果 */
+[data-theme='fireblack'] #aiAnalysisToggleBtn .tooltip {
+  background: linear-gradient(to right, #1a1500, rgba(255, 85, 0, 0.2));
+  color: #ff9900;
+  border-color: #ff5500;
+}
+
+[data-theme='fireblack'] #aiAnalysisToggleBtn .tooltip::before {
+  animation: fire-spark 3s infinite;
+}
+
+@keyframes fire-spark {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+    text-shadow: 0 0 2px #ff5500;
+  }
+  50% {
+    transform: scale(1.3) rotate(5deg);
+    opacity: 1;
+    text-shadow: 0 0 4px #ff9900;
   }
 }
 

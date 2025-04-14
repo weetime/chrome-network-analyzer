@@ -1,24 +1,24 @@
 /**
- * AI缓存管理器 - 处理AI分析结果缓存
- * 提供分析结果的缓存和检索功能，避免重复分析相同数据
+ * AI Cache Manager - Manages caching of AI analysis results
+ * Provides caching and retrieval of analysis results to avoid redundant analysis of identical data
  */
 
-// 缓存配置常量
+// Cache configuration constants
 const CACHE_CONFIG = {
-  // 缓存过期时间（毫秒）
-  EXPIRATION_TIME: 60 * 60 * 1000, // 1小时
-  // 最大缓存条目数
+  // Cache expiration time (milliseconds)
+  EXPIRATION_TIME: 60 * 60 * 1000, // 1 hour
+  // Maximum number of cache entries
   MAX_ENTRIES: 30,
-  // 缓存存储键名
+  // Cache storage key
   STORAGE_KEY: 'aiAnalysisCache'
 };
 
-// 缓存内存结构
+// In-memory cache structure
 let cacheData = null;
 
 /**
- * 初始化缓存
- * 从chrome.storage.local加载缓存数据
+ * Initialize cache
+ * Loads cache data from chrome.storage.local
  */
 async function initCache() {
   if (cacheData !== null) return;
@@ -27,18 +27,18 @@ async function initCache() {
     const result = await chrome.storage.local.get(CACHE_CONFIG.STORAGE_KEY);
     cacheData = result[CACHE_CONFIG.STORAGE_KEY] || {};
     
-    // 清理过期的缓存条目
+    // Clean expired cache entries
     await cleanExpiredCache();
   } catch (error) {
-    console.error('初始化AI分析缓存失败:', error);
+    console.error('Failed to initialize AI analysis cache:', error);
     cacheData = {};
   }
 }
 
 /**
- * 生成用于缓存的键
- * 使用提供商、模型、数据特征和语言创建唯一键
- * @returns {Object} 包含缓存键和数据指纹的对象
+ * Generate a cache key
+ * Creates a unique key using provider, model, data characteristics and language
+ * @returns {Object} Object containing the cache key and data fingerprint
  */
 async function generateCacheKey(provider, model, data, language) {
   const dataFingerprint = await generateDataFingerprint(data);
@@ -47,48 +47,48 @@ async function generateCacheKey(provider, model, data, language) {
 }
 
 /**
- * 生成数据指纹 (SHA-256)
- * 从分析数据中提取关键特征以创建唯一标识符
- * @returns {string} 数据指纹哈希值
+ * Generate data fingerprint (SHA-256)
+ * Creates a unique identifier from key data characteristics
+ * @returns {string} Data fingerprint hash
  */
 async function generateDataFingerprint(data) {
-  // 处理空数据情况
+  // Handle empty data case
   if (!data) {
     return 'empty-data';
   }
   
-  // 检查加密API可用性
+  // Check crypto API availability
   if (!window.crypto || !window.crypto.subtle || !window.crypto.subtle.digest) {
-    console.error('当前环境不支持加密API');
+    console.error('Crypto API not available in current context');
     return 'crypto-unavailable';
   }
   
   try {
-    // 提取统计数据并序列化
+    // Extract and serialize statistics data
     const statistics = data.statistics || {};
     const statsString = JSON.stringify(statistics);
 
-    // 编码为Uint8Array
+    // Encode as Uint8Array
     const encoder = new TextEncoder();
     const dataArray = encoder.encode(statsString);
 
-    // 计算SHA-256哈希
+    // Calculate SHA-256 hash
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataArray);
 
-    // 转换为十六进制字符串
+    // Convert to hexadecimal string
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const fingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     
     return fingerprint;
   } catch (error) {
-    console.error('生成数据指纹失败:', error);
+    console.error('Failed to generate data fingerprint:', error);
     return 'error-fingerprint'; 
   }
 }
 
 /**
- * 获取缓存的分析结果
- * @returns {Object|null} 缓存的分析结果或null
+ * Retrieve cached analysis result
+ * @returns {Object|null} Cached analysis result or null
  */
 async function getCachedAnalysis(provider, model, data, language) {
   await initCache();
@@ -98,15 +98,15 @@ async function getCachedAnalysis(provider, model, data, language) {
   
   if (!cachedItem) return null;
   
-  // 检查是否过期
+  // Check if expired
   if (Date.now() > cachedItem.expiration) {
-    // 删除过期项
+    // Remove expired item
     delete cacheData[cacheKey];
     await saveCache();
     return null;
   }
   
-  // 更新最后访问时间
+  // Update last accessed time
   cachedItem.lastAccessed = Date.now();
   await saveCache();
   
@@ -114,14 +114,14 @@ async function getCachedAnalysis(provider, model, data, language) {
 }
 
 /**
- * 缓存分析结果
- * @returns {boolean} 缓存操作是否成功
+ * Cache analysis result
+ * @returns {boolean} Whether caching operation was successful
  */
 async function cacheAnalysisResult(provider, model, data, language, result) {
   await initCache();
   
   if (!data || !result) {
-    console.warn('尝试缓存undefined数据或结果');
+    console.warn('Attempted to cache undefined data or result');
     return false;
   }
   
@@ -129,29 +129,29 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
     const { cacheKey, fingerprint } = await generateCacheKey(provider, model, data, language);
     const timestamp = Date.now();
     
-    // 创建缓存条目
+    // Create cache entry
     cacheData[cacheKey] = {
-      result: JSON.parse(JSON.stringify(result)), // 创建深拷贝以避免引用问题
+      result: JSON.parse(JSON.stringify(result)), // Create deep copy to avoid reference issues
       fingerprint,
       timestamp,
       expiration: timestamp + CACHE_CONFIG.EXPIRATION_TIME,
       lastAccessed: timestamp
     };
     
-    // 如果缓存条目超过最大数量，清理最旧的条目
+    // Clean oldest entries if exceeding maximum count
     await cleanOldestIfNeeded();
     
-    // 保存缓存到存储
+    // Save cache to storage
     await saveCache();
     return true;
   } catch (error) {
-    console.error('缓存分析结果失败:', error);
+    console.error('Failed to cache analysis result:', error);
     return false;
   }
 }
 
 /**
- * 清理过期的缓存条目
+ * Clean expired cache entries
  */
 async function cleanExpiredCache() {
   const now = Date.now();
@@ -170,17 +170,17 @@ async function cleanExpiredCache() {
 }
 
 /**
- * 如果缓存条目数量超过最大值，清理最旧的条目
+ * Clean oldest entries if cache exceeds maximum size
  */
 async function cleanOldestIfNeeded() {
   const keys = Object.keys(cacheData);
   
   if (keys.length <= CACHE_CONFIG.MAX_ENTRIES) return;
   
-  // 按最后访问时间排序
+  // Sort by last accessed time
   keys.sort((a, b) => cacheData[a].lastAccessed - cacheData[b].lastAccessed);
   
-  // 删除最旧的条目，直到数量符合限制
+  // Remove oldest entries until count is within limit
   const keysToRemove = keys.slice(0, keys.length - CACHE_CONFIG.MAX_ENTRIES);
   keysToRemove.forEach(key => {
     delete cacheData[key];
@@ -190,19 +190,19 @@ async function cleanOldestIfNeeded() {
 }
 
 /**
- * 保存缓存到存储
+ * Save cache to storage
  */
 async function saveCache() {
   try {
     await chrome.storage.local.set({ [CACHE_CONFIG.STORAGE_KEY]: cacheData });
   } catch (error) {
-    console.error('保存AI分析缓存失败:', error);
+    console.error('Failed to save AI analysis cache:', error);
   }
 }
 
 /**
- * 清除所有缓存
- * @returns {boolean} 操作是否成功
+ * Clear all cache
+ * @returns {boolean} Whether operation was successful
  */
 async function clearCache() {
   cacheData = {};
@@ -211,8 +211,8 @@ async function clearCache() {
 }
 
 /**
- * 获取缓存统计信息
- * @returns {Object} 缓存统计数据
+ * Get cache statistics
+ * @returns {Object} Cache statistics data
  */
 async function getCacheStats() {
   await initCache();
@@ -230,7 +230,7 @@ async function getCacheStats() {
   };
 }
 
-// 导出API接口
+// Export API interface
 export const AiCacheManager = {
   getCachedAnalysis,
   cacheAnalysisResult,

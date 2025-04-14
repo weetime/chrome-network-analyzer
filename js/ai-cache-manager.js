@@ -10,7 +10,7 @@ const CACHE_CONFIG = {
   // Maximum number of cache entries
   MAX_ENTRIES: 30,
   // Cache storage key
-  STORAGE_KEY: "aiAnalysisCache",
+  STORAGE_KEY: 'aiAnalysisCache',
 };
 
 // In-memory cache structure
@@ -30,7 +30,7 @@ async function initCache() {
     // Clean expired cache entries
     await cleanExpiredCache();
   } catch (error) {
-    console.error("Failed to initialize AI analysis cache:", error);
+    console.error('Failed to initialize AI analysis cache:', error);
     cacheData = {};
   }
 }
@@ -54,13 +54,13 @@ async function generateCacheKey(provider, model, data, language) {
 async function generateDataFingerprint(data) {
   // Handle empty data case
   if (!data) {
-    return "empty-data";
+    return 'empty-data';
   }
 
   // Check crypto API availability
   if (!window.crypto || !window.crypto.subtle || !window.crypto.subtle.digest) {
-    console.error("Crypto API not available in current context");
-    return "crypto-unavailable";
+    console.error('Crypto API not available in current context');
+    return 'crypto-unavailable';
   }
 
   try {
@@ -73,18 +73,16 @@ async function generateDataFingerprint(data) {
     const dataArray = encoder.encode(statsString);
 
     // Calculate SHA-256 hash
-    const hashBuffer = await crypto.subtle.digest("SHA-256", dataArray);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataArray);
 
     // Convert to hexadecimal string
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const fingerprint = hashArray
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const fingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
     return fingerprint;
   } catch (error) {
-    console.error("Failed to generate data fingerprint:", error);
-    return "error-fingerprint";
+    console.error('Failed to generate data fingerprint:', error);
+    return 'error-fingerprint';
   }
 }
 
@@ -123,17 +121,12 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
   await initCache();
 
   if (!data || !result) {
-    console.warn("Attempted to cache undefined data or result");
+    console.warn('Attempted to cache undefined data or result');
     return false;
   }
 
   try {
-    const { cacheKey, fingerprint } = await generateCacheKey(
-      provider,
-      model,
-      data,
-      language
-    );
+    const { cacheKey, fingerprint } = await generateCacheKey(provider, model, data, language);
     const timestamp = Date.now();
 
     // Create cache entry
@@ -152,7 +145,7 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
     await saveCache();
     return true;
   } catch (error) {
-    console.error("Failed to cache analysis result:", error);
+    console.error('Failed to cache analysis result:', error);
     return false;
   }
 }
@@ -189,7 +182,7 @@ async function cleanOldestIfNeeded() {
 
   // Remove oldest entries until count is within limit
   const keysToRemove = keys.slice(0, keys.length - CACHE_CONFIG.MAX_ENTRIES);
-  keysToRemove.forEach((key) => {
+  keysToRemove.forEach(key => {
     delete cacheData[key];
   });
 
@@ -203,7 +196,7 @@ async function saveCache() {
   try {
     await chrome.storage.local.set({ [CACHE_CONFIG.STORAGE_KEY]: cacheData });
   } catch (error) {
-    console.error("Failed to save AI analysis cache:", error);
+    console.error('Failed to save AI analysis cache:', error);
   }
 }
 
@@ -229,14 +222,8 @@ async function getCacheStats() {
   return {
     totalEntries: keys.length,
     maxEntries: CACHE_CONFIG.MAX_ENTRIES,
-    oldestEntry:
-      keys.length > 0
-        ? Math.min(...keys.map((k) => cacheData[k].timestamp))
-        : null,
-    newestEntry:
-      keys.length > 0
-        ? Math.max(...keys.map((k) => cacheData[k].timestamp))
-        : null,
+    oldestEntry: keys.length > 0 ? Math.min(...keys.map(k => cacheData[k].timestamp)) : null,
+    newestEntry: keys.length > 0 ? Math.max(...keys.map(k => cacheData[k].timestamp)) : null,
     memoryUsage: JSON.stringify(cacheData).length,
   };
 }

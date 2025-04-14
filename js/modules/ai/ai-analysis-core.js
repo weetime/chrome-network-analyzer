@@ -24,26 +24,26 @@ async function runAiAnalysis() {
     console.error('AI analysis container not found');
     return;
   }
-  
+
   // Toggle analysis container visibility
   aiAnalysisContainer.classList.add('visible');
-  
+
   // Get analysis content and loading elements
   const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
   const aiAnalysisResult = document.getElementById('aiAnalysisResult');
-  
+
   if (!aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
     return;
   }
-  
+
   // Show loading, hide content
   aiAnalysisStatus.style.display = 'flex';
   aiAnalysisResult.innerHTML = '';
-  
+
   // Get data for analysis
   let requestsData = {};
-  
+
   // Try to get data from stored function first
   if (typeof getRequestDataFunction === 'function') {
     requestsData = getRequestDataFunction();
@@ -53,18 +53,15 @@ async function runAiAnalysis() {
   } else {
     // Request from background script as last resort
     try {
-      const response = await new Promise((resolve) => {
-        chrome.runtime.sendMessage(
-          { action: "getRequestData", tabId: currentTabId },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              throw new Error(chrome.runtime.lastError.message);
-            }
-            resolve(response);
+      const response = await new Promise(resolve => {
+        chrome.runtime.sendMessage({ action: 'getRequestData', tabId: currentTabId }, response => {
+          if (chrome.runtime.lastError) {
+            throw new Error(chrome.runtime.lastError.message);
           }
-        );
+          resolve(response);
+        });
       });
-      
+
       if (response && response.requestData) {
         requestsData = response.requestData;
       }
@@ -73,66 +70,71 @@ async function runAiAnalysis() {
       return;
     }
   }
-  
+
   // If no data, show error
   if (Object.keys(requestsData).length === 0) {
     AiAnalysisUi.showAnalysisError('No request data available for analysis.');
     return;
   }
-  
+
   // Calculate statistics for AI analysis
   const statistics = AiDataProcessor.calculateStatistics(requestsData);
-  
+
   // Flag to track loading state
   isAnalysisLoading = true;
-  
+
   try {
     // Get API configuration from storage
-    const config = await new Promise((resolve) => {
-      chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], (result) => {
-        console.log('获取AI设置:', result); // 调试信息
-        
-        const config = {
-          provider: result.aiProvider || 'openai',
-          apiKey: result.apiKey || result.openaiApiKey || '',
-          model: result.aiModel || 'gpt-4-turbo',
-          apiUrl: result.apiUrl || ''
-        };
-        
-        console.log('使用AI配置:', config.provider, config.model); // 调试信息
-        resolve(config);
-      });
+    const config = await new Promise(resolve => {
+      chrome.storage.sync.get(
+        ['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'],
+        result => {
+          console.log('Getting AI settings:', result); // Debug information
+
+          const config = {
+            provider: result.aiProvider || 'openai',
+            apiKey: result.apiKey || result.openaiApiKey || '',
+            model: result.aiModel || 'gpt-4-turbo',
+            apiUrl: result.apiUrl || '',
+          };
+
+          console.log('Using AI configuration:', config.provider, config.model); // Debug information
+          resolve(config);
+        }
+      );
     });
-    
+
     // Check if API key is configured
     if (!config.apiKey) {
-      AiAnalysisUi.showAnalysisError('API key not configured. Please configure API key in the options page.');
+      AiAnalysisUi.showAnalysisError(
+        'API key not configured. Please configure API key in the options page.'
+      );
       return;
     }
-    
-    // 预先更新模型信息显示
+
+    // Update model information display in advance
     const modelInfoElement = document.getElementById('aiModelInfo');
     if (modelInfoElement) {
       const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
       modelInfoElement.textContent = `Analyzed with ${providerName} ${config.model}`;
     }
-    
+
     // Format data for AI analysis
     const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
-    
+
     // Send to AI provider
     const result = await AiConnector.sendToAI(
-      analysisData, 
-      config.provider, 
-      config.apiKey, 
+      analysisData,
+      config.provider,
+      config.apiKey,
       config.model
     );
-    
-    console.log('AI分析结果:', result); // 调试信息
-    
+
+    console.log('AI analysis result:', result); // Debug information
+
     // Save result
     currentAnalysisResult = result;
-    
+
     // Display analysis result
     AiAnalysisUi.displayAnalysisResult(result, config);
   } catch (error) {
@@ -159,9 +161,10 @@ function copyAnalysisResults() {
   if (!currentAnalysisResult || !currentAnalysisResult.analysis) {
     return;
   }
-  
+
   // Copy to clipboard
-  navigator.clipboard.writeText(currentAnalysisResult.analysis)
+  navigator.clipboard
+    .writeText(currentAnalysisResult.analysis)
     .then(() => {
       // Show temporary success message
       const copyBtn = document.getElementById('copyAiResultBtn');
@@ -173,7 +176,7 @@ function copyAnalysisResults() {
           </svg>
           <span>Copied!</span>
         `;
-        
+
         // Restore original text after 2 seconds
         setTimeout(() => {
           copyBtn.innerHTML = originalText;
@@ -195,14 +198,14 @@ function init(options = {}) {
     modelInfoId = 'aiModelInfo',
     copyButtonId = 'copyAiResultBtn',
     getRequestData = null,
-    tabId = null
+    tabId = null,
   } = options;
-  
+
   // Store options for later use
   if (getRequestData) {
     getRequestDataFunction = getRequestData;
   }
-  
+
   // Store current tab ID if provided
   if (tabId) {
     currentTabId = tabId;
@@ -214,33 +217,33 @@ function init(options = {}) {
       currentTabId = parseInt(tabIdParam, 10);
     }
   }
-  
+
   // Add event listener for analyze button
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   if (analyzeButton) {
     analyzeButton.addEventListener('click', runAiAnalysis);
   }
-  
+
   // Add event listener for copy button
   const copyButton = document.getElementById(copyButtonId);
   if (copyButton) {
     copyButton.addEventListener('click', copyAnalysisResults);
   }
-  
+
   return Promise.resolve();
 }
 
-// 获取当前分析结果
+// Get current analysis result
 function getCurrentAnalysisResult() {
   return currentAnalysisResult;
 }
 
-// 设置当前分析结果
+// Set current analysis result
 function setCurrentAnalysisResult(result) {
   currentAnalysisResult = result;
 }
 
-// 获取分析加载状态
+// Get analysis loading state
 function getAnalysisLoadingState() {
   return isAnalysisLoading;
 }
@@ -253,5 +256,5 @@ export const AiAnalysisCore = {
   copyAnalysisResults,
   getCurrentAnalysisResult,
   setCurrentAnalysisResult,
-  getAnalysisLoadingState
+  getAnalysisLoadingState,
 };

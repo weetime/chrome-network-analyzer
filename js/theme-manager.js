@@ -5,30 +5,30 @@
 // Theme management
 function loadTheme() {
   // 从 Chrome Storage 中读取主题设置
-  chrome.storage.local.get(['theme'], (result) => {
+  chrome.storage.local.get(['theme'], result => {
     // 如果 Storage 中有设置值，使用它
-    if (result.hasOwnProperty('theme')) {
+    if (Object.prototype.hasOwnProperty.call(result, 'theme')) {
       const theme = result.theme;
       // 应用主题到页面
       document.documentElement.setAttribute('data-theme', theme);
       // 确保 localStorage 同步
       localStorage.setItem('theme', theme);
       localStorage.setItem('networkAnalyzerTheme', theme);
-      
+
       // 更新主题图标
       updateThemeIcon(theme);
     } else {
       // 如果 Storage 中没有设置，则使用 localStorage 中的设置
-      const savedTheme = localStorage.getItem('networkAnalyzerTheme') || 
-                       localStorage.getItem('theme') || 'light';
+      const savedTheme =
+        localStorage.getItem('networkAnalyzerTheme') || localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', savedTheme);
-      
+
       // 将设置同步到 Chrome Storage
-      chrome.storage.local.set({ 
+      chrome.storage.local.set({
         theme: savedTheme,
-        darkThemeDefault: savedTheme === 'dark' // 兼容旧版设置
+        darkThemeDefault: savedTheme === 'dark', // 兼容旧版设置
       });
-      
+
       // 更新主题图标
       updateThemeIcon(savedTheme);
     }
@@ -38,9 +38,9 @@ function loadTheme() {
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   let newTheme;
-  
+
   // 轮换三种主题
-  switch(currentTheme) {
+  switch (currentTheme) {
     case 'light':
       newTheme = 'dark';
       break;
@@ -52,20 +52,20 @@ function toggleTheme() {
       newTheme = 'light';
       break;
   }
-  
+
   document.documentElement.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
   localStorage.setItem('networkAnalyzerTheme', newTheme);
-  
+
   // 同步更新 Chrome Storage 中的主题设置
-  chrome.storage.local.set({ 
+  chrome.storage.local.set({
     theme: newTheme,
-    darkThemeDefault: newTheme === 'dark' // 兼容旧版设置
+    darkThemeDefault: newTheme === 'dark', // 兼容旧版设置
   });
-  
+
   // Update theme icon visibility
   updateThemeIcon(newTheme);
-  
+
   // Update tooltip text if tooltip element exists
   const themeTooltip = document.getElementById('themeTooltip');
   if (themeTooltip) {
@@ -85,9 +85,9 @@ function updateThemeIcon(theme) {
   const fireIcon = document.getElementById('fireIcon');
   const sunRays = document.querySelectorAll('[id^="sunRay"]');
   const themeToggle = document.getElementById('themeToggle');
-  
+
   if (!themeToggle) return;
-  
+
   if (moonIcon && sunIcon) {
     // 基于主题显示不同图标
     if (theme === 'light') {
@@ -95,21 +95,21 @@ function updateThemeIcon(theme) {
       moonIcon.style.display = 'none';
       sunIcon.style.display = 'block';
       if (fireIcon) fireIcon.style.display = 'none';
-      if (sunRays) sunRays.forEach(ray => ray.style.display = 'block');
+      if (sunRays) sunRays.forEach(ray => (ray.style.display = 'block'));
       themeToggle.classList.remove('dark-mode', 'fire-mode');
     } else if (theme === 'dark') {
       // 显示月亮图标
       moonIcon.style.display = 'block';
       sunIcon.style.display = 'none';
       if (fireIcon) fireIcon.style.display = 'none';
-      if (sunRays) sunRays.forEach(ray => ray.style.display = 'none');
+      if (sunRays) sunRays.forEach(ray => (ray.style.display = 'none'));
       themeToggle.classList.add('dark-mode');
       themeToggle.classList.remove('fire-mode');
     } else if (theme === 'fireblack') {
       // 显示火焰图标（如果存在）
       moonIcon.style.display = 'none';
       sunIcon.style.display = 'none';
-      if (sunRays) sunRays.forEach(ray => ray.style.display = 'none');
+      if (sunRays) sunRays.forEach(ray => (ray.style.display = 'none'));
       themeToggle.classList.remove('dark-mode');
       themeToggle.classList.add('fire-mode');
       if (fireIcon) {
@@ -139,5 +139,5 @@ export const ThemeManager = {
   init: initThemeManager,
   loadTheme,
   toggleTheme,
-  updateThemeIcon
+  updateThemeIcon,
 };

@@ -1,0 +1,298 @@
+# Chrome Network Analyzer - Next.js Chrome扩展重构计划
+
+## 项目概述
+
+当前项目是基于 Chrome Extension Manifest V3 开发的网络请求分析工具，提供了以下功能：
+- 网络请求捕获和分析
+- 域名管理与授权
+- 统计数据展示
+- AI 分析功能
+- 主题切换
+- 国际化支持
+
+## 重构目标
+
+将现有的 Chrome 扩展程序内部实现使用 Next.js 重构，同时**保持Chrome扩展的形态和所有Chrome API功能**。
+
+## 重构策略
+
+### 1. 项目架构与设置
+
+1. 初始化 Next.js 项目并配置为Chrome扩展
+   ```bash
+   npx create-next-app@latest chrome-network-analyzer-next
+   ```
+
+2. 选择配置：
+   - TypeScript: 是
+   - ESLint: 是
+   - Tailwind CSS: 是
+   - `src/` 目录: 是
+   - App Router: 是
+   - 自定义导入别名: 是
+
+3. 安装Chrome扩展开发所需的依赖
+   ```bash
+   npm install --save-dev crx-next webpack-ext-reloader copy-webpack-plugin
+   ```
+
+4. 项目目录结构设计（专为Chrome扩展设计）
+   ```
+   chrome-network-analyzer-next/
+   ├── public/                  # 静态资源
+   │   ├── images/              # 从原项目迁移的图片
+   │   └── _locales/            # 国际化资源文件
+   ├── src/
+   │   ├── pages/               # Next.js 页面组件（使用Pages Router而非App Router）
+   │   │   ├── popup/           # 弹出窗口页面
+   │   │   │   └── index.tsx    # 主弹出页
+   │   │   ├── options/         # 选项页面
+   │   │   │   └── index.tsx    # 选项页
+   │   │   └── ai-analysis/     # AI分析页面
+   │   │       └── index.tsx    # AI分析页
+   │   ├── background/          # 后台脚本
+   │   │   └── index.ts         # 后台入口
+   │   ├── content/             # 内容脚本
+   │   │   └── index.ts         # 内容脚本入口
+   │   ├── components/          # 可复用组件
+   │   │   ├── ui/              # UI组件
+   │   │   ├── network/         # 网络相关组件
+   │   │   ├── domain/          # 域名管理组件
+   │   │   ├── stats/           # 统计组件
+   │   │   └── ai/              # AI分析组件
+   │   ├── hooks/               # 自定义hooks
+   │   ├── lib/                 # 工具库
+   │   │   ├── chrome/          # Chrome API封装
+   │   │   ├── network/         # 网络跟踪功能
+   │   │   ├── domain/          # 域名管理
+   │   │   ├── ai/              # AI连接器
+   │   │   └── i18n/            # 国际化支持
+   │   ├── store/               # 状态管理
+   │   ├── types/               # TypeScript类型定义
+   │   ├── styles/              # 全局样式
+   │   └── manifest.json        # Chrome扩展配置文件
+   └── next.config.js           # 自定义Next.js配置（包含Chrome扩展打包配置）
+   ```
+
+### 2. 技术栈迁移
+
+1. **基础技术栈**
+   - React 18 (Next.js 内置)
+   - TypeScript
+   - Tailwind CSS (替代现有CSS)
+   - Zustand (状态管理，结合chrome.storage)
+
+2. **功能模块保留与增强**
+   - 网络请求追踪: 保留Chrome webRequest API
+   - 存储: 继续使用chrome.storage，通过自定义hooks封装
+   - 国际化: 使用next-intl，但保持与Chrome扩展i18n兼容
+   - 主题管理: 使用next-themes，但保持扩展内存储偏好
+
+### 3. 构建配置
+
+1. **修改Next.js配置**
+   创建自定义`next.config.js`，配置Chrome扩展特定输出：
+   ```javascript
+   const CopyPlugin = require('copy-webpack-plugin');
+   const path = require('path');
+
+   module.exports = {
+     reactStrictMode: true,
+     webpack: (config, { isServer, dev }) => {
+       // Chrome扩展特定配置
+       config.plugins.push(
+         new CopyPlugin({
+           patterns: [
+             { 
+               from: 'src/manifest.json',
+               to: path.join(__dirname, 'dist') 
+             },
+             { 
+               from: 'public/_locales',
+               to: path.join(__dirname, 'dist/_locales') 
+             },
+             { 
+               from: 'public/images',
+               to: path.join(__dirname, 'dist/images') 
+             },
+           ],
+         })
+       );
+
+       config.output.filename = 'static/chunks/[name].js';
+       config.output.chunkFilename = 'static/chunks/[name].js';
+       
+       // 后台脚本和内容脚本入口配置
+       config.entry = {
+         ...config.entry,
+         background: path.join(__dirname, 'src/background/index.ts'),
+         content: path.join(__dirname, 'src/content/index.ts'),
+       };
+
+       return config;
+     },
+     // 输出设置为静态站点模式
+     output: 'export',
+     // 禁用图片优化
+     images: { unoptimized: true },
+     // 禁用默认的页面后缀，使页面URL更干净
+     trailingSlash: false,
+     // 自定义输出目录为dist
+     distDir: 'dist',
+   };
+   ```
+
+2. **构建流程**
+   在`package.json`中添加构建脚本：
+   ```json
+   {
+     "scripts": {
+       "dev": "next dev",
+       "build": "next build && next export -o dist",
+       "build:extension": "npm run build && node scripts/prepare-extension.js",
+       "start": "next start",
+       "lint": "next lint"
+     }
+   }
+   ```
+
+### 4. 功能模块迁移计划
+
+#### 阶段 1: 基础架构与UI组件迁移
+
+1. **设置基础架构**
+   - 创建Next.js项目并配置以支持Chrome扩展
+   - 设置Tailwind CSS并迁移现有样式
+   - 创建基本目录结构和构建流程
+
+2. **Core 模块迁移**
+   - 创建background.ts和content.ts作为后台和内容脚本入口
+   - 配置Chrome扩展清单文件(manifest.json)
+   - 确保Chrome API的可访问性
+
+3. **UI组件迁移**
+   - 迁移主题系统 (theme-manager.js → ThemeProvider组件)
+   - 实现Toast通知系统 (toast-manager.js → Toast组件)
+   - 创建响应式布局和基础UI组件
+
+4. **国际化支持**
+   - 设置next-intl，但保持与Chrome扩展i18n兼容
+   - 从现有_locales迁移语言资源文件
+
+#### 阶段 2: 核心功能模块迁移
+
+1. **Chrome API封装**
+   - 为Chrome API创建TypeScript类型定义
+   - 创建React Hooks封装常用Chrome API
+
+2. **数据模型实现**
+   - 定义TypeScript接口和类型
+   - 创建状态管理库，集成chrome.storage
+
+3. **网络数据管理**
+   - 将网络请求跟踪代码迁移到TypeScript
+   - 网络请求展示组件
+   - 表格排序和过滤功能
+
+4. **域名管理**
+   - 域名授权系统重构
+   - 域名设置UI组件化
+
+#### 阶段 3: 高级功能迁移
+
+1. **AI分析功能**
+   - 将AI连接器迁移到TypeScript
+   - AI分析结果组件化
+
+2. **数据导出功能**
+   - CSV导出实现
+   - 数据持久化
+
+### 5. 具体实施步骤
+
+#### 步骤 1: 项目基础设置 (1周)
+
+1. 创建Next.js项目并配置Chrome扩展构建
+2. 迁移manifest.json
+3. 设置基本的后台脚本和内容脚本
+4. 创建构建和打包流程
+
+#### 步骤 2: 弹出窗口和选项页UI (2周)
+
+1. 使用Next.js和React组件重构弹出窗口
+2. 实现主题切换
+3. 设置Tailwind CSS并迁移样式
+4. 设置国际化
+
+#### 步骤 3: 核心功能实现 (3周)
+
+1. 重构网络请求跟踪模块
+2. 实现网络请求表格和数据展示
+3. 重构域名管理功能
+4. 统计数据计算与展示
+
+#### 步骤 4: 高级功能实现 (2周)
+
+1. 实现AI分析功能
+2. 数据导出和图表功能
+3. 性能优化
+
+### 6. 技术考量与解决方案
+
+1. **Next.js和Chrome扩展集成**
+   - 问题: Next.js默认为SPA或SSR应用，而非扩展程序
+   - 解决方案: 
+     a. 使用static export功能生成静态HTML/JS/CSS
+     b. 自定义webpack配置处理background.js和content.js
+     c. 修改构建输出以符合Chrome扩展结构
+
+2. **组件间通信**
+   - 问题: Chrome扩展各部分需要通信(popup、background、content)
+   - 解决方案:
+     a. 封装chrome.runtime.sendMessage和chrome.tabs.sendMessage
+     b. 创建基于React Context的消息通信系统
+     c. 使用Zustand集成chrome.storage
+
+3. **状态持久化**
+   - 问题: 扩展需要在重启后保持状态
+   - 解决方案:
+     a. 创建封装chrome.storage的hooks
+     b. 实现状态管理与存储的自动同步
+
+### 7. 测试策略
+
+1. **单元测试**
+   - 使用Jest和React Testing Library测试组件
+   - 模拟Chrome API进行测试
+
+2. **集成测试**
+   - 使用Puppeteer测试Chrome扩展功能
+   - 自动化测试关键用户流程
+
+3. **扩展特定测试**
+   - 测试后台脚本和内容脚本
+   - 测试Chrome API集成
+
+### 8. 迁移优先级
+
+1. **高优先级**
+   - 基础架构设置
+   - Chrome API封装
+   - 弹出窗口UI
+   - 网络请求捕获核心功能
+
+2. **中优先级**
+   - 域名管理功能
+   - 主题与国际化支持
+   - 统计数据展示
+
+3. **低优先级**
+   - AI分析功能
+   - 高级数据可视化
+   - 性能优化
+
+## 结论
+
+通过使用Next.js重构Chrome Network Analyzer，我们可以保持扩展的所有功能，同时获得React组件化、TypeScript类型安全和现代构建工具的优势。重构将在保留Chrome API功能的同时，提升代码质量、可维护性和开发效率。
+
+这种方法结合了Chrome扩展开发和现代前端技术的优点，使项目更易于扩展和维护，同时保持了Chrome扩展的特性和功能完整性。 

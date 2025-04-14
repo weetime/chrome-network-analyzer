@@ -4,7 +4,6 @@
   "description": "Chrome extension for network request analysis",
   "main": "js/background.js",
   "scripts": {
-    "test": "node test-extension.js",
     "format": "prettier --write \"js/**/*.js\"",
     "lint": "eslint \"js/**/*.js\"",
     "lint:fix": "eslint \"js/**/*.js\" --fix",
@@ -17,8 +16,7 @@
     "eslint-config-prettier": "^9.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.5.1",
-    "prettier": "^3.2.4",
-    "puppeteer": "^22.5.0"
+    "prettier": "^3.2.4"
   },
   "lint-staged": {
     "*.js": [

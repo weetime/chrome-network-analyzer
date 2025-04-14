@@ -14,12 +14,12 @@ export const AiAnalysisManager = {
   runAiAnalysis: AiAnalysisCore.runAiAnalysis,
   closeAnalysis: AiAnalysisCore.closeAnalysis,
   copyAnalysisResults: AiAnalysisCore.copyAnalysisResults,
-  
+
   // Data processing functions
   calculateStatistics: AiDataProcessor.calculateStatistics,
   formatAnalysisText: AiDataProcessor.formatAnalysisText,
-  
+
   // UI functions
   displayAnalysisResult: AiAnalysisUi.displayAnalysisResult,
-  showAnalysisError: AiAnalysisUi.showAnalysisError
+  showAnalysisError: AiAnalysisUi.showAnalysisError,
 };

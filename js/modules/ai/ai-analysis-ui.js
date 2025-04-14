@@ -13,39 +13,39 @@ function displayAnalysisResult(result, userConfig) {
   const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
   const aiAnalysisResult = document.getElementById('aiAnalysisResult');
   const modelInfoElement = document.getElementById('aiModelInfo');
-  
+
   if (!aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
     return;
   }
-  
+
   // Hide loading indicator
   aiAnalysisStatus.style.display = 'none';
-  
+
   // Set analysis text with formatted content
   aiAnalysisResult.innerHTML = AiDataProcessor.formatAnalysisText(result.analysis);
-  
+
   // 处理provider信息
   let provider = result.provider || '';
   // 如果provider包含括号内容（如"OpenAI (via Custom OpenAI API)"），则提取主要提供商名称
   if (provider.includes('(')) {
     provider = provider.split('(')[0].trim();
   }
-  
+
   // 优先使用用户配置的提供商
   if (userConfig && userConfig.provider) {
     provider = userConfig.provider.charAt(0).toUpperCase() + userConfig.provider.slice(1);
     console.log('使用用户配置的提供商:', provider); // 调试信息
   }
-  
-  const model = userConfig && userConfig.model ? userConfig.model : (result.model || 'AI');
-  
+
+  const model = userConfig && userConfig.model ? userConfig.model : result.model || 'AI';
+
   // Set model info if element exists
   if (modelInfoElement) {
     modelInfoElement.textContent = `Analyzed with ${provider} ${model}`;
     console.log('显示模型信息:', `Analyzed with ${provider} ${model}`); // 调试信息
   }
-  
+
   // Save current result for copy function
   AiAnalysisCore.setCurrentAnalysisResult(result);
 }
@@ -58,18 +58,18 @@ function showAnalysisError(message) {
   const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
   const aiAnalysisStatus = document.getElementById('aiAnalysisStatus');
   const aiAnalysisResult = document.getElementById('aiAnalysisResult');
-  
+
   if (!aiAnalysisContainer || !aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
     return;
   }
-  
+
   // Show container
   aiAnalysisContainer.classList.add('visible');
-  
+
   // Hide loading and show error in result
   aiAnalysisStatus.style.display = 'none';
-  
+
   // Set error message in result div
   aiAnalysisResult.innerHTML = `
     <div class="analysis-error">
@@ -86,5 +86,5 @@ function showAnalysisError(message) {
 // Export UI-related functions
 export const AiAnalysisUi = {
   displayAnalysisResult,
-  showAnalysisError
+  showAnalysisError,
 };

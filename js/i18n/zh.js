@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
   if (!window.I18nMessages) {
     window.I18nMessages = {};
   }
-  
+
   // 中文翻译
   window.I18nMessages.zh = {
     // 通用
@@ -19,10 +19,10 @@ if (typeof window !== 'undefined') {
     enable: '启用',
     disable: '禁用',
     close: '关闭',
-    
+
     // 应用名称
     appName: '网络请求分析器',
-    
+
     // 域名管理
     domainManagement: '域名管理',
     domainManagementDesc: '管理已授权的域名，这些域名将允许收集网络请求数据。',
@@ -41,7 +41,7 @@ if (typeof window !== 'undefined') {
     domainRemoveFailed: '移除域名 "{domain}" 授权失败',
     domainName: '域名',
     actions: '操作',
-    
+
     // AI设置
     aiSettings: 'AI 分析设置',
     aiSettingsDesc: '配置AI分析功能的相关设置',
@@ -54,28 +54,28 @@ if (typeof window !== 'undefined') {
     apiUrl: '自定义 API 地址',
     enterApiUrl: '输入自定义 API 地址（可选）',
     configRequired: 'API 密钥未配置。请在设置页面配置 API 密钥。',
-    
+
     // 界面设置
     interfaceSettings: '界面设置',
     interfaceSettingsDesc: '自定义界面外观和行为',
     darkThemeDefault: '深色主题',
     defaultRowCount: '默认显示行数',
-    
+
     // 扩展操作
     extensionActions: '扩展操作',
     extensionActionsDesc: '点击下方按钮访问扩展分析页面。',
     openExtension: '打开扩展',
-    
+
     // 状态消息
     settingsSaved: '设置已保存',
     errorOccurred: '发生错误',
-    
+
     // 语言设置
     languageSettings: '语言设置',
     language: '语言',
     languageZh: '中文',
     languageEn: '英文',
-    
+
     // 表格和筛选
     url: 'URL',
     type: '类型',
@@ -99,7 +99,7 @@ if (typeof window !== 'undefined') {
     redirect: '重定向 (3xx)',
     clientError: '客户端错误 (4xx)',
     serverError: '服务器错误 (5xx)',
-    
+
     // 操作按钮
     toggleDarkMode: '切换深色模式',
     clearData: '清除数据',
@@ -108,10 +108,10 @@ if (typeof window !== 'undefined') {
     runAnalysis: '运行分析',
     processing: '处理中...',
     copy: '复制',
-    
+
     // 表格信息
     noDataMessage: '尚未捕获任何网络请求。浏览网站以查看数据。',
-    
+
     // 统计信息
     noData: '暂无数据',
     totalRequests: '总请求数',
@@ -134,7 +134,7 @@ if (typeof window !== 'undefined') {
     status_2xx: '成功请求',
     status_4xx: '客户端错误',
     status_5xx: '服务器错误',
-    
+
     // AI分析页面
     aiAnalysisTitle: '网络请求 AI 分析',
     backToMain: '返回主页',
@@ -158,7 +158,7 @@ if (typeof window !== 'undefined') {
     downloadDataCSV: '下载数据 (CSV)',
     downloadAll: '全部下载',
     requestsCount: '请求统计',
-    
+
     // 分析过程消息
     tabDataLoaded: '已加载标签页数据',
     tabDataLoadError: '加载标签页数据出错',
@@ -175,7 +175,7 @@ if (typeof window !== 'undefined') {
     confirmClear: '确定要清除所有网络数据吗？',
     currentTab: '当前标签页',
     noAuthorizedTabs: '没有其他授权的标签页',
-    
+
     // 通知消息
     noDataAvailable: '没有可用的请求数据进行分析',
     noApiKeyConfigured: '未配置API密钥。请在选项页面中配置API密钥',
@@ -186,7 +186,7 @@ if (typeof window !== 'undefined') {
     initPageError: '初始化AI分析页面时出错',
     cacheClearSuccess: 'AI分析缓存已清除',
     cacheClearError: '清除缓存失败',
-    
+
     // 优化建议
     optimizationTips: '优化建议',
     optimizationTip1: '合并小型资源文件，减少HTTP请求次数',
@@ -194,21 +194,21 @@ if (typeof window !== 'undefined') {
     optimizationTip3: '使用HTTP/2协议可以并行处理多个请求',
     optimizationTip4: '设置合理的缓存策略，减少重复请求',
     optimizationTip5: '压缩JS和CSS文件，减少传输体积',
-    
+
     languageChangeMsg: '正在切换到中文...',
 
     aiSettingsSaved: 'AI 分析设置已保存成功',
-    
+
     // 扩展程序设置
     extensionSettings: '扩展程序设置',
     extensionSettingsDesc: '自定义扩展程序的外观和行为。',
-    
+
     // 主题设置
     themeSettings: '主题设置',
     lightTheme: '浅色主题',
     darkTheme: '深色主题',
     fireBlackTheme: '火焰黑主题',
-    
+
     // 按钮文本
     stopAnalysis: '停止分析',
     clearCache: '清除缓存',
@@ -218,4 +218,4 @@ if (typeof window !== 'undefined') {
 // 导出中文翻译数据，以便在需要时直接导入
 export const zhTranslations = {
   // 中文翻译内容（与上面相同）
-}; 
+};

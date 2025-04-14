@@ -17,7 +17,7 @@ function initDomainAuthUi(options = {}) {
     domainListId = 'headerDomainsList',
     switchId = 'headerAuthorizationSwitch',
     statusId = 'headerAuthStatus',
-    settingsLinkId = 'openDomainSettings'
+    settingsLinkId = 'openDomainSettings',
   } = options;
 
   // 确保域名信息区域显示
@@ -32,7 +32,7 @@ function initDomainAuthUi(options = {}) {
   // Add event listeners for domain management
   setupDomainSwitchListener();
   setupDomainManagementLinks();
-  
+
   return Promise.resolve();
 }
 
@@ -42,45 +42,45 @@ function initDomainAuthUi(options = {}) {
 function setupDomainSwitchListener() {
   const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
   const headerAuthStatus = document.getElementById('headerAuthStatus');
-  
+
   if (headerAuthorizationSwitch) {
     headerAuthorizationSwitch.addEventListener('change', () => {
       if (headerAuthorizationSwitch.checked) {
         // Authorize domain
         if (currentDomain) {
           chrome.runtime.sendMessage(
-            { action: "authorizeDomain", domain: currentDomain },
-            (response) => {
+            { action: 'authorizeDomain', domain: currentDomain },
+            response => {
               if (chrome.runtime.lastError) {
-                console.error("Error authorizing domain:", chrome.runtime.lastError);
+                console.error('Error authorizing domain:', chrome.runtime.lastError);
                 // Reset switch
                 headerAuthorizationSwitch.checked = false;
                 return;
               }
-              
+
               if (response && response.success) {
                 // Update UI
                 if (headerAuthStatus) {
                   headerAuthStatus.textContent = I18n.getText('enable');
                   headerAuthStatus.className = 'auth-status enabled';
                 }
-                
+
                 // Show authorized content
                 document.getElementById('authorizedContent').style.display = 'block';
-                
+
                 // Request network data - using parent's function if available
                 if (typeof requestNetworkData === 'function') {
                   requestNetworkData();
                 } else {
                   // 发送消息给后台脚本获取请求数据
                   chrome.runtime.sendMessage(
-                    { action: "getRequestData", tabId: currentDomain },
-                    (response) => {
-                      console.log("Requested network data directly from DomainAuthUI");
+                    { action: 'getRequestData', tabId: currentDomain },
+                    response => {
+                      console.log('Requested network data directly from DomainAuthUI');
                     }
                   );
                 }
-                
+
                 // Update authorized domains list
                 loadAuthorizedDomains();
               }
@@ -91,25 +91,25 @@ function setupDomainSwitchListener() {
         // Remove domain authorization
         if (currentDomain) {
           chrome.runtime.sendMessage(
-            { action: "removeDomainAuthorization", domain: currentDomain },
-            (response) => {
+            { action: 'removeDomainAuthorization', domain: currentDomain },
+            response => {
               if (chrome.runtime.lastError) {
-                console.error("Error removing domain authorization:", chrome.runtime.lastError);
+                console.error('Error removing domain authorization:', chrome.runtime.lastError);
                 // Reset switch
                 headerAuthorizationSwitch.checked = true;
                 return;
               }
-              
+
               if (response && response.success !== false) {
                 // Update UI
                 if (headerAuthStatus) {
                   headerAuthStatus.textContent = I18n.getText('disable');
                   headerAuthStatus.className = 'auth-status disabled';
                 }
-                
+
                 // Hide authorized content
                 document.getElementById('authorizedContent').style.display = 'none';
-                
+
                 // Update authorized domains list
                 loadAuthorizedDomains();
               }
@@ -128,16 +128,16 @@ function setupDomainManagementLinks() {
   // Domain settings link in header
   const openDomainSettings = document.getElementById('openDomainSettings');
   if (openDomainSettings) {
-    openDomainSettings.addEventListener('click', (e) => {
+    openDomainSettings.addEventListener('click', e => {
       e.preventDefault();
       chrome.runtime.openOptionsPage();
     });
   }
-  
+
   // AI settings link
   const openOptionsPage = document.getElementById('openOptionsPage');
   if (openOptionsPage) {
-    openOptionsPage.addEventListener('click', (e) => {
+    openOptionsPage.addEventListener('click', e => {
       e.preventDefault();
       chrome.runtime.openOptionsPage();
     });
@@ -149,13 +149,13 @@ function setupDomainManagementLinks() {
  */
 function hideAuthorizedContent() {
   document.getElementById('authorizedContent').style.display = 'none';
-  
+
   // Hide AI analysis panel if it exists
   const aiAnalysisContainer = document.getElementById('aiAnalysisContainer');
   if (aiAnalysisContainer) {
     aiAnalysisContainer.classList.remove('visible');
   }
-  
+
   // 不再隐藏domain-info，确保用户可以看到域名信息并重新授权
   // const domainInfoElement = document.querySelector('.domain-info');
   // if (domainInfoElement) {
@@ -167,19 +167,16 @@ function hideAuthorizedContent() {
  * Load and display authorized domains
  */
 function loadAuthorizedDomains() {
-  chrome.runtime.sendMessage(
-    { action: "getAuthorizedDomains" },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error getting authorized domains:", chrome.runtime.lastError);
-        return;
-      }
-      
-      if (response && response.authorizedDomains) {
-        displayAuthorizedDomains(response.authorizedDomains);
-      }
+  chrome.runtime.sendMessage({ action: 'getAuthorizedDomains' }, response => {
+    if (chrome.runtime.lastError) {
+      console.error('Error getting authorized domains:', chrome.runtime.lastError);
+      return;
     }
-  );
+
+    if (response && response.authorizedDomains) {
+      displayAuthorizedDomains(response.authorizedDomains);
+    }
+  });
 }
 
 /**
@@ -187,12 +184,12 @@ function loadAuthorizedDomains() {
  */
 function displayAuthorizedDomains(domains) {
   const headerDomainsList = document.getElementById('headerDomainsList');
-  
+
   if (!headerDomainsList) return;
-  
+
   // Clear list
   headerDomainsList.innerHTML = '';
-  
+
   // 只显示当前域名
   if (currentDomain) {
     const currentDomainItem = document.createElement('div');
@@ -206,63 +203,57 @@ function displayAuthorizedDomains(domains) {
  * Remove domain authorization and update UI
  */
 function removeDomainAuthorization(domain) {
-  chrome.runtime.sendMessage(
-    { action: "removeDomainAuthorization", domain },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error removing domain authorization:", chrome.runtime.lastError);
-        return;
-      }
-      
-      if (response && response.success !== false) {
-        // If removed domain is current domain, update UI
-        if (domain === currentDomain) {
-          // Update header switch
-          const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
-          const headerAuthStatus = document.getElementById('headerAuthStatus');
-          
-          if (headerAuthorizationSwitch) {
-            headerAuthorizationSwitch.checked = false;
-          }
-          if (headerAuthStatus) {
-            headerAuthStatus.textContent = I18n.getText('disable');
-            headerAuthStatus.className = 'auth-status disabled';
-          }
-          
-          // Show unauthorized content
-          hideAuthorizedContent();
-        }
-        
-        // Reload authorized domains list
-        loadAuthorizedDomains();
-      }
+  chrome.runtime.sendMessage({ action: 'removeDomainAuthorization', domain }, response => {
+    if (chrome.runtime.lastError) {
+      console.error('Error removing domain authorization:', chrome.runtime.lastError);
+      return;
     }
-  );
+
+    if (response && response.success !== false) {
+      // If removed domain is current domain, update UI
+      if (domain === currentDomain) {
+        // Update header switch
+        const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
+        const headerAuthStatus = document.getElementById('headerAuthStatus');
+
+        if (headerAuthorizationSwitch) {
+          headerAuthorizationSwitch.checked = false;
+        }
+        if (headerAuthStatus) {
+          headerAuthStatus.textContent = I18n.getText('disable');
+          headerAuthStatus.className = 'auth-status disabled';
+        }
+
+        // Show unauthorized content
+        hideAuthorizedContent();
+      }
+
+      // Reload authorized domains list
+      loadAuthorizedDomains();
+    }
+  });
 }
 
 /**
  * Check domain authorization status and update UI
  */
 function checkDomainAuthorization(domain) {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage(
-      { action: "checkDomainAuthorization", domain },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Error checking domain authorization:", chrome.runtime.lastError);
-          resolve(false);
-          return;
-        }
-        
-        if (response && response.isAuthorized) {
-          // Domain is authorized
-          resolve(true);
-        } else {
-          // Domain is not authorized
-          resolve(false);
-        }
+  return new Promise(resolve => {
+    chrome.runtime.sendMessage({ action: 'checkDomainAuthorization', domain }, response => {
+      if (chrome.runtime.lastError) {
+        console.error('Error checking domain authorization:', chrome.runtime.lastError);
+        resolve(false);
+        return;
       }
-    );
+
+      if (response && response.isAuthorized) {
+        // Domain is authorized
+        resolve(true);
+      } else {
+        // Domain is not authorized
+        resolve(false);
+      }
+    });
   });
 }
 
@@ -271,24 +262,24 @@ function checkDomainAuthorization(domain) {
  */
 async function setCurrentDomain(domain) {
   currentDomain = domain;
-  
+
   // 无论授权状态如何，都显示域名信息区域
   const domainInfoElement = document.querySelector('.domain-info');
   if (domainInfoElement) {
     domainInfoElement.style.display = 'flex';
   }
-  
+
   // Check if domain is authorized - make sure we're checking from sync storage
   const isAuthorized = await checkDomainAuthorization(domain);
-  
+
   // Update UI based on authorization status
   const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
   const headerAuthStatus = document.getElementById('headerAuthStatus');
-  
+
   if (headerAuthorizationSwitch) {
     headerAuthorizationSwitch.checked = isAuthorized;
   }
-  
+
   if (headerAuthStatus) {
     if (isAuthorized) {
       headerAuthStatus.textContent = I18n.getText('enable');
@@ -298,17 +289,17 @@ async function setCurrentDomain(domain) {
       headerAuthStatus.className = 'auth-status disabled';
     }
   }
-  
+
   // Update content visibility
   if (isAuthorized) {
     document.getElementById('authorizedContent').style.display = 'block';
   } else {
     hideAuthorizedContent();
   }
-  
+
   // Load authorized domains list
   loadAuthorizedDomains();
-  
+
   return isAuthorized;
 }
 
@@ -322,18 +313,18 @@ export const DomainAuthUI = {
   checkDomainAuthorization,
   setCurrentDomain,
   getCurrentDomain: () => currentDomain,
-  updateDomainList: (domain) => {
+  updateDomainList: domain => {
     currentDomain = domain;
     displayAuthorizedDomains([domain]);
   },
-  updateAuthorizationStatus: (isAuthorized) => {
+  updateAuthorizationStatus: isAuthorized => {
     const headerAuthorizationSwitch = document.getElementById('headerAuthorizationSwitch');
     const headerAuthStatus = document.getElementById('headerAuthStatus');
-    
+
     if (headerAuthorizationSwitch) {
       headerAuthorizationSwitch.checked = isAuthorized;
     }
-    
+
     if (headerAuthStatus) {
       if (isAuthorized) {
         headerAuthStatus.textContent = I18n.getText('enable');
@@ -343,5 +334,5 @@ export const DomainAuthUI = {
         headerAuthStatus.className = 'auth-status disabled';
       }
     }
-  }
+  },
 };

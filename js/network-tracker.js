@@ -21,19 +21,19 @@ function storeRequestData(tabId) {
 function initNetworkTracker() {
   // Ensure DomainManager is available
   if (!DomainManager) {
-    console.error("DomainManager is required for NetworkTracker to work properly");
+    console.error('DomainManager is required for NetworkTracker to work properly');
     return;
   }
-  
+
   // Listen for web request events
   chrome.webRequest.onBeforeRequest.addListener(
-    async (details) => {
+    async details => {
       const domain = DomainManager.extractDomain(details.url);
       if (!domain) return;
-      
+
       const isAuthorized = await DomainManager.isDomainAuthorized(domain);
       if (!isAuthorized) return;
-      
+
       if (!requestData[details.tabId]) {
         requestData[details.tabId] = {};
       }
@@ -42,64 +42,66 @@ function initNetworkTracker() {
         domain: domain,
         startTime: details.timeStamp,
         method: details.method,
-        type: details.type
+        type: details.type,
       };
     },
-    { urls: ["<all_urls>"] }
+    { urls: ['<all_urls>'] }
   );
 
   // Track when headers are received
   chrome.webRequest.onHeadersReceived.addListener(
-    (details) => {
+    details => {
       if (requestData[details.tabId] && requestData[details.tabId][details.requestId]) {
         requestData[details.tabId][details.requestId].headerReceivedTime = details.timeStamp;
-        
+
         // Store response headers size
         if (details.responseHeaders) {
-          requestData[details.tabId][details.requestId].responseHeadersSize = JSON.stringify(details.responseHeaders).length;
+          requestData[details.tabId][details.requestId].responseHeadersSize = JSON.stringify(
+            details.responseHeaders
+          ).length;
         }
       }
     },
-    { urls: ["<all_urls>"] },
-    ["responseHeaders"]
+    { urls: ['<all_urls>'] },
+    ['responseHeaders']
   );
 
   // Track when request is completed
   chrome.webRequest.onCompleted.addListener(
-    (details) => {
+    details => {
       if (requestData[details.tabId] && requestData[details.tabId][details.requestId]) {
         const request = requestData[details.tabId][details.requestId];
         request.endTime = details.timeStamp;
         request.totalTime = request.endTime - request.startTime;
         request.status = details.statusCode;
-        
+
         // If we have header received time, calculate TTFB
         if (request.headerReceivedTime) {
           request.ttfb = request.headerReceivedTime - request.startTime;
         }
-        
+
         // Calculate content download time (total time minus TTFB)
         if (request.ttfb) {
           request.contentDownloadTime = request.totalTime - request.ttfb;
         }
-        
+
         // Store content size if available
         if (details.responseSize) {
           request.responseSize = details.responseSize;
         }
-        
+
         // Send data to popup if it's open
         try {
           // Check if we can send a message by checking if any listeners exist
           chrome.runtime.sendMessage(
             {
-              action: "requestCompleted",
+              action: 'requestCompleted',
               tabId: details.tabId,
               requestId: details.requestId,
-              requestData: request
+              requestData: request,
             },
             // Add a callback to handle the case where no receivers exist
-            (response) => {
+            response => {
               if (chrome.runtime.lastError) {
                 // This is expected if popup is not open, no need to log an error
                 // console.debug("No receivers for message (this is normal if popup is closed)");
@@ -107,37 +109,37 @@ function initNetworkTracker() {
             }
           );
         } catch (error) {
-          console.error("Error sending requestCompleted message:", error);
+          console.error('Error sending requestCompleted message:', error);
         }
-        
+
         // Store in local storage for persistence
         storeRequestData(details.tabId);
       }
     },
-    { urls: ["<all_urls>"] }
+    { urls: ['<all_urls>'] }
   );
 
   // Track when request fails
   chrome.webRequest.onErrorOccurred.addListener(
-    (details) => {
+    details => {
       if (requestData[details.tabId] && requestData[details.tabId][details.requestId]) {
         const request = requestData[details.tabId][details.requestId];
         request.endTime = details.timeStamp;
         request.totalTime = request.endTime - request.startTime;
         request.error = details.error;
-        
+
         // Send data to popup if it's open
         try {
           // Check if we can send a message by checking if any listeners exist
           chrome.runtime.sendMessage(
             {
-              action: "requestFailed",
+              action: 'requestFailed',
               tabId: details.tabId,
               requestId: details.requestId,
-              requestData: request
+              requestData: request,
             },
             // Add a callback to handle the case where no receivers exist
-            (response) => {
+            response => {
               if (chrome.runtime.lastError) {
                 // This is expected if popup is not open, no need to log an error
                 // console.debug("No receivers for message (this is normal if popup is closed)");
@@ -145,18 +147,18 @@ function initNetworkTracker() {
             }
           );
         } catch (error) {
-          console.error("Error sending requestFailed message:", error);
+          console.error('Error sending requestFailed message:', error);
         }
-        
+
         // Store in local storage for persistence
         storeRequestData(details.tabId);
       }
     },
-    { urls: ["<all_urls>"] }
+    { urls: ['<all_urls>'] }
   );
 
   // Clear data when tab is closed
-  chrome.tabs.onRemoved.addListener((tabId) => {
+  chrome.tabs.onRemoved.addListener(tabId => {
     if (requestData[tabId]) {
       delete requestData[tabId];
       chrome.storage.local.remove(`requestData_${tabId}`);
@@ -181,5 +183,5 @@ export const NetworkTracker = {
   init: initNetworkTracker,
   getRequestData,
   clearRequestData,
-  storeRequestData
+  storeRequestData,
 };

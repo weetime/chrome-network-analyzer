@@ -12,11 +12,11 @@ let counter = 0;
  */
 function createToastContainer() {
   if (toastContainer) return toastContainer;
-  
+
   toastContainer = document.createElement('div');
   toastContainer.className = 'toast-container';
   document.body.appendChild(toastContainer);
-  
+
   return toastContainer;
 }
 
@@ -34,9 +34,9 @@ function createIcon(type) {
   svg.setAttribute('stroke-width', '2');
   svg.setAttribute('stroke-linecap', 'round');
   svg.setAttribute('stroke-linejoin', 'round');
-  
+
   let path = '';
-  
+
   switch (type) {
     case 'success':
       // Success icon
@@ -63,7 +63,7 @@ function createIcon(type) {
               <line x1="12" y1="8" x2="12.01" y2="8"></line>`;
       break;
   }
-  
+
   svg.innerHTML = path;
   return svg;
 }
@@ -75,31 +75,26 @@ function createIcon(type) {
  * @param {object} options - Configuration options
  */
 function showToast(message, type = 'info', options = {}) {
-  const {
-    title = '',
-    duration = 3000,
-    closable = true,
-    position = 'top-right'
-  } = options;
-  
+  const { title = '', duration = 3000, closable = true } = options;
+
   // Ensure container exists
   const container = createToastContainer();
-  
+
   // Create toast element
   const toast = document.createElement('div');
   const toastId = `toast-${++counter}`;
   toast.id = toastId;
   toast.className = `toast ${type}`;
-  
+
   // Create icon
   const iconContainer = document.createElement('div');
   iconContainer.className = 'toast-icon';
   iconContainer.appendChild(createIcon(type));
-  
+
   // Create content
   const content = document.createElement('div');
   content.className = 'toast-content';
-  
+
   // Add title if provided
   if (title) {
     const titleElement = document.createElement('div');
@@ -107,13 +102,13 @@ function showToast(message, type = 'info', options = {}) {
     titleElement.textContent = title;
     content.appendChild(titleElement);
   }
-  
+
   // Add message
   const messageElement = document.createElement('div');
   messageElement.className = 'toast-message';
   messageElement.textContent = message;
   content.appendChild(messageElement);
-  
+
   // Add close button
   if (closable) {
     const closeButton = document.createElement('button');
@@ -127,49 +122,49 @@ function showToast(message, type = 'info', options = {}) {
     closeButton.addEventListener('click', () => {
       removeToast(toastId);
     });
-    
+
     toast.appendChild(closeButton);
   }
-  
+
   // Add progress bar
   const progress = document.createElement('div');
   progress.className = 'toast-progress';
   toast.appendChild(progress);
-  
+
   // Assemble toast
   toast.appendChild(iconContainer);
   toast.appendChild(content);
-  
+
   // Add to container
   container.appendChild(toast);
-  
+
   // Record active toast
   activeToasts.push({
     id: toastId,
     element: toast,
-    timeout: null
+    timeout: null,
   });
-  
+
   // Show animation
   setTimeout(() => {
     toast.classList.add('show');
-    
+
     // Progress bar animation
     progress.style.animation = `shrink ${duration / 1000}s linear forwards`;
     progress.style.width = '100%';
-    
+
     // Auto remove
     const timeoutId = setTimeout(() => {
       removeToast(toastId);
     }, duration);
-    
+
     // Update timeout reference
     const toastObj = activeToasts.find(t => t.id === toastId);
     if (toastObj) {
       toastObj.timeout = timeoutId;
     }
   }, 10);
-  
+
   return toastId;
 }
 
@@ -179,27 +174,27 @@ function showToast(message, type = 'info', options = {}) {
 function removeToast(id) {
   const toastIndex = activeToasts.findIndex(t => t.id === id);
   if (toastIndex === -1) return;
-  
+
   const { element, timeout } = activeToasts[toastIndex];
-  
+
   // Clear timer
   if (timeout) {
     clearTimeout(timeout);
   }
-  
+
   // Add fade-out animation
   element.classList.remove('show');
   element.classList.add('hide');
-  
+
   // Remove element after animation completes
   setTimeout(() => {
     if (element.parentNode) {
       element.parentNode.removeChild(element);
     }
-    
+
     // Remove from active list
     activeToasts = activeToasts.filter(t => t.id !== id);
-    
+
     // If no active toasts, remove container
     if (activeToasts.length === 0 && toastContainer && toastContainer.parentNode) {
       toastContainer.parentNode.removeChild(toastContainer);
@@ -220,9 +215,9 @@ function clearAllToasts() {
       toast.element.parentNode.removeChild(toast.element);
     }
   });
-  
+
   activeToasts = [];
-  
+
   if (toastContainer && toastContainer.parentNode) {
     toastContainer.parentNode.removeChild(toastContainer);
     toastContainer = null;
@@ -254,7 +249,7 @@ export const ToastManager = {
   info,
   warning,
   remove: removeToast,
-  clear: clearAllToasts
+  clear: clearAllToasts,
 };
 
 // Add CSS animation
@@ -265,4 +260,4 @@ style.textContent = `
   100% { width: 0%; }
 }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
   if (!window.I18nMessages) {
     window.I18nMessages = {};
   }
-  
+
   // English translations
   window.I18nMessages.en = {
     // Common
@@ -19,13 +19,14 @@ if (typeof window !== 'undefined') {
     enable: 'Enable',
     disable: 'Disable',
     close: 'Close',
-    
+
     // App name
     appName: 'Network Request Analyzer',
-    
+
     // Domain Management
     domainManagement: 'Domain Management',
-    domainManagementDesc: 'Manage domains for which this extension is authorized to capture network requests.',
+    domainManagementDesc:
+      'Manage domains for which this extension is authorized to capture network requests.',
     noDomains: 'No authorized domains yet. This extension will only work on authorized domains.',
     addNewDomain: 'Enter domain (e.g. example.com or *.example.com)',
     remove: 'Remove',
@@ -38,7 +39,7 @@ if (typeof window !== 'undefined') {
     domainRemoveSuccess: 'Authorization for domain "{domain}" has been removed',
     domainName: 'Domain',
     actions: 'Actions',
-    
+
     // AI Settings
     aiSettings: 'AI Analysis Settings',
     aiSettingsDesc: 'Configure settings for AI analysis functionality',
@@ -49,16 +50,16 @@ if (typeof window !== 'undefined') {
     apiUrl: 'Custom API URL',
     enterApiUrl: 'Enter custom API URL if needed',
     configRequired: 'API key not configured. Please configure API key in settings page.',
-    
+
     // Status Messages
     settingsSaved: 'Settings saved',
-    
+
     // Language Settings
     languageSettings: 'Language Settings',
     language: 'Language',
     languageZh: 'Chinese',
     languageEn: 'English',
-    
+
     // Table and Filtering
     url: 'URL',
     type: 'Type',
@@ -82,7 +83,7 @@ if (typeof window !== 'undefined') {
     redirect: 'Redirect (3xx)',
     clientError: 'Client Error (4xx)',
     serverError: 'Server Error (5xx)',
-    
+
     // Action Buttons
     toggleDarkMode: 'Toggle Dark Mode',
     clearData: 'Clear Data',
@@ -91,10 +92,10 @@ if (typeof window !== 'undefined') {
     runAnalysis: 'Run Analysis',
     processing: 'Processing...',
     copy: 'Copy',
-    
+
     // Table Info
     noDataMessage: 'No network requests captured yet. Browse a website to see data.',
-    
+
     // Statistics
     noData: 'No Data',
     totalRequests: 'Total Requests',
@@ -116,7 +117,7 @@ if (typeof window !== 'undefined') {
     status_2xx: 'Success',
     status_4xx: 'Client Error',
     status_5xx: 'Server Error',
-    
+
     // AI Analysis page
     aiAnalysisTitle: 'Network Request AI Analysis',
     backToMain: 'Back to Home',
@@ -135,7 +136,7 @@ if (typeof window !== 'undefined') {
     downloadDataCSV: 'Data (CSV)',
     downloadAll: 'Download All',
     requestsCount: 'Request Count',
-    
+
     // Analysis process messages
     tabDataLoaded: 'Tab data loaded',
     tabDataLoadError: 'Error loading tab data',
@@ -152,7 +153,7 @@ if (typeof window !== 'undefined') {
     confirmClear: 'Are you sure you want to clear all network data?',
     currentTab: 'Current tab',
     noAuthorizedTabs: 'No other authorized tabs',
-    
+
     // Notification messages
     noDataAvailable: 'No request data available for analysis',
     noApiKeyConfigured: 'No API key configured. Please configure API key in options page',
@@ -163,21 +164,21 @@ if (typeof window !== 'undefined') {
     initPageError: 'Error initializing AI analysis page',
     cacheClearSuccess: 'AI analysis cache cleared',
     cacheClearError: 'Failed to clear cache',
-    
+
     languageChangeMsg: 'Switching to English...',
-    
+
     aiSettingsSaved: 'AI analysis settings saved successfully',
-    
+
     // Extension Settings Tab
     extensionSettings: 'Extension Settings',
     extensionSettingsDesc: 'Customize the appearance and behavior of the extension.',
-    
+
     // Theme Settings
     themeSettings: 'Theme Settings',
     lightTheme: 'Light Theme',
     darkTheme: 'Dark Theme',
     fireBlackTheme: 'Fire Black Theme',
-    
+
     // Button Text
     stopAnalysis: 'Stop Analysis',
     clearCache: 'Clear Cache',
@@ -187,4 +188,4 @@ if (typeof window !== 'undefined') {
 // Export English translations for direct import if needed
 export const enTranslations = {
   // English translations content (same as above)
-}; 
+};

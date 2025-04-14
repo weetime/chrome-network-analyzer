@@ -30,7 +30,7 @@ async function initPage() {
     // Get tabId from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     currentTabId = parseInt(urlParams.get('tabId'));
-    
+
     if (!currentTabId) {
       // If no tabId provided, get current active tab
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -41,26 +41,26 @@ async function initPage() {
         return;
       }
     }
-    
+
     // Get current tab information to display domain
     if (currentTabId) {
       await updateTabInfo(currentTabId);
     }
-    
+
     // Get network request data
     await fetchNetworkData();
-    
+
     // Update data overview
     updateDataOverview(requestsData);
-    
+
     // Update statistics
     if (StatsManager) {
       // Initialize statistics module
       await StatsManager.init({
         containerId: 'statsContainer',
-        getRequestData: () => requestsData
+        getRequestData: () => requestsData,
       });
-      
+
       StatsManager.updateStatistics();
     }
   } catch (error) {
@@ -73,22 +73,19 @@ async function initPage() {
 // Get network request data from background script
 async function fetchNetworkData() {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      { action: "getRequestData", tabId: currentTabId },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
-        
-        if (response && response.requestData) {
-          requestsData = response.requestData;
-          resolve(requestsData);
-        } else {
-          reject(new Error('Failed to get network request data'));
-        }
+    chrome.runtime.sendMessage({ action: 'getRequestData', tabId: currentTabId }, response => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
       }
-    );
+
+      if (response && response.requestData) {
+        requestsData = response.requestData;
+        resolve(requestsData);
+      } else {
+        reject(new Error('Failed to get network request data'));
+      }
+    });
   });
 }
 
@@ -98,7 +95,7 @@ async function updateTabInfo(tabId) {
     const tab = await chrome.tabs.get(tabId);
     if (tab && tab.url) {
       const urlElement = document.getElementById('domainUrl');
-      
+
       if (urlElement) urlElement.textContent = tab.url;
     }
   } catch (error) {
@@ -111,24 +108,24 @@ async function loadTabData(tabId) {
   try {
     // Update current tab ID
     currentTabId = tabId;
-    
+
     // Get tab information and display domain
     await updateTabInfo(tabId);
-    
+
     // Get network request data
     await fetchNetworkData();
-    
+
     // Update data overview
     updateDataOverview(requestsData);
-    
+
     // Update statistics
     if (StatsManager) {
       StatsManager.updateStatistics();
     }
-    
+
     // Show success message
     ToastManager.success(I18n.getText('tabDataLoaded'));
-    
+
     return true;
   } catch (error) {
     console.error('Error loading tab data:', error);
@@ -140,58 +137,72 @@ async function loadTabData(tabId) {
 // Update data overview area
 function updateDataOverview(requestsData) {
   const requests = Object.values(requestsData);
-  
+
   // Update request count
   updateElementText('requestsCount', '.highlight-text', requests.length);
   updateElementText('totalRequestsValue', null, requests.length);
   updateElementText('totalRequestsValue2', null, requests.length);
-  
+
   // Calculate performance metrics
   const validRequests = requests.filter(req => req.totalTime);
   if (validRequests.length === 0) return;
-  
+
   const totalLoadTime = validRequests.reduce((sum, req) => sum + req.totalTime, 0);
   const avgResponseTime = totalLoadTime / validRequests.length;
-  const slowestRequest = validRequests.reduce((prev, current) => 
-    (prev.totalTime > current.totalTime) ? prev : current, { totalTime: 0 });
-  
+  const slowestRequest = validRequests.reduce(
+    (prev, current) => (prev.totalTime > current.totalTime ? prev : current),
+    { totalTime: 0 }
+  );
+
   // Update UI
-  updateElementText('totalLoadTimeValue', null, totalLoadTime > 0 ? `${Math.round(totalLoadTime)}ms` : '--');
-  updateElementText('avgResponseTimeValue', null, avgResponseTime > 0 ? `${Math.round(avgResponseTime)}ms` : '--');
-  updateElementText('slowestRequestValue', null, slowestRequest.totalTime > 0 ? `${Math.round(slowestRequest.totalTime)}ms` : '--');
+  updateElementText(
+    'totalLoadTimeValue',
+    null,
+    totalLoadTime > 0 ? `${Math.round(totalLoadTime)}ms` : '--'
+  );
+  updateElementText(
+    'avgResponseTimeValue',
+    null,
+    avgResponseTime > 0 ? `${Math.round(avgResponseTime)}ms` : '--'
+  );
+  updateElementText(
+    'slowestRequestValue',
+    null,
+    slowestRequest.totalTime > 0 ? `${Math.round(slowestRequest.totalTime)}ms` : '--'
+  );
 }
 
 // Calculate statistics
 function calculateStatistics(requestsData) {
   const requests = Object.values(requestsData);
   const validRequests = requests.filter(req => req.totalTime);
-  
+
   // If no valid requests, return empty statistics
   if (validRequests.length === 0) {
     return {
       totalRequests: requests.length,
       averageLoadTime: 0,
       p95LoadTime: 0,
-      errorRate: 0
+      errorRate: 0,
     };
   }
-  
+
   // Calculate key metrics
   const totalLoadTime = validRequests.reduce((sum, req) => sum + req.totalTime, 0);
   const averageLoadTime = totalLoadTime / validRequests.length;
   const errorCount = requests.filter(req => req.error || (req.status && req.status >= 400)).length;
   const errorRate = (errorCount / requests.length) * 100;
-  
+
   // Calculate p95 response time
   const times = validRequests.map(req => req.totalTime).sort((a, b) => a - b);
   const index = Math.floor(times.length * 0.95);
   const p95LoadTime = times[index] || 0;
-  
+
   return {
     totalRequests: requests.length,
     averageLoadTime,
     p95LoadTime,
-    errorRate
+    errorRate,
   };
 }
 
@@ -199,7 +210,7 @@ function calculateStatistics(requestsData) {
 function updateElementText(id, selector, value) {
   const element = document.getElementById(id);
   if (!element) return;
-  
+
   if (selector) {
     const targetElement = element.querySelector(selector);
     if (targetElement) targetElement.textContent = value;
@@ -211,10 +222,10 @@ function updateElementText(id, selector, value) {
 // Update progress bar
 function updateProgress(percent, elements, statusText) {
   if (!elements.progressBar || !elements.progressText) return;
-  
+
   elements.progressBar.style.width = `${percent}%`;
   elements.progressText.textContent = statusText;
-  
+
   // If progress is nearing completion, change progress bar color
   if (percent >= 90) {
     elements.progressBar.classList.add('progress-complete');
@@ -235,27 +246,27 @@ async function runAiAnalysis() {
     ToastManager.showError('Analysis is already running, please wait for completion');
     return;
   }
-  
+
   // Set analysis status to running
   isAnalysisRunning = true;
-  
+
   // Create new abort controller
   abortController = new AbortController();
-  
+
   // Disable analysis button and change style
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   // Add stop analysis button
   const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
-  
+
   if (analyzeButton) {
     analyzeButton.disabled = true;
     analyzeButton.classList.add('disabled');
   }
-  
+
   if (stopAnalysisButton) {
     stopAnalysisButton.style.display = 'inline-block';
   }
-  
+
   // Get analysis elements
   const elements = {
     loading: document.getElementById('analysisLoading'),
@@ -264,49 +275,48 @@ async function runAiAnalysis() {
     error: document.getElementById('analysisError'),
     progress: document.getElementById('analysisProgress'),
     progressBar: document.getElementById('analysisProgressBar'),
-    progressText: document.getElementById('analysisProgressText')
+    progressText: document.getElementById('analysisProgressText'),
   };
-  
+
   if (!elements.loading || !elements.content || !elements.text || !elements.error) {
     console.error('Required AI analysis elements not found');
     resetAnalysisState();
     return;
   }
-  
+
   // Reset UI state
   resetAnalysisUI(elements);
-  
+
   try {
     // Ensure there is request data
-    if (!await ensureRequestData(elements)) {
+    if (!(await ensureRequestData(elements))) {
       resetAnalysisState();
       return;
     }
-    
+
     updateProgress(20, elements, I18n.getText('calculatingStats'));
-    
+
     // Calculate statistics
     const statistics = calculateStatistics(requestsData);
-    
+
     // Get AI configuration and check
     updateProgress(30, elements, I18n.getText('loadingAiConfig'));
     const config = await getAIConfig();
-    
+
     if (!validateAIConfig(config, elements)) {
       resetAnalysisState();
       return;
     }
-    
+
     // Prepare analysis data
     updateProgress(40, elements, I18n.getText('preparingData'));
     updateAIProviderDisplay(config);
-    
+
     // Check cache status
     updateProgress(45, elements, I18n.getText('checkingCache'));
-    
+
     // Send AI request and process result
     await processAIAnalysis(requestsData, statistics, config, elements);
-    
   } catch (error) {
     // Check if the request was canceled by the user
     if (error.name === 'AbortError' || error.message.includes('aborted')) {
@@ -338,7 +348,7 @@ function resetAnalysisUI(elements) {
   elements.text.style.display = 'block'; // Make text element visible for streaming display
   elements.text.innerHTML = '<div class="stream-cursor"></div>'; // Add a blinking cursor
   elements.error.style.display = 'none';
-  
+
   // Simulate data loading progress
   updateProgress(10, elements, I18n.getText('dataLoading'));
 }
@@ -355,13 +365,13 @@ async function ensureRequestData(elements) {
       return false;
     }
   }
-  
+
   // If still no data, show error
   if (Object.keys(requestsData).length === 0) {
     showNoDataError(elements);
     return false;
   }
-  
+
   return true;
 }
 
@@ -382,57 +392,54 @@ function validateAIConfig(config, elements) {
 async function processAIAnalysis(requestsData, statistics, config, elements) {
   // Connect to AI service
   updateProgress(50, elements, I18n.getText('connectingAi'));
-  
+
   // Format data and prepare to send to AI
   const analysisData = AiConnector.formatNetworkDataForAI(requestsData, statistics);
   const currentLanguage = I18n.getCurrentLanguage();
-  
+
   // Create a variable to track generation progress
   let generationProgress = 0;
   const startGenerationPercent = 60;
   const endGenerationPercent = 95;
-  
+
   // Use streaming API, define callback function for processing each data block
   const onChunkReceived = (chunk, fullText) => {
     // Update generation progress
     generationProgress = Math.min(generationProgress + 1, 100);
-    const progressPercent = startGenerationPercent + 
+    const progressPercent =
+      startGenerationPercent +
       (generationProgress / 100) * (endGenerationPercent - startGenerationPercent);
-    
-    updateProgress(
-      progressPercent, 
-      elements, 
-      I18n.getText('generatingAnalysis')
-    );
-    
+
+    updateProgress(progressPercent, elements, I18n.getText('generatingAnalysis'));
+
     // Update display (replace last cursor element)
     elements.text.innerHTML = formatAnalysisText(fullText) + '<div class="stream-cursor"></div>';
-    
+
     // When content increases, scroll to bottom for user to see latest content
     elements.content.scrollTop = elements.content.scrollHeight;
   };
-  
+
   // Use streaming API to send request, pass abort signal
   const result = await AiConnector.streamToAI(
     analysisData,
     config.provider,
     config.apiKey,
     config.model,
-    {language: currentLanguage},
+    { language: currentLanguage },
     2000, // Max tokens
     onChunkReceived, // Callback function
     abortController.signal // Add abort signal
   );
-  
+
   // Streaming processing completed, ensure final result is fully displayed
   elements.text.innerHTML = formatAnalysisText(result.analysis);
-  
+
   // Set result provider and model information
   updateProviderModelInfo(result, config);
-  
+
   // Complete progress
   updateProgress(100, elements, I18n.getText('analysisComplete'));
-  
+
   // Hide progress bar and loading area
   setTimeout(() => {
     elements.loading.style.display = 'none';
@@ -444,15 +451,15 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
 function resetAnalysisState() {
   isAnalysisRunning = false;
   abortController = null;
-  
+
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
-  
+
   if (analyzeButton) {
     analyzeButton.disabled = false;
     analyzeButton.classList.remove('disabled');
   }
-  
+
   if (stopAnalysisButton) {
     stopAnalysisButton.style.display = 'none';
   }
@@ -469,16 +476,19 @@ function handleAnalysisError(error, elements) {
 
 // Get AI configuration
 async function getAIConfig() {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get(['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'], (result) => {
-      const config = {
-        provider: result.aiProvider || 'openai',
-        apiKey: result.apiKey || result.openaiApiKey || '',
-        model: result.aiModel || 'gpt-4-turbo',
-        apiUrl: result.apiUrl || ''
-      };
-      resolve(config);
-    });
+  return new Promise(resolve => {
+    chrome.storage.sync.get(
+      ['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'],
+      result => {
+        const config = {
+          provider: result.aiProvider || 'openai',
+          apiKey: result.apiKey || result.openaiApiKey || '',
+          model: result.aiModel || 'gpt-4-turbo',
+          apiUrl: result.apiUrl || '',
+        };
+        resolve(config);
+      }
+    );
   });
 }
 
@@ -497,14 +507,14 @@ function updateProviderModelInfo(result, config) {
   if (provider.includes('(')) {
     provider = provider.split('(')[0].trim();
   }
-  
+
   // Prefer user configuration
   if (config && config.provider) {
     provider = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
   }
-  
-  const model = config && config.model ? config.model : (result.model || 'Unknown model');
-  
+
+  const model = config && config.model ? config.model : result.model || 'Unknown model';
+
   // Set model and provider information
   updateElementText('analysisModel', null, model);
   updateElementText('analysisProvider', null, provider);
@@ -514,7 +524,7 @@ function updateProviderModelInfo(result, config) {
 function updateAIProviderDisplay(config) {
   const analysisProvider = document.getElementById('analysisProvider');
   const analysisModel = document.getElementById('analysisModel');
-  
+
   if (analysisProvider && analysisModel) {
     const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
     analysisProvider.textContent = providerName;
@@ -527,10 +537,10 @@ function displayAnalysisResult(result, config, elements) {
   // Hide loading, show content
   elements.loading.style.display = 'none';
   elements.text.style.display = 'block';
-  
+
   // Set analysis text
   elements.text.innerHTML = formatAnalysisText(result.analysis);
-  
+
   // Update provider and model information
   updateProviderModelInfo(result, config);
 }
@@ -542,20 +552,20 @@ function showAnalysisError(message, elements) {
       loading: document.getElementById('analysisLoading'),
       text: document.getElementById('analysisText'),
       error: document.getElementById('analysisError'),
-      errorText: document.getElementById('analysisErrorText')
+      errorText: document.getElementById('analysisErrorText'),
     };
   }
-  
+
   if (!elements.loading || !elements.text || !elements.error || !elements.errorText) {
     console.error('Required AI analysis elements not found');
     return;
   }
-  
+
   // Hide loading and content, show error
   elements.loading.style.display = 'none';
   elements.text.style.display = 'none';
   elements.error.style.display = 'block';
-  
+
   // Set error information
   elements.errorText.textContent = message;
 }
@@ -563,22 +573,22 @@ function showAnalysisError(message, elements) {
 // Use similar Markdown format to format analysis text
 function formatAnalysisText(text) {
   if (!text) return '';
-  
+
   // Convert newline characters to HTML newlines
   let formatted = text.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
-  
+
   // Convert titles
   formatted = formatted.replace(/#{3,6} (.+?)(?:<br>|$)/g, '<h4>$1</h4>');
   formatted = formatted.replace(/## (.+?)(?:<br>|$)/g, '<h3>$1</h3>');
   formatted = formatted.replace(/# (.+?)(?:<br>|$)/g, '<h2>$1</h2>');
-  
+
   // Convert formatted text
   formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  
+
   // Convert lists
   formatted = formatted.replace(/- (.+?)(?:<br>|$)/g, '• $1<br>');
-  
+
   return formatted;
 }
 
@@ -594,11 +604,12 @@ function copyAnalysisResults() {
     ToastManager.showError(I18n.getText('noCopyContent'));
     return;
   }
-  
+
   // Copy to clipboard in Markdown format
   const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
-  
-  navigator.clipboard.writeText(markdownText)
+
+  navigator.clipboard
+    .writeText(markdownText)
     .then(() => {
       ToastManager.success(I18n.getText('copySuccess'));
     })
@@ -612,25 +623,25 @@ function copyAnalysisResults() {
 function downloadReport() {
   const analysisText = document.getElementById('analysisText');
   const domainUrl = document.getElementById('domainUrl').textContent;
-  
+
   // If no analysis results, show error
   if (!analysisText.innerHTML.trim()) {
     ToastManager.showError(I18n.getText('noAnalysisResultsToDownload'));
     return;
   }
-  
+
   // Extract domain
   const domain = extractDomain(domainUrl);
   const currentDate = formatDate(new Date());
-  
+
   // Create and show dropdown menu
   const dropdown = createDownloadDropdown();
   document.body.appendChild(dropdown);
-  
+
   // Position dropdown menu
   const anchor = document.getElementById('downloadReportBtn');
   positionDropdown(dropdown, anchor);
-  
+
   // Set download option event listeners
   setupDownloadListeners(dropdown, analysisText, domain, currentDate);
 }
@@ -684,39 +695,39 @@ function createDownloadDropdown() {
 // Position dropdown menu
 function positionDropdown(dropdown, anchor) {
   const rect = anchor.getBoundingClientRect();
-  
+
   // Calculate best display position
   let top = rect.bottom + window.scrollY + 5;
   let left = rect.left + window.scrollX;
-  
+
   // Check if it exceeds bottom of page
   const dropdownHeight = 200; // Estimated height
   const windowHeight = window.innerHeight;
   const windowBottom = window.scrollY + windowHeight;
-  
+
   // If dropdown menu would exceed bottom, show above button
   if (top + dropdownHeight > windowBottom) {
     top = rect.top + window.scrollY - dropdownHeight - 5;
   }
-  
+
   // Ensure it doesn't exceed left side
   if (left < 10) {
     left = 10;
   }
-  
+
   // Ensure it doesn't exceed right side
   const dropdownWidth = 200; // Estimated width
   if (left + dropdownWidth > document.documentElement.clientWidth - 10) {
     left = document.documentElement.clientWidth - dropdownWidth - 10;
   }
-  
+
   dropdown.style.position = 'absolute';
   dropdown.style.top = `${top}px`;
   dropdown.style.left = `${left}px`;
   dropdown.style.zIndex = '2000'; // Ensure higher z-index
-  
+
   document.body.appendChild(dropdown);
-  
+
   // Scroll to dropdown menu visible
   setTimeout(() => {
     dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -727,12 +738,12 @@ function positionDropdown(dropdown, anchor) {
 function setupDownloadListeners(dropdown, analysisText, domainName, currentDate) {
   // Click other areas to close dropdown menu
   document.addEventListener('click', closeDropdownOnOutsideClick);
-  
+
   // Prevent clicking dropdown menu itself to close
-  dropdown.addEventListener('click', (e) => {
+  dropdown.addEventListener('click', e => {
     e.stopPropagation();
   });
-  
+
   // Set event listeners for each download option
   setupDownloadOptionListeners(dropdown, analysisText, domainName, currentDate);
 }
@@ -740,26 +751,32 @@ function setupDownloadListeners(dropdown, analysisText, domainName, currentDate)
 // Set event listeners for each download option
 function setupDownloadOptionListeners(dropdown, analysisText, domainName, currentDate) {
   // Download report button
-  document.getElementById('downloadReportOnly').addEventListener('click', (e) => {
+  document.getElementById('downloadReportOnly').addEventListener('click', e => {
     e.preventDefault();
     const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
-    downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName')}-${domainName}-${currentDate}.md`);
+    downloadMarkdownFile(
+      markdownText,
+      `${I18n.getText('reportFileName')}-${domainName}-${currentDate}.md`
+    );
     closeDropdown();
   });
-  
+
   // Download JSON data button
-  document.getElementById('downloadDataJSON').addEventListener('click', (e) => {
+  document.getElementById('downloadDataJSON').addEventListener('click', e => {
     e.preventDefault();
     if (requestsData && Object.keys(requestsData).length > 0) {
-      downloadJsonFile(requestsData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`);
+      downloadJsonFile(
+        requestsData,
+        `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`
+      );
     } else {
       ToastManager.showError(I18n.getText('noDataAvailable'));
     }
     closeDropdown();
   });
-  
+
   // Download CSV data button
-  document.getElementById('downloadDataCSV').addEventListener('click', (e) => {
+  document.getElementById('downloadDataCSV').addEventListener('click', e => {
     e.preventDefault();
     if (requestsData && Object.keys(requestsData).length > 0) {
       const csvData = convertRequestsToCSV(requestsData);
@@ -769,15 +786,21 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
     }
     closeDropdown();
   });
-  
+
   // Download all button
-  document.getElementById('downloadAll').addEventListener('click', (e) => {
+  document.getElementById('downloadAll').addEventListener('click', e => {
     e.preventDefault();
     const markdownText = convertHtmlToMarkdown(analysisText.innerHTML);
-    downloadMarkdownFile(markdownText, `${I18n.getText('reportFileName')}-${domainName}-${currentDate}.md`);
-    
+    downloadMarkdownFile(
+      markdownText,
+      `${I18n.getText('reportFileName')}-${domainName}-${currentDate}.md`
+    );
+
     if (requestsData && Object.keys(requestsData).length > 0) {
-      downloadJsonFile(requestsData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`);
+      downloadJsonFile(
+        requestsData,
+        `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`
+      );
       const csvData = convertRequestsToCSV(requestsData);
       downloadTextFile(csvData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.csv`);
     }
@@ -796,15 +819,15 @@ function closeDropdown() {
 
 // Download file related functions
 function downloadTextFile(text, filename) {
-  downloadFile(new Blob([text], {type: 'text/plain'}), filename);
+  downloadFile(new Blob([text], { type: 'text/plain' }), filename);
 }
 
 function downloadJsonFile(data, filename) {
-  downloadFile(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}), filename);
+  downloadFile(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), filename);
 }
 
 function downloadMarkdownFile(text, filename) {
-  downloadFile(new Blob([text], {type: 'text/markdown'}), filename);
+  downloadFile(new Blob([text], { type: 'text/markdown' }), filename);
 }
 
 function downloadFile(blob, filename) {
@@ -814,41 +837,41 @@ function downloadFile(blob, filename) {
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  
+
   // Clean up
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, 100);
-  
+
   ToastManager.success(`${I18n.getText('downloadSuccess')}: ${filename}`);
 }
 
 // Convert HTML to Markdown
 function convertHtmlToMarkdown(html) {
   if (!html) return '';
-  
+
   let markdown = html;
-  
+
   // Replace HTML tags with Markdown format
   markdown = markdown.replace(/<h2>(.*?)<\/h2>/g, '# $1\n\n');
   markdown = markdown.replace(/<h3>(.*?)<\/h3>/g, '## $1\n\n');
   markdown = markdown.replace(/<h4>(.*?)<\/h4>/g, '### $1\n\n');
   markdown = markdown.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
   markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
-  
+
   // Replace list items
   markdown = markdown.replace(/• (.*?)<br>/g, '- $1\n');
-  
+
   // Replace newlines
   markdown = markdown.replace(/<br>/g, '\n');
-  
+
   // Clean up possible HTML entities
   markdown = markdown.replace(/&nbsp;/g, ' ');
   markdown = markdown.replace(/&amp;/g, '&');
   markdown = markdown.replace(/&lt;/g, '<');
   markdown = markdown.replace(/&gt;/g, '>');
-  
+
   return markdown;
 }
 
@@ -856,20 +879,28 @@ function convertHtmlToMarkdown(html) {
 function convertRequestsToCSV(requestsData) {
   const requests = Object.values(requestsData);
   if (requests.length === 0) return '';
-  
+
   // CSV headers
   const headers = [
-    'URL', 'Type', 'Method', 'Status', 
-    'Total Time (ms)', 'TTFB (ms)', 'Domain',
-    'Transferred Size (bytes)', 'Content Size (bytes)',
-    'Protocol', 'Priority', 'Cache Control'
+    'URL',
+    'Type',
+    'Method',
+    'Status',
+    'Total Time (ms)',
+    'TTFB (ms)',
+    'Domain',
+    'Transferred Size (bytes)',
+    'Content Size (bytes)',
+    'Protocol',
+    'Priority',
+    'Cache Control',
   ];
-  
+
   // Create CSV content
   let csvContent = headers.join(',') + '\n';
-  
+
   // Escape CSV fields
-  const escapeCSV = (field) => {
+  const escapeCSV = field => {
     if (field === null || field === undefined) return '';
     const str = String(field);
     if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -877,7 +908,7 @@ function convertRequestsToCSV(requestsData) {
     }
     return str;
   };
-  
+
   // Add each request's row
   requests.forEach(req => {
     const row = [
@@ -892,11 +923,11 @@ function convertRequestsToCSV(requestsData) {
       escapeCSV(req.contentSize),
       escapeCSV(req.protocol),
       escapeCSV(req.priority),
-      escapeCSV(req.cacheControl)
+      escapeCSV(req.cacheControl),
     ];
     csvContent += row.join(',') + '\n';
   });
-  
+
   return csvContent;
 }
 
@@ -908,26 +939,26 @@ function convertRequestsToCSV(requestsData) {
 // Helper function: Truncate title, avoid repeated display of domain
 function truncateTitle(title, domain) {
   if (!title) return '';
-  
+
   // Remove domain part, avoid repeated
   let shortTitle = title.replace(domain, '').trim();
   shortTitle = shortTitle.replace(/^[-–—\s|]*/, '').trim(); // Remove leading separators
-  
+
   // If title is too long, truncate
   if (shortTitle.length > 20) {
     shortTitle = shortTitle.substring(0, 18) + '...';
   }
-  
+
   return shortTitle;
 }
 
 // Check if domain is authorized domain
 function isAuthorizedDomain(domain, authorizedDomains) {
   if (!domain || !authorizedDomains || !authorizedDomains.length) return false;
-  
+
   // Check exact match
   if (authorizedDomains.includes(domain)) return true;
-  
+
   // Check subdomain match (if authorizedDomains contains example.com, then sub.example.com is also authorized)
   return authorizedDomains.some(authDomain => {
     return domain.endsWith('.' + authDomain);
@@ -936,7 +967,9 @@ function isAuthorizedDomain(domain, authorizedDomains) {
 
 // Check if it's local development address
 function isLocalhost(domain) {
-  return domain === 'localhost' || domain === '127.0.0.1' || domain.match(/^192\.168\.\d{1,3}\.\d{1,3}$/);
+  return (
+    domain === 'localhost' || domain === '127.0.0.1' || domain.match(/^192\.168\.\d{1,3}\.\d{1,3}$/)
+  );
 }
 
 // Get authorized domain list
@@ -945,10 +978,10 @@ async function getAuthorizedDomains() {
     // Try to get authorized domain list from storage
     const result = await chrome.storage.sync.get('authorizedDomains');
     const domains = result.authorizedDomains || [];
-    
+
     // Always allow common development and test domains
     const defaultDomains = ['localhost', '127.0.0.1', 'example.com'];
-    
+
     // Merge default domains and stored domains, ensure no duplicates
     return [...new Set([...defaultDomains, ...domains])];
   } catch (error) {
@@ -965,13 +998,13 @@ async function getAuthorizedDomains() {
 async function initTabSelector() {
   const tabSelectorWrapper = document.querySelector('.tab-selector-wrapper');
   if (!tabSelectorWrapper) return;
-  
+
   try {
     // Get current page's domain
     const currentDomainUrl = document.getElementById('domainUrl')?.textContent;
     let currentDomain = '';
     let displayDomain = I18n.getText('currentTab');
-    
+
     try {
       if (currentDomainUrl && currentDomainUrl !== '--') {
         const url = new URL(currentDomainUrl);
@@ -982,79 +1015,80 @@ async function initTabSelector() {
     } catch (e) {
       console.error('Error parsing current domain:', e);
     }
-    
+
     // Create custom dropdown menu element
     tabSelectorWrapper.innerHTML = '';
     const customDropdown = document.createElement('div');
     customDropdown.className = 'custom-dropdown';
-    
+
     // Get all tabs
     const tabs = await chrome.tabs.query({});
-    
+
     // Get authorized domain list
     const authorizedDomains = await getAuthorizedDomains();
-    
+
     // Create tab page option data structure
     const authorizedTabs = [];
     let hasMatchingTab = false;
-    
+
     // Handle current tab
     const currentTab = {
       element: document.createElement('div'),
       domain: currentDomain.toLowerCase(),
       tabId: 'current',
       matchesCurrent: true,
-      displayName: displayDomain
+      displayName: displayDomain,
     };
-    
+
     currentTab.element.className = 'dropdown-option';
     currentTab.element.dataset.value = 'current';
     currentTab.element.dataset.domain = currentDomain;
     currentTab.element.title = currentDomainUrl;
     currentTab.element.innerHTML = `<span class="tab-domain">${displayDomain}</span>`;
-    
+
     // Add other tabs that meet conditions
     tabs.forEach(tab => {
       // Ignore current page
       if (tab.id === chrome.devtools?.inspectedWindow?.tabId) return;
-      
+
       try {
         // Check if tab has URL and whether it's authorized domain
         if (tab.url) {
           const url = new URL(tab.url);
           const domain = url.hostname;
-          
+
           // Only add authorized domain or local development address
           if (isAuthorizedDomain(domain, authorizedDomains) || isLocalhost(domain)) {
             // Truncate title length, only display meaningful part
             const title = tab.title || '';
             const shortTitle = truncateTitle(title, domain);
-            
+
             const option = document.createElement('div');
             option.className = 'dropdown-option';
             option.dataset.value = tab.id;
             option.dataset.domain = domain;
             option.title = `${domain} - ${tab.title || ''}`;
-            
+
             // Use more concise display form
             option.innerHTML = `<span class="tab-domain">${domain}</span>`;
             if (shortTitle) {
               option.innerHTML += `<span class="tab-title">${shortTitle}</span>`;
             }
-            
-            const matchesCurrent = currentDomain && domain.toLowerCase() === currentDomain.toLowerCase();
-            
+
+            const matchesCurrent =
+              currentDomain && domain.toLowerCase() === currentDomain.toLowerCase();
+
             // If find matching tab for current domain, mark it
             if (matchesCurrent) {
               hasMatchingTab = true;
             }
-            
+
             authorizedTabs.push({
               element: option,
               domain: domain.toLowerCase(),
               tabId: tab.id,
               matchesCurrent: matchesCurrent,
-              displayName: domain
+              displayName: domain,
             });
           }
         }
@@ -1063,42 +1097,42 @@ async function initTabSelector() {
         console.error('Error parsing tab URL:', e);
       }
     });
-    
+
     // Sort by domain
     authorizedTabs.sort((a, b) => a.domain.localeCompare(b.domain));
-    
+
     // Find matching tab for current domain
     const matchingTab = authorizedTabs.find(tab => tab.matchesCurrent);
-    
+
     // Create dropdown selected display part
     const dropdownSelected = document.createElement('div');
     dropdownSelected.className = 'dropdown-selected';
-    
+
     // If there's matching tab, use its domain as display text
     // Otherwise use current tab's domain
     const selectedTab = matchingTab || currentTab;
-    
+
     dropdownSelected.innerHTML = `
       <span id="selectedTabText" title="${selectedTab.title || selectedTab.displayName}">${selectedTab.displayName}</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     `;
-    
+
     const dropdownOptions = document.createElement('div');
     dropdownOptions.className = 'dropdown-options';
-    
+
     // Add all options to dropdown list
     dropdownOptions.appendChild(currentTab.element);
-    
+
     // Set current option as selected unless there's matching tab
     if (!hasMatchingTab) {
       currentTab.element.classList.add('selected');
     }
-    
+
     authorizedTabs.forEach(tab => {
       dropdownOptions.appendChild(tab.element);
-      
+
       // If this is matching tab for current domain, mark as selected
       if (tab.matchesCurrent) {
         tab.element.classList.add('selected');
@@ -1106,7 +1140,7 @@ async function initTabSelector() {
         loadTabData(tab.tabId);
       }
     });
-    
+
     // If no authorized tabs, show one information
     if (authorizedTabs.length === 0) {
       const noAuthOption = document.createElement('div');
@@ -1114,41 +1148,42 @@ async function initTabSelector() {
       noAuthOption.textContent = I18n.getText('noAuthorizedTabs');
       dropdownOptions.appendChild(noAuthOption);
     }
-    
+
     // Add dropdown element to DOM
     customDropdown.appendChild(dropdownSelected);
     customDropdown.appendChild(dropdownOptions);
     tabSelectorWrapper.appendChild(customDropdown);
-    
+
     // Click to show/hide dropdown menu
     dropdownSelected.addEventListener('click', () => {
       dropdownSelected.classList.toggle('active');
       dropdownOptions.classList.toggle('active');
     });
-    
+
     // Click option to close dropdown menu
-    dropdownOptions.addEventListener('click', async (e) => {
+    dropdownOptions.addEventListener('click', async e => {
       const option = e.target.closest('.dropdown-option');
       if (!option || option.classList.contains('disabled')) return;
-      
+
       // Update selected state
       dropdownOptions.querySelectorAll('.dropdown-option').forEach(opt => {
         opt.classList.remove('selected');
       });
       option.classList.add('selected');
-      
+
       // Update display text - only display domain part
-      const domain = option.dataset.domain || option.querySelector('.tab-domain')?.textContent || '';
+      const domain =
+        option.dataset.domain || option.querySelector('.tab-domain')?.textContent || '';
       document.getElementById('selectedTabText').textContent = domain;
       document.getElementById('selectedTabText').title = option.title || domain;
-      
+
       // Close dropdown menu
       dropdownSelected.classList.remove('active');
       dropdownOptions.classList.remove('active');
-      
+
       // Handle selected value
       const selectedTabId = option.dataset.value;
-      
+
       if (selectedTabId === 'current') {
         // Get current active tab
         const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -1160,15 +1195,14 @@ async function initTabSelector() {
         await loadTabData(parseInt(selectedTabId));
       }
     });
-    
+
     // Click other areas to close dropdown menu
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       if (!e.target.closest('.custom-dropdown')) {
         dropdownSelected.classList.remove('active');
         dropdownOptions.classList.remove('active');
       }
     });
-    
   } catch (error) {
     console.error('Error initializing tab selector:', error);
   }
@@ -1181,25 +1215,25 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
   try {
     console.log('Initializing AI analysis page...');
-    
+
     // Initialize theme manager
     ThemeManager.init();
-    
+
     // Initialize internationalization
     await initI18n();
-    
+
     // Initialize AI provider display
     await initAIProviderDisplay();
-    
+
     // Initialize tab selector
     await initTabSelector();
-    
+
     // Initialize page data
     await initPage();
-    
+
     // Set event handlers
     setupEventHandlers();
-    
+
     console.log('AI analysis page initialized, waiting for user to click run analysis');
   } catch (error) {
     console.error('Error initializing AI analysis page:', error);
@@ -1232,18 +1266,18 @@ function setupEventHandlers() {
   // Back to main page button
   const backToMainBtn = document.getElementById('backToMain');
   if (backToMainBtn) {
-    backToMainBtn.addEventListener('click', (e) => {
+    backToMainBtn.addEventListener('click', e => {
       e.preventDefault();
       window.close(); // Close current tab
     });
   }
-  
+
   // Run analysis button
   const runAiAnalysisBtn = document.getElementById('runAiAnalysisBtn');
   if (runAiAnalysisBtn) {
     runAiAnalysisBtn.addEventListener('click', runAiAnalysis);
   }
-  
+
   // Stop analysis button
   const stopAiAnalysisBtn = document.getElementById('stopAiAnalysisBtn');
   if (stopAiAnalysisBtn) {
@@ -1251,19 +1285,19 @@ function setupEventHandlers() {
     // Default hidden
     stopAiAnalysisBtn.style.display = 'none';
   }
-  
+
   // Copy results button
   const copyAnalysisBtn = document.getElementById('copyAnalysisBtn');
   if (copyAnalysisBtn) {
     copyAnalysisBtn.addEventListener('click', copyAnalysisResults);
   }
-  
+
   // Download report and data button
   const downloadReportBtn = document.getElementById('downloadReportBtn');
   if (downloadReportBtn) {
     downloadReportBtn.addEventListener('click', downloadReport);
   }
-  
+
   // Clear cache button
   const clearCacheBtn = document.getElementById('clearAiCacheBtn');
   if (clearCacheBtn) {
@@ -1272,11 +1306,11 @@ function setupEventHandlers() {
       ToastManager.success(I18n.getText('aiCacheCleared'));
     });
   }
-  
+
   // Open settings page
   const openOptionsPage = document.getElementById('openOptionsPage');
   if (openOptionsPage) {
-    openOptionsPage.addEventListener('click', (e) => {
+    openOptionsPage.addEventListener('click', e => {
       e.preventDefault();
       if (chrome.runtime.openOptionsPage) {
         chrome.runtime.openOptionsPage();

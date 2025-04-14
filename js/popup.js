@@ -4,7 +4,7 @@
 
 // Import all required modules
 import { I18n } from './i18n.js';
-import './i18n/zh.js'; 
+import './i18n/zh.js';
 import './i18n/en.js';
 import { AiConnector } from './ai-connector.js';
 import { ThemeManager } from './theme-manager.js';
@@ -27,10 +27,10 @@ async function initI18n() {
     // Initialize I18n and load language packs
     await I18n.init();
     console.log('I18n initialized with language:', I18n.getCurrentLanguage());
-    
+
     // Ensure language settings are applied to the page
     I18n.updatePageText();
-    
+
     // Set html element's lang attribute for CSS selector matching
     document.documentElement.lang = I18n.getCurrentLanguage();
   } catch (error) {
@@ -42,7 +42,7 @@ async function initI18n() {
 function setupMessageListeners() {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Handle request completion messages
-    if (message.action === "requestCompleted" && message.tabId === currentTabId) {
+    if (message.action === 'requestCompleted' && message.tabId === currentTabId) {
       // Get current data
       const currentData = TableManager.getRequestData();
       // Update specific request data
@@ -52,14 +52,14 @@ function setupMessageListeners() {
         TableManager.updateTableData(currentData);
         // Update statistics
         StatsManager.updateStatistics();
-        
+
         // Ensure internationalization updates
         I18n.updatePageText();
       }
     }
-    
+
     // Handle request failure messages
-    if (message.action === "requestFailed" && message.tabId === currentTabId) {
+    if (message.action === 'requestFailed' && message.tabId === currentTabId) {
       // Get current data
       const currentData = TableManager.getRequestData();
       // Update specific request data
@@ -69,12 +69,12 @@ function setupMessageListeners() {
         TableManager.updateTableData(currentData);
         // Update statistics
         StatsManager.updateStatistics();
-        
+
         // Ensure internationalization updates
         I18n.updatePageText();
       }
     }
-    
+
     // Return true to keep message channel open
     return true;
   });
@@ -82,26 +82,23 @@ function setupMessageListeners() {
 
 // Function to request network data from background script
 function requestNetworkData() {
-  chrome.runtime.sendMessage(
-    { action: "getRequestData", tabId: currentTabId },
-    (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error getting request data:", chrome.runtime.lastError);
-        return;
-      }
-      
-      if (response && response.requestData) {
-        // Update table data using TableManager
-        TableManager.updateTableData(response.requestData);
-        
-        // Update statistics
-        StatsManager.updateStatistics();
-        
-        // Ensure internationalization updates
-        I18n.updatePageText();
-      }
+  chrome.runtime.sendMessage({ action: 'getRequestData', tabId: currentTabId }, response => {
+    if (chrome.runtime.lastError) {
+      console.error('Error getting request data:', chrome.runtime.lastError);
+      return;
     }
-  );
+
+    if (response && response.requestData) {
+      // Update table data using TableManager
+      TableManager.updateTableData(response.requestData);
+
+      // Update statistics
+      StatsManager.updateStatistics();
+
+      // Ensure internationalization updates
+      I18n.updatePageText();
+    }
+  });
 }
 
 // Set requestNetworkData function as global variable so other modules can access it
@@ -113,7 +110,7 @@ function startRealTimeUpdates() {
   if (updateInterval) {
     clearInterval(updateInterval);
   }
-  
+
   // Set new timer, update data every 3 seconds
   updateInterval = setInterval(requestNetworkData, 3000);
 }
@@ -133,40 +130,40 @@ function setupControlButtons() {
   if (themeToggle) {
     themeToggle.addEventListener('click', ThemeManager.toggleTheme);
   }
-  
+
   // Export button
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', exportData);
   }
-  
+
   // Clear button
   const clearBtn = document.getElementById('clearBtn');
   if (clearBtn) {
     clearBtn.addEventListener('click', clearData);
   }
-  
+
   // Analyze button
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   if (analyzeButton) {
     analyzeButton.addEventListener('click', AiAnalysisManager.runAiAnalysis);
   }
-  
+
   // AI analysis toggle button
   const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
   if (aiAnalysisToggleBtn) {
     aiAnalysisToggleBtn.addEventListener('click', () => {
       // Open standalone AI analysis page, and pass current tabId parameter
       chrome.tabs.create({
-        url: chrome.runtime.getURL(`ai-analysis.html?tabId=${currentTabId}`)
+        url: chrome.runtime.getURL(`ai-analysis.html?tabId=${currentTabId}`),
       });
     });
   }
-  
+
   // Open settings page
   const openOptionsPage = document.getElementById('openOptionsPage');
   if (openOptionsPage) {
-    openOptionsPage.addEventListener('click', (e) => {
+    openOptionsPage.addEventListener('click', e => {
       e.preventDefault();
       if (chrome.runtime.openOptionsPage) {
         chrome.runtime.openOptionsPage();
@@ -178,31 +175,31 @@ function setupControlButtons() {
 // Export data as JSON
 function exportData() {
   const requestData = TableManager.getRequestData();
-  
+
   if (Object.keys(requestData).length === 0) {
     // When no data, don't show toast, just return
     console.log('No data to export');
     return;
   }
-  
+
   // Create a blob with the data
   const dataStr = JSON.stringify(requestData, null, 2);
   const blob = new Blob([dataStr], { type: 'application/json' });
-  
+
   // Create a download link
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  
+
   // Get current date/time for filename
   const date = new Date();
   const dateStr = date.toISOString().replace(/:/g, '-').replace('T', '_').split('.')[0];
-  
+
   // Set attributes and click to trigger download
   a.href = url;
   a.download = `network_data_${dateStr}.json`;
   document.body.appendChild(a);
   a.click();
-  
+
   // Cleanup
   setTimeout(() => {
     document.body.removeChild(a);
@@ -213,7 +210,7 @@ function exportData() {
 // Clear network request data
 function clearData() {
   const confirmMsg = I18n.getText('confirmClear');
-  
+
   // Create custom confirmation dialog
   const confirmDialog = document.createElement('div');
   confirmDialog.className = 'custom-confirm';
@@ -226,9 +223,9 @@ function clearData() {
       </div>
     </div>
   `;
-  
+
   document.body.appendChild(confirmDialog);
-  
+
   // Add event listeners
   return new Promise(resolve => {
     // Cancel button
@@ -236,87 +233,90 @@ function clearData() {
       document.body.removeChild(confirmDialog);
       resolve(false);
     });
-    
+
     // Confirm button
     confirmDialog.querySelector('.confirm-btn').addEventListener('click', () => {
       document.body.removeChild(confirmDialog);
       resolve(true);
-      
+
       // Execute clear operation
-      chrome.runtime.sendMessage(
-        { action: "clearRequestData", tabId: currentTabId },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.error("Error clearing request data:", chrome.runtime.lastError);
-            return;
-          }
-          
-          if (response && response.success) {
-            // Clear table data
-            TableManager.updateTableData({});
-            
-            // Update statistics
-            StatsManager.updateStatistics();
-            
-            // Close any open request details
-            try {
-              if (RequestDetailsManager && typeof RequestDetailsManager.closeRequestDetails === 'function') {
-                RequestDetailsManager.closeRequestDetails();
-              } else if (RequestDetailsManager && typeof RequestDetailsManager.closeDetails === 'function') {
-                RequestDetailsManager.closeDetails();
-              }
-            } catch (error) {
-              console.error('Error closing request details:', error);
-            }
-            
-            // Don't show success message toast
-            console.log('Data cleared successfully');
-          } else if (response && response.error) {
-            console.error("Error clearing data:", response.error);
-          }
+      chrome.runtime.sendMessage({ action: 'clearRequestData', tabId: currentTabId }, response => {
+        if (chrome.runtime.lastError) {
+          console.error('Error clearing request data:', chrome.runtime.lastError);
+          return;
         }
-      );
+
+        if (response && response.success) {
+          // Clear table data
+          TableManager.updateTableData({});
+
+          // Update statistics
+          StatsManager.updateStatistics();
+
+          // Close any open request details
+          try {
+            if (
+              RequestDetailsManager &&
+              typeof RequestDetailsManager.closeRequestDetails === 'function'
+            ) {
+              RequestDetailsManager.closeRequestDetails();
+            } else if (
+              RequestDetailsManager &&
+              typeof RequestDetailsManager.closeDetails === 'function'
+            ) {
+              RequestDetailsManager.closeDetails();
+            }
+          } catch (error) {
+            console.error('Error closing request details:', error);
+          }
+
+          // Don't show success message toast
+          console.log('Data cleared successfully');
+        } else if (response && response.error) {
+          console.error('Error clearing data:', response.error);
+        }
+      });
     });
   });
 }
 
 // Main initialization function
 async function initPopup() {
-  console.log("Initializing popup...");
-  
+  console.log('Initializing popup...');
+
   // Initialize internationalization support
   await initI18n();
-  
+
   // Initialize theme controller
   ThemeManager.init();
-  
+
   // Get current active tab
-  chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, async tabs => {
     if (tabs.length > 0) {
       currentTabId = tabs[0].tabId || tabs[0].id;
       const domain = new URL(tabs[0].url).hostname;
-      
+
       console.log(`Current tab: ${currentTabId}, Domain: ${domain}`);
-      
+
       // Start network data module
       await TableManager.init({
         tableId: 'requestsTable',
         bodyId: 'requestsTableBody',
         noDataMessageId: 'noDataMessage',
-        requestDetailsManager: RequestDetailsManager
+        requestDetailsManager: RequestDetailsManager,
       });
-      
+
       // Initialize details manager
       await RequestDetailsManager.init({
-        detailsContainerId: 'requestDetails'
+        detailsContainerId: 'requestDetails',
       });
-      
+
       // Initialize statistics module
       await StatsManager.init({
         containerId: 'statsContainer',
-        getRequestData: TableManager.getRequestData
+        getRequestData: TableManager.getRequestData,
       });
-      
+
       // Initialize AI analysis manager
       await AiAnalysisManager.init({
         containerId: 'aiAnalysisContainer',
@@ -325,33 +325,33 @@ async function initPopup() {
         modelInfoId: 'aiModelInfo',
         copyButtonId: 'copyAiResultBtn',
         getRequestData: TableManager.getRequestData,
-        tabId: currentTabId
+        tabId: currentTabId,
       });
-      
+
       // Initialize domain authentication UI
       await DomainAuthUI.init({
         domainListId: 'headerDomainsList',
         switchId: 'headerAuthorizationSwitch',
         statusId: 'headerAuthStatus',
-        settingsLinkId: 'openDomainSettings'
+        settingsLinkId: 'openDomainSettings',
       });
-      
+
       // Display current domain and check authorization
       checkDomainAndLoadData(domain);
     }
   });
-  
+
   // Set up message listeners
   setupMessageListeners();
-  
+
   // Set up control button event listeners
   setupControlButtons();
-  
+
   // Start real-time updates
   startRealTimeUpdates();
-  
+
   // Listen for popup close event
-  window.addEventListener('beforeunload', function() {
+  window.addEventListener('beforeunload', function () {
     stopRealTimeUpdates();
   });
 }
@@ -364,13 +364,13 @@ function checkDomainAndLoadData(domain) {
       // Domain is authorized, load network data
       console.log(`Domain ${domain} is authorized, loading network data...`);
       requestNetworkData();
-      
+
       // Show authorized content
       document.getElementById('authorizedContent').style.display = 'block';
     } else {
       // Domain is not authorized, show authorization form
       console.log(`Domain ${domain} is not authorized.`);
-      
+
       // Hide authorized content
       document.getElementById('authorizedContent').style.display = 'none';
     }

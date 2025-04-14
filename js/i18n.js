@@ -28,23 +28,24 @@ function setLanguage(lang) {
 // Get translated text
 function getText(key, replacements = {}) {
   const lang = getCurrentLanguage();
-  
+
   // Ensure I18nMessages is loaded
   if (!window.I18nMessages || !window.I18nMessages[lang]) {
     console.error(`Language pack for ${lang} not loaded.`);
     return key;
   }
-  
-  const text = window.I18nMessages[lang][key] || 
-               (window.I18nMessages[DEFAULT_LANGUAGE] ? window.I18nMessages[DEFAULT_LANGUAGE][key] : key);
-  
+
+  const text =
+    window.I18nMessages[lang][key] ||
+    (window.I18nMessages[DEFAULT_LANGUAGE] ? window.I18nMessages[DEFAULT_LANGUAGE][key] : key);
+
   // Process replacement variables
   if (Object.keys(replacements).length > 0) {
     return Object.keys(replacements).reduce((result, placeholder) => {
       return result.replace(`{${placeholder}}`, replacements[placeholder]);
     }, text);
   }
-  
+
   return text;
 }
 
@@ -54,12 +55,12 @@ function updatePageText() {
     const key = element.getAttribute('data-i18n');
     element.textContent = getText(key);
   });
-  
+
   document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
     const key = element.getAttribute('data-i18n-placeholder');
     element.placeholder = getText(key);
   });
-  
+
   document.querySelectorAll('[data-i18n-title]').forEach(element => {
     const key = element.getAttribute('data-i18n-title');
     element.title = getText(key);
@@ -72,28 +73,32 @@ function setupObserver() {
   if (i18nObserver) {
     i18nObserver.disconnect();
   }
-  
+
   // Create new MutationObserver
-  i18nObserver = new MutationObserver((mutations) => {
+  i18nObserver = new MutationObserver(mutations => {
     let shouldUpdate = false;
-    
+
     // Check if new elements need localization
     mutations.forEach(mutation => {
       if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
         mutation.addedNodes.forEach(node => {
-          if (node.nodeType === 1) { // Element node
+          if (node.nodeType === 1) {
+            // Element node
             // Check if the element itself has data-i18n attributes
-            if (node.hasAttribute && (
-                node.hasAttribute('data-i18n') || 
-                node.hasAttribute('data-i18n-placeholder') || 
-                node.hasAttribute('data-i18n-title')
-            )) {
+            if (
+              node.hasAttribute &&
+              (node.hasAttribute('data-i18n') ||
+                node.hasAttribute('data-i18n-placeholder') ||
+                node.hasAttribute('data-i18n-title'))
+            ) {
               shouldUpdate = true;
             }
-            
+
             // Check if child elements have data-i18n attributes
             if (node.querySelectorAll) {
-              const i18nNodes = node.querySelectorAll('[data-i18n], [data-i18n-placeholder], [data-i18n-title]');
+              const i18nNodes = node.querySelectorAll(
+                '[data-i18n], [data-i18n-placeholder], [data-i18n-title]'
+              );
               if (i18nNodes.length > 0) {
                 shouldUpdate = true;
               }
@@ -102,20 +107,19 @@ function setupObserver() {
         });
       }
     });
-    
+
     // Only update when localization elements are detected
     if (shouldUpdate) {
       updatePageText();
     }
   });
-  
+
   // Start observing the entire document
-  i18nObserver.observe(document.body, { 
-    childList: true, 
-    subtree: true 
+  i18nObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
   });
 }
-
 
 // Initialize internationalization module
 async function init() {
@@ -135,5 +139,5 @@ export const I18n = {
   getCurrentLanguage,
   setLanguage,
   updatePageText,
-  SUPPORTED_LANGUAGES
-}; 
+  SUPPORTED_LANGUAGES,
+};

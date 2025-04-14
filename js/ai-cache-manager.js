@@ -28,7 +28,7 @@ async function initCache() {
     cacheData = result[CACHE_CONFIG.STORAGE_KEY] || {};
     
     // 清理过期的缓存条目
-    cleanExpiredCache();
+    await cleanExpiredCache();
   } catch (error) {
     console.error('初始化AI分析缓存失败:', error);
     cacheData = {};
@@ -38,55 +38,60 @@ async function initCache() {
 /**
  * 生成用于缓存的键
  * 使用提供商、模型、数据特征和语言创建唯一键
+ * Returns an object containing the cache key and the data fingerprint.
  */
-function generateCacheKey(provider, model, data, language) {
+async function generateCacheKey(provider, model, data, language) {
   // 从data中提取特征信息以创建指纹
-  const dataFingerprint = generateDataFingerprint(data);
-  return `${provider}_${model}_${language}_${dataFingerprint}`;
+  const dataFingerprint = await generateDataFingerprint(data);
+  const cacheKey = `${provider}_${model}_${language}_${dataFingerprint}`;
+  return { cacheKey, fingerprint: dataFingerprint };
 }
 
 /**
- * 生成数据指纹
+ * 生成数据指纹 (SHA-256)
  * 从分析数据中提取关键特征以创建唯一标识符
  */
-function generateDataFingerprint(data) {
+async function generateDataFingerprint(data) {
   // If data is undefined or null, return a default fingerprint
   if (!data) {
     return 'empty-data';
   }
   
+  // 检查 crypto API 的可用性
+  if (!window.crypto || !window.crypto.subtle || !window.crypto.subtle.digest) {
+    console.error('Crypto API not available in this context');
+    return 'crypto-unavailable';
+  }
+  
   try {
     // 从data中提取statistics数据
     const statistics = data.statistics || {};
-    
-    // 将statistics对象转换为字符串并计算MD5
     const statsString = JSON.stringify(statistics);
+
+    // Encode the string into a Uint8Array
+    const encoder = new TextEncoder();
+    const dataArray = encoder.encode(statsString);
+
+    // Calculate the SHA-256 hash (更安全且更广泛支持的算法)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataArray);
+
+    // Convert the ArrayBuffer to a hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const fingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     
-    // 使用内置的hashString函数生成MD5类似的哈希值
-    // 注意：这里使用简化的哈希方法，实际MD5需要引入专门的库
-    const fingerprint = hashString(statsString);
-    
+    console.log('fingerprint', fingerprint);
     return fingerprint;
   } catch (error) {
-    console.error('Error creating data fingerprint:', error);
-    return 'error-fingerprint';
+    console.error('Error creating data fingerprint (SHA-256):', error);
+    // 记录详细错误信息以便调试
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    // Provide a distinct fingerprint for errors during hashing
+    return 'error-sha256-fingerprint'; 
   }
-}
-
-/**
- * 简单的字符串哈希函数
- */
-function hashString(str) {
-  let hash = 0;
-  if (str.length === 0) return hash.toString(16);
-  
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // 转换为32位整数
-  }
-  
-  return hash.toString(16);
 }
 
 /**
@@ -95,7 +100,7 @@ function hashString(str) {
 async function getCachedAnalysis(provider, model, data, language) {
   await initCache();
   
-  const cacheKey = generateCacheKey(provider, model, data, language);
+  const { cacheKey } = await generateCacheKey(provider, model, data, language);
   const cachedItem = cacheData[cacheKey];
   
   if (!cachedItem) return null;
@@ -104,13 +109,13 @@ async function getCachedAnalysis(provider, model, data, language) {
   if (Date.now() > cachedItem.expiration) {
     // 删除过期项
     delete cacheData[cacheKey];
-    saveCache();
+    await saveCache();
     return null;
   }
   
   // 更新访问时间
   cachedItem.lastAccessed = Date.now();
-  saveCache();
+  await saveCache();
   
   return cachedItem.result;
 }
@@ -128,8 +133,7 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
   }
   
   try {
-    const cacheKey = generateCacheKey(provider, model, data, language);
-    const fingerprint = generateDataFingerprint(data);
+    const { cacheKey, fingerprint } = await generateCacheKey(provider, model, data, language);
     const timestamp = Date.now();
     
     // 创建缓存条目
@@ -142,10 +146,10 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
     };
     
     // 如果缓存条目超过最大数量，清理最旧的条目
-    cleanOldestIfNeeded();
+    await cleanOldestIfNeeded();
     
     // 保存缓存到存储
-    saveCache();
+    await saveCache();
     console.log(`AI analysis result cached with key: ${cacheKey}`);
     return true;
   } catch (error) {
@@ -157,7 +161,7 @@ async function cacheAnalysisResult(provider, model, data, language, result) {
 /**
  * 清理过期的缓存条目
  */
-function cleanExpiredCache() {
+async function cleanExpiredCache() {
   const now = Date.now();
   let cleaned = false;
   
@@ -169,14 +173,14 @@ function cleanExpiredCache() {
   }
   
   if (cleaned) {
-    saveCache();
+    await saveCache();
   }
 }
 
 /**
  * 如果缓存条目数量超过最大值，清理最旧的条目
  */
-function cleanOldestIfNeeded() {
+async function cleanOldestIfNeeded() {
   const keys = Object.keys(cacheData);
   
   if (keys.length <= CACHE_CONFIG.MAX_ENTRIES) return;
@@ -189,14 +193,19 @@ function cleanOldestIfNeeded() {
   keysToRemove.forEach(key => {
     delete cacheData[key];
   });
+  
+  await saveCache();
 }
 
 /**
  * 保存缓存到存储
  */
-function saveCache() {
-  chrome.storage.local.set({ [CACHE_CONFIG.STORAGE_KEY]: cacheData })
-    .catch(error => console.error('保存AI分析缓存失败:', error));
+async function saveCache() {
+  try {
+    await chrome.storage.local.set({ [CACHE_CONFIG.STORAGE_KEY]: cacheData });
+  } catch (error) {
+    console.error('保存AI分析缓存失败:', error);
+  }
 }
 
 /**

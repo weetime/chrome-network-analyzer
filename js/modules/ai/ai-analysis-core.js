@@ -25,6 +25,21 @@ async function runAiAnalysis() {
     return;
   }
 
+  // Get the analyze button
+  const analyzeButton = document.getElementById('runAiAnalysisBtn');
+
+  // Check if analysis is already running
+  if (isAnalysisLoading) {
+    console.log('Analysis already in progress');
+    return;
+  }
+
+  // Disable the button and add loading state
+  if (analyzeButton) {
+    analyzeButton.disabled = true;
+    analyzeButton.classList.add('disabled');
+  }
+
   // Toggle analysis container visibility
   aiAnalysisContainer.classList.add('visible');
 
@@ -34,6 +49,11 @@ async function runAiAnalysis() {
 
   if (!aiAnalysisStatus || !aiAnalysisResult) {
     console.error('Required AI analysis elements not found');
+    // Re-enable the button before returning
+    if (analyzeButton) {
+      analyzeButton.disabled = false;
+      analyzeButton.classList.remove('disabled');
+    }
     return;
   }
 
@@ -67,6 +87,11 @@ async function runAiAnalysis() {
       }
     } catch (error) {
       AiAnalysisUi.showAnalysisError(`Error getting request data: ${error.message}`);
+      // Re-enable the button before returning
+      if (analyzeButton) {
+        analyzeButton.disabled = false;
+        analyzeButton.classList.remove('disabled');
+      }
       return;
     }
   }
@@ -74,6 +99,11 @@ async function runAiAnalysis() {
   // If no data, show error
   if (Object.keys(requestsData).length === 0) {
     AiAnalysisUi.showAnalysisError('No request data available for analysis.');
+    // Re-enable the button before returning
+    if (analyzeButton) {
+      analyzeButton.disabled = false;
+      analyzeButton.classList.remove('disabled');
+    }
     return;
   }
 
@@ -141,6 +171,12 @@ async function runAiAnalysis() {
     AiAnalysisUi.showAnalysisError(`Error during AI analysis: ${error.message}`);
   } finally {
     isAnalysisLoading = false;
+
+    // Re-enable the button
+    if (analyzeButton) {
+      analyzeButton.disabled = false;
+      analyzeButton.classList.remove('disabled');
+    }
   }
 }
 

@@ -257,6 +257,8 @@ async function runAiAnalysis() {
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   // Add stop analysis button
   const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
+  // Get dropdown selected element to disable it
+  const dropdownSelected = document.querySelector('.dropdown-selected');
 
   if (analyzeButton) {
     analyzeButton.disabled = true;
@@ -265,6 +267,13 @@ async function runAiAnalysis() {
 
   if (stopAnalysisButton) {
     stopAnalysisButton.style.display = 'inline-block';
+  }
+
+  // Disable dropdown selector during analysis
+  if (dropdownSelected) {
+    dropdownSelected.classList.add('disabled');
+    // Remove any active click listeners temporarily
+    dropdownSelected.style.pointerEvents = 'none';
   }
 
   // Get analysis elements
@@ -447,13 +456,16 @@ async function processAIAnalysis(requestsData, statistics, config, elements) {
   }, 500);
 }
 
-// Reset analysis state and buttons
+// Reset analysis state
 function resetAnalysisState() {
   isAnalysisRunning = false;
   abortController = null;
 
+  // Re-enable buttons and hide stop button
   const analyzeButton = document.getElementById('runAiAnalysisBtn');
   const stopAnalysisButton = document.getElementById('stopAiAnalysisBtn');
+  // Get dropdown selected element to re-enable it
+  const dropdownSelected = document.querySelector('.dropdown-selected');
 
   if (analyzeButton) {
     analyzeButton.disabled = false;
@@ -462,6 +474,13 @@ function resetAnalysisState() {
 
   if (stopAnalysisButton) {
     stopAnalysisButton.style.display = 'none';
+  }
+
+  // Re-enable dropdown selector after analysis is done
+  if (dropdownSelected) {
+    dropdownSelected.classList.remove('disabled');
+    // Restore click event handling
+    dropdownSelected.style.pointerEvents = 'auto';
   }
 }
 

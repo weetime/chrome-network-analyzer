@@ -524,13 +524,3 @@ pre {
     filter: drop-shadow(0 0 10px rgba(255, 85, 0, 1));
   }
 }
-
-/* 火焰黑主题按钮增强 */
-[data-theme='fireblack'] .btn-minimal:hover {
-  box-shadow:
-    0 0 15px rgba(255, 85, 0, 0.8),
-    inset 0 0 5px rgba(255, 85, 0, 0.3);
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.1) 0%, rgba(255, 85, 0, 0.2) 100%);
-  border-color: rgba(255, 120, 0, 0.5);
-  transform: translateY(-3px);
-}

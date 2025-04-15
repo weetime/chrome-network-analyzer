@@ -55,17 +55,3 @@
   gap: 8px;
   align-items: center;
 }
-
-.btn-minimal {
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  color: var(--text-color);
-  padding: 6px;
-  border-radius: var(--btn-radius);
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}

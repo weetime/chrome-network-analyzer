@@ -61,7 +61,6 @@
   justify-content: center;
   transition: all 0.2s;
   position: relative;
-  overflow: hidden;
 }
 
 .btn-minimal:hover {
@@ -379,43 +378,6 @@ input:checked + .slider:before {
   transform: translateX(18px);
 }
 
-/* AI分析按钮样式 */
-#aiAnalysisToggleBtn {
-  background: linear-gradient(to right, var(--bg-color), var(--bg-color), rgba(77, 213, 222, 0.05));
-  color: var(--text-color);
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-color);
-  padding: 6px 10px;
-  width: auto;
-  height: auto;
-  min-width: 38px;
-  min-height: 38px;
-  position: relative;
-  overflow: visible;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 悬停状态 */
-#aiAnalysisToggleBtn:hover {
-  border-color: var(--accent-color);
-  background: linear-gradient(to right, var(--bg-color), rgba(77, 213, 222, 0.1));
-  box-shadow: var(--neon-glow);
-  transform: translateY(-2px);
-}
-
-/* 暗色模式特殊效果 */
-[data-theme='dark'] #aiAnalysisToggleBtn {
-  background: linear-gradient(to right, var(--bg-color), rgba(77, 213, 222, 0.08));
-}
-
-[data-theme='dark'] #aiAnalysisToggleBtn:hover {
-  background: linear-gradient(to right, var(--bg-color), rgba(77, 213, 222, 0.15));
-  box-shadow: 0 0 8px rgba(77, 213, 222, 0.3);
-}
-
 /* AI图标动画 */
 #aiAnalysisToggleBtn .ai-star-icon {
   width: 20px;
@@ -511,23 +473,6 @@ input:checked + .slider:before {
   }
 }
 
-/* AI分析按钮的tooltip特殊样式 */
-#aiAnalysisToggleBtn .tooltip {
-  background: linear-gradient(to right, var(--card-bg), rgba(77, 213, 222, 0.1));
-  font-weight: 500;
-  letter-spacing: 0.6px;
-  color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-
-/* 魔法光芒效果 */
-#aiAnalysisToggleBtn .tooltip::before {
-  content: '✨';
-  margin-right: 4px;
-  display: inline-block;
-  animation: magic-spark 3s infinite;
-}
-
 @keyframes magic-spark {
   0%,
   100% {
@@ -538,17 +483,6 @@ input:checked + .slider:before {
     transform: scale(1.3) rotate(5deg);
     opacity: 1;
   }
-}
-
-/* 火焰主题特殊效果 */
-[data-theme='fireblack'] #aiAnalysisToggleBtn .tooltip {
-  background: linear-gradient(to right, #1a1500, rgba(255, 85, 0, 0.2));
-  color: #ff9900;
-  border-color: #ff5500;
-}
-
-[data-theme='fireblack'] #aiAnalysisToggleBtn .tooltip::before {
-  animation: fire-spark 3s infinite;
 }
 
 @keyframes fire-spark {
@@ -563,13 +497,4 @@ input:checked + .slider:before {
     opacity: 1;
     text-shadow: 0 0 4px #ff9900;
   }
-}
-
-/* NEW 徽标专门为 AI 分析按钮调整 */
-#aiAnalysisToggleBtn .new-badge {
-  top: -8px;
-  right: -8px;
-  font-size: 8px;
-  padding: 3px 4px;
-  border-radius: 6px;
 }

@@ -10,7 +10,6 @@
   border: 1px solid var(--border-color);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: relative;
-  overflow: hidden;
 }
 
 .controls::before {
@@ -46,12 +45,6 @@
   display: flex;
   align-items: center;
   gap: 8px; /* 减小按钮间距 */
-}
-
-/* Reset individual button margins */
-.button-group .theme-toggle-minimal,
-.button-group .btn-minimal {
-  margin: 0;
 }
 
 /* Minimalist button styles with geek design */

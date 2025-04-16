@@ -50,6 +50,7 @@ if (typeof window !== 'undefined') {
     apiUrl: 'Custom API URL',
     enterApiUrl: 'Enter custom API URL if needed',
     configRequired: 'API key not configured. Please configure API key in settings page.',
+    configureNow: 'Configure Now',
 
     // Status Messages
     settingsSaved: 'Settings saved',

@@ -27,7 +27,15 @@ let abortController = null; // Add abort controller
 // Get current tab ID and network request data
 async function initPage() {
   try {
-    // Get tabId from URL parameters
+    // 首先检查API密钥是否配置
+    const apiConfigured = await checkApiKeyConfiguration();
+    if (!apiConfigured) {
+      // 显示错误提示并禁用页面操作
+      disablePageOperations();
+      return;
+    }
+
+    // 获取tabId从URL参数
     const urlParams = new URLSearchParams(window.location.search);
     currentTabId = parseInt(urlParams.get('tabId'));
 
@@ -565,7 +573,7 @@ function displayAnalysisResult(result, config, elements) {
 }
 
 // Show error information
-function showAnalysisError(message, elements) {
+function showAnalysisError(message, elements, isApiConfigError = false) {
   if (!elements) {
     elements = {
       loading: document.getElementById('analysisLoading'),
@@ -586,7 +594,19 @@ function showAnalysisError(message, elements) {
   elements.error.style.display = 'block';
 
   // Set error information
-  elements.errorText.textContent = message;
+  if (isApiConfigError) {
+    const apiConfigMissing = document.getElementById('apiConfigMissing');
+    if (apiConfigMissing) {
+      apiConfigMissing.style.display = 'flex';
+      elements.error.style.display = 'none';
+    } else {
+      // 如果没有找到专门的错误提示区域，则回退到普通错误提示
+      elements.error.style.display = 'block';
+      elements.errorText.textContent = message;
+    }
+  } else {
+    elements.errorText.textContent = message;
+  }
 }
 
 // Use similar Markdown format to format analysis text
@@ -1253,6 +1273,12 @@ async function init() {
     // Set event handlers
     setupEventHandlers();
 
+    // 设置打开设置页面的点击事件
+    const openOptionsLink = document.getElementById('openOptionsPage');
+    if (openOptionsLink) {
+      openOptionsLink.addEventListener('click', openOptionsPage);
+    }
+
     console.log('AI analysis page initialized, waiting for user to click run analysis');
   } catch (error) {
     console.error('Error initializing AI analysis page:', error);
@@ -1337,5 +1363,77 @@ function setupEventHandlers() {
         window.open(chrome.runtime.getURL('options.html'));
       }
     });
+  }
+}
+
+/**
+ * 检查API密钥配置
+ */
+async function checkApiKeyConfiguration() {
+  return new Promise(resolve => {
+    chrome.storage.sync.get(['apiKey', 'openaiApiKey'], result => {
+      const apiKey = result.apiKey || result.openaiApiKey || '';
+      if (!apiKey) {
+        const errorMsg =
+          I18n.getText('configRequired') ||
+          'API key not configured. Please configure API key in settings page.';
+        showAnalysisError(errorMsg, null, true);
+        console.error('API key not configured');
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    });
+  });
+}
+
+/**
+ * 禁用页面操作
+ */
+function disablePageOperations() {
+  // 禁用运行分析按钮
+  const runBtn = document.getElementById('runAiAnalysisBtn');
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.classList.add('disabled');
+  }
+
+  // 禁用标签页选择器
+  const tabSelector = document.querySelector('.tab-selector-wrapper');
+  if (tabSelector) {
+    tabSelector.style.opacity = '0.5';
+    tabSelector.style.pointerEvents = 'none';
+  }
+
+  // 禁用操作按钮
+  const actionButtons = document.querySelectorAll('.action-btn');
+  actionButtons.forEach(btn => {
+    btn.disabled = true;
+    btn.classList.add('disabled');
+  });
+
+  // 显示设置链接高亮提示
+  const settingsLink = document.getElementById('openOptionsPage');
+  if (settingsLink) {
+    settingsLink.classList.add('highlight-link');
+    settingsLink.style.animation = 'pulse 1.5s infinite';
+  }
+
+  // 设置API错误提示区域按钮点击事件
+  const configBtn = document.getElementById('openOptionsPageFromError');
+  if (configBtn) {
+    configBtn.addEventListener('click', openOptionsPage);
+  }
+}
+
+/**
+ * 打开设置页面
+ */
+function openOptionsPage(e) {
+  if (e) e.preventDefault();
+  if (chrome.runtime.openOptionsPage) {
+    chrome.runtime.openOptionsPage();
+  } else {
+    window.open(chrome.runtime.getURL('options.html'));
   }
 }

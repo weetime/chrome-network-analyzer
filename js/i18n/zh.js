@@ -54,6 +54,7 @@ if (typeof window !== 'undefined') {
     apiUrl: '自定义 API 地址',
     enterApiUrl: '输入自定义 API 地址（可选）',
     configRequired: 'API 密钥未配置。请在设置页面配置 API 密钥。',
+    configureNow: '立即配置',
 
     // 界面设置
     interfaceSettings: '界面设置',

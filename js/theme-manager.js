@@ -20,7 +20,7 @@ function loadTheme() {
     } else {
       // 如果 Storage 中没有设置，则使用 localStorage 中的设置
       const savedTheme =
-        localStorage.getItem('networkAnalyzerTheme') || localStorage.getItem('theme') || 'light';
+        localStorage.getItem('networkAnalyzerTheme') || localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
 
       // 将设置同步到 Chrome Storage

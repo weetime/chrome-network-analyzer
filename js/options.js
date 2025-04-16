@@ -445,6 +445,13 @@ async function testApiConnection() {
     </svg> ${I18n.getText('connectionSuccess')}`;
     apiTestResult.className = 'api-test-result api-test-success';
 
+    // 成功消息在3秒后自动隐藏
+    setTimeout(() => {
+      if (apiTestResult.className.includes('api-test-success')) {
+        apiTestResult.style.display = 'none';
+      }
+    }, 3000);
+
     console.log('API test result:', result);
     return true;
   } catch (error) {

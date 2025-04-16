@@ -362,10 +362,108 @@ function initSettingsSave() {
 
   if (!saveAISettingsBtn) return;
 
-  saveAISettingsBtn.addEventListener('click', function () {
-    // Save AI settings
-    saveAISettings();
+  // 测试并保存按钮事件
+  saveAISettingsBtn.addEventListener('click', async function () {
+    // 先测试API连接，成功后再保存设置
+    const success = await testApiConnection();
+    if (success) {
+      // 如果测试成功，保存设置
+      saveAISettings();
+    }
   });
+}
+
+/**
+ * Test API connection with current settings
+ * @returns {Promise<boolean>} 测试是否成功
+ */
+async function testApiConnection() {
+  // Get current settings
+  const provider = document.getElementById('aiProvider').value;
+  const model = document.getElementById('aiModel').value;
+  const apiKey = document.getElementById('aiApiKey').value;
+  const apiUrl = document.getElementById('aiApiUrl').value;
+
+  // Get result display element
+  const apiTestResult = document.getElementById('apiTestResult');
+
+  // 获取保存按钮元素
+  const saveBtn = document.getElementById('saveAISettingsBtn');
+
+  // Validate API key
+  if (!apiKey || apiKey.trim() === '') {
+    apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"></line>
+      <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"></line>
+    </svg> ${I18n.getText('apiKeyRequired')}`;
+    apiTestResult.className = 'api-test-result api-test-error';
+    apiTestResult.style.display = 'flex';
+    return false;
+  }
+
+  // Change button state to loading
+  const originalBtnText = saveBtn.innerHTML;
+  saveBtn.innerHTML = `
+    <span>${I18n.getText('testing')}</span>
+    <div class="button-spinner"></div>
+  `;
+  saveBtn.classList.add('button-with-spinner');
+  saveBtn.disabled = true;
+
+  // Show loading state
+  apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
+    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+  </svg> ${I18n.getText('testingConnection')}`;
+  apiTestResult.className = 'api-test-result api-test-loading';
+  apiTestResult.style.display = 'flex';
+
+  try {
+    // Update API URL settings (if provided)
+    if (apiUrl) {
+      const providerKey = provider.toUpperCase();
+      AiConnector.setCustomApiUrl(providerKey, apiUrl);
+    }
+
+    // Create a simple test data payload
+    const testData = {
+      testMessage: 'Hello, this is a connection test from Chrome Network Analyzer.',
+      timestamp: new Date().toISOString(),
+    };
+
+    // Call the API with a small test payload
+    const result = await AiConnector.sendToAI(testData, provider, apiKey, model, {
+      test: true,
+      maxTokens: 50,
+    });
+
+    // Display success
+    apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg> ${I18n.getText('connectionSuccess')}`;
+    apiTestResult.className = 'api-test-result api-test-success';
+
+    console.log('API test result:', result);
+    return true;
+  } catch (error) {
+    // Display error
+    apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
+      <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"></line>
+      <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"></line>
+    </svg> ${I18n.getText('connectionError')}: ${error.message}`;
+    apiTestResult.className = 'api-test-result api-test-error';
+
+    console.error('API test error:', error);
+    return false;
+  } finally {
+    // Restore button state
+    saveBtn.innerHTML = originalBtnText;
+    saveBtn.classList.remove('button-with-spinner');
+    saveBtn.disabled = false;
+  }
 }
 
 /**

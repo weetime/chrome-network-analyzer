@@ -20,6 +20,15 @@ if (typeof window !== 'undefined') {
     disable: 'Disable',
     close: 'Close',
 
+    // API Testing Feature
+    testApi: 'Test API Connection',
+    testing: 'Testing...',
+    testingConnection: 'Testing connection...',
+    connectionSuccess: 'Connection successful! API is working.',
+    connectionError: 'Connection error',
+    apiKeyRequired: 'API key is required',
+    testAndSave: 'Test & Save',
+
     // App name
     appName: 'Network Request Analyzer',
 

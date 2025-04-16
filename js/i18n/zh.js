@@ -20,6 +20,15 @@ if (typeof window !== 'undefined') {
     disable: '禁用',
     close: '关闭',
 
+    // API测试功能
+    testApi: '测试API连接',
+    testing: '正在测试...',
+    testingConnection: '正在测试连接...',
+    connectionSuccess: '连接成功！API正常工作。',
+    connectionError: '连接错误',
+    apiKeyRequired: 'API密钥不能为空',
+    testAndSave: '测试并保存',
+
     // 应用名称
     appName: '网络请求分析器',
 

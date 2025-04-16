@@ -405,6 +405,33 @@
   text-decoration: underline;
 }
 
+/* 高亮设置链接 */
+.highlight-link {
+  color: var(--primary-btn) !important;
+  font-weight: 600;
+  text-decoration: underline !important;
+  position: relative;
+}
+
+/* 禁用状态的按钮样式增强 */
+.action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--hover-effect-rgb), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(var(--hover-effect-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--hover-effect-rgb), 0);
+  }
+}
+
 /* 进度条样式 */
 .progress-container {
   width: 100%;
@@ -1081,4 +1108,89 @@ body.tech-bg {
 .compact-layout .ai-stop-btn {
   padding: 8px 12px;
   font-size: 13px;
+}
+
+/* API配置缺失提示样式 */
+.api-config-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  background-color: rgba(255, 76, 76, 0.05);
+  border: 1px solid var(--error-color);
+  border-radius: var(--card-radius);
+  margin: 20px 0;
+  text-align: center;
+  color: var(--error-color);
+}
+
+.api-config-missing svg {
+  margin-bottom: 15px;
+  stroke: var(--error-color);
+}
+
+.api-config-missing h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.api-config-missing p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 500px;
+}
+
+.config-now-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background-color: var(--primary-btn);
+  color: white;
+  border-radius: var(--card-radius);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: none;
+  cursor: pointer;
+  animation: pulse 1.5s infinite;
+}
+
+.config-now-btn:hover {
+  background-color: var(--primary-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme='dark'] .api-config-missing {
+  background-color: rgba(255, 76, 76, 0.1);
+}
+
+[data-theme='dark'] .config-now-btn {
+  box-shadow: var(--neon-glow);
+}
+
+[data-theme='fireblack'] .api-config-missing {
+  background-color: rgba(26, 19, 13, 0.85);
+  border: 1px solid rgba(255, 85, 0, 0.5);
+}
+
+[data-theme='fireblack'] .api-config-missing h3,
+[data-theme='fireblack'] .api-config-missing p {
+  color: #ff7e00;
+}
+
+[data-theme='fireblack'] .api-config-missing svg {
+  stroke: #ff7e00;
+}
+
+[data-theme='fireblack'] .config-now-btn {
+  background: linear-gradient(90deg, #ff3300, #ff7700);
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.3);
+}
+
+[data-theme='fireblack'] .config-now-btn:hover {
+  box-shadow: 0 0 20px rgba(255, 85, 0, 0.5);
 }

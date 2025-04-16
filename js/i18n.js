@@ -6,7 +6,7 @@
 const SUPPORTED_LANGUAGES = ['zh', 'en'];
 
 // Default language
-const DEFAULT_LANGUAGE = 'zh';
+const DEFAULT_LANGUAGE = 'en';
 
 // Declare MutationObserver variable
 let i18nObserver = null;

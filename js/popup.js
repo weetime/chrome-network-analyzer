@@ -294,7 +294,11 @@ async function initPopup() {
   chrome.tabs.query({ active: true, currentWindow: true }, async tabs => {
     if (tabs.length > 0) {
       currentTabId = tabs[0].tabId || tabs[0].id;
-      const domain = new URL(tabs[0].url).hostname;
+      let domain = '';
+
+      if (tabs[0].url && tabs[0].url.startsWith('http')) {
+        domain = new URL(tabs[0].url).hostname;
+      }
 
       console.log(`Current tab: ${currentTabId}, Domain: ${domain}`);
 

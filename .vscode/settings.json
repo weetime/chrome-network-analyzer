@@ -8,5 +8,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "eslint.validate": ["javascript"],
-  "prettier.requireConfig": true
+  "prettier.requireConfig": true,
+  "[ignore]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

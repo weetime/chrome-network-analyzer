@@ -3,7 +3,6 @@ node_modules/
 npm-debug.log
 yarn-error.log
 yarn-debug.log
-package-lock.json
 
 # 构建文件
 dist/
@@ -27,3 +26,9 @@ coverage/
 # 临时文件
 tmp/
 temp/
+
+.cursor
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/extensions.jsons

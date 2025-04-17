@@ -1,7 +1,7 @@
 # Network Request Analyzer
 
 <div align="center">
-  <img src="images/icon128.png" alt="Network Request Analyzer Logo" width="128" height="128">
+  <img src="src/images/icon128.png" alt="Network Request Analyzer Logo" width="128" height="128">
 </div>
 
 🚀 A powerful Chrome extension for analyzing network requests with AI-powered insights!
@@ -13,6 +13,7 @@
 ## 🌟 Features
 
 ### Network Request Analysis
+
 - Real-time monitoring of all HTTP/HTTPS requests
 - Detailed timing breakdown (DNS, TCP, TLS, TTFB, etc.)
 - Request/response headers and payload inspection
@@ -20,11 +21,12 @@
 - Performance metrics and statistics
 
 <div align="center">
-  <img src="images/light.jpg" alt="Network Analysis Light Theme" width="600">
+  <img src="src/images/light.jpg" alt="Network Analysis Light Theme" width="600">
   <p><em>Network Analysis Interface - Light Theme</em></p>
 </div>
 
 ### AI-Powered Insights
+
 - Intelligent performance bottleneck detection
 - Security risk assessment
 - Optimization recommendations
@@ -32,11 +34,12 @@
 - Multiple AI provider support (OpenAI, Anthropic, Deepseek)
 
 <div align="center">
-  <img src="images/ai-analysis.jpg" alt="AI Analysis Interface" width="600">
+  <img src="src/images/ai-analysis.jpg" alt="AI Analysis Interface" width="600">
   <p><em>AI-Powered Analysis Interface</em></p>
 </div>
 
 ### Advanced Features
+
 - Domain-based filtering
 - Custom analysis rules
 - Data export capabilities
@@ -44,7 +47,7 @@
 - Multi-language support
 
 <div align="center">
-  <img src="images/detail.jpg" alt="Request Detail View" width="600">
+  <img src="src/images/detail.jpg" alt="Request Detail View" width="600">
   <p><em>Detailed Request Analysis View</em></p>
 </div>
 
@@ -54,11 +57,11 @@
   <table>
     <tr>
       <td align="center">
-        <img src="images/dark.jpg" alt="Dark Theme" width="400">
+        <img src="src/images/dark.jpg" alt="Dark Theme" width="400">
         <p><em>Dark Theme</em></p>
       </td>
       <td align="center">
-        <img src="images/firedark.jpg" alt="Fire Dark Theme" width="400">
+        <img src="src/images/firedark.jpg" alt="Fire Dark Theme" width="400">
         <p><em>Fire Dark Theme</em></p>
       </td>
     </tr>
@@ -73,11 +76,11 @@ Easily customize your experience with our intuitive settings interface:
   <table>
     <tr>
       <td align="center">
-        <img src="images/setting_01.jpg" alt="Settings Page 1" width="400">
+        <img src="src/images/setting_01.jpg" alt="Settings Page 1" width="400">
         <p><em>General Settings</em></p>
       </td>
       <td align="center">
-        <img src="images/setting_02.jpg" alt="Settings Page 2" width="400">
+        <img src="src/images/setting_02.jpg" alt="Settings Page 2" width="400">
         <p><em>AI Provider Configuration</em></p>
       </td>
     </tr>
@@ -87,9 +90,11 @@ Easily customize your experience with our intuitive settings interface:
 ## 🚀 Installation
 
 ### Chrome Web Store
+
 Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/network-request-analyzer/nbhkalnbmfkedmigpehagkcoocogegcp)
 
 ### Developer Mode
+
 1. Clone this repository
 2. Open Chrome Extensions page (chrome://extensions/)
 3. Enable "Developer mode"
@@ -99,12 +104,14 @@ Install directly from the [Chrome Web Store](https://chromewebstore.google.com/d
 ## 🔧 Configuration
 
 ### AI Provider Setup
+
 1. Open extension options
 2. Select your preferred AI provider
 3. Enter your API key
 4. Configure additional provider settings
 
 ### Display Settings
+
 - Theme selection (Light/Dark)
 - Table column customization
 - Statistics display options
@@ -113,10 +120,12 @@ Install directly from the [Chrome Web Store](https://chromewebstore.google.com/d
 ## 💻 Development
 
 ### Prerequisites
+
 - Node.js 14+
 - Chrome Browser
 
 ### Setup
+
 ```bash
 # Install dependencies
 npm install
@@ -126,6 +135,7 @@ npm install
 ```
 
 ### Project Structure
+
 See [project-structure.md](project-structure.md) for detailed project structure documentation.
 
 ## 🤝 Contributing
@@ -139,6 +149,7 @@ See [project-structure.md](project-structure.md) for detailed project structure 
 ## 📝 Documentation
 
 ### User Documentation
+
 - [Getting Started Guide](docs/user-guide.md#getting-started)
 - [Basic Usage](docs/user-guide.md#basic-usage)
 - [Advanced Features](docs/user-guide.md#advanced-features)
@@ -146,6 +157,7 @@ See [project-structure.md](project-structure.md) for detailed project structure 
 - [Troubleshooting](docs/user-guide.md#troubleshooting)
 
 ### Developer Documentation
+
 - [API Reference](docs/api.md)
 - [Development Setup](docs/development.md#development-setup)
 - [Project Structure](project-structure.md)
@@ -153,6 +165,7 @@ See [project-structure.md](project-structure.md) for detailed project structure 
 - [Testing Guidelines](docs/development.md#testing-guidelines)
 
 ### Additional Resources
+
 - [Performance Optimization](docs/development.md#performance-optimization)
 - [Security Guidelines](docs/development.md#security-guidelines)
 - [Release Process](docs/development.md#deployment)
@@ -161,6 +174,7 @@ See [project-structure.md](project-structure.md) for detailed project structure 
 ## 🔒 Privacy
 
 This extension:
+
 - Does not collect or use your data for unauthorized purposes
 - Does not sell data to third parties
 - Does not transfer data for purposes unrelated to core functionality

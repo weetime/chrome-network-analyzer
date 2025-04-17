@@ -8,37 +8,37 @@
   "optional_permissions": ["tabs"],
   "host_permissions": ["<all_urls>"],
   "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png"
+    "16": "src/images/icon16.png",
+    "48": "src/images/icon48.png",
+    "128": "src/images/icon128.png"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup.html",
     "default_icon": {
-      "16": "images/icon16.png",
-      "48": "images/icon48.png",
-      "128": "images/icon128.png"
+      "16": "src/images/icon16.png",
+      "48": "src/images/icon48.png",
+      "128": "src/images/icon128.png"
     },
     "default_title": "__MSG_appName__"
   },
   "background": {
-    "service_worker": "js/background.js",
+    "service_worker": "src/js/background.js",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["js/content.js"],
+      "js": ["src/js/content.js"],
       "run_at": "document_idle",
       "type": "module"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["ai-analysis.html", "css/*", "js/*", "images/*"],
+      "resources": ["src/ai-analysis.html", "src/css/*", "src/js/*", "src/images/*"],
       "matches": ["<all_urls>"]
     }
   ],
-  "options_page": "options.html",
+  "options_page": "src/options.html",
   "author": "weetime001@gmail.com"
 }

@@ -155,7 +155,7 @@ function setupControlButtons() {
     aiAnalysisToggleBtn.addEventListener('click', () => {
       // Open standalone AI analysis page, and pass current tabId parameter
       chrome.tabs.create({
-        url: chrome.runtime.getURL(`ai-analysis.html?tabId=${currentTabId}`),
+        url: chrome.runtime.getURL(`src/ai-analysis.html?tabId=${currentTabId}`),
       });
     });
   }

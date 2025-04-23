@@ -24,7 +24,7 @@ if (typeof window !== 'undefined') {
     testApi: 'Test API Connection',
     testing: 'Testing...',
     testingConnection: 'Testing connection...',
-    connectionSuccess: 'Connection successful! API is working.',
+    testingApiConnection: 'Testing API connection, please wait...',
     connectionError: 'Connection error',
     apiKeyRequired: 'API key is required',
     testAndSave: 'Test & Save',

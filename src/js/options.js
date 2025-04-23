@@ -384,21 +384,13 @@ async function testApiConnection() {
   const apiKey = document.getElementById('aiApiKey').value;
   const apiUrl = document.getElementById('aiApiUrl').value;
 
-  // Get result display element
-  const apiTestResult = document.getElementById('apiTestResult');
-
-  // 获取保存按钮元素
+  // 获取保存按钮元素和页面遮罩层
   const saveBtn = document.getElementById('saveAISettingsBtn');
+  const pageOverlay = document.getElementById('pageOverlay');
 
   // Validate API key
   if (!apiKey || apiKey.trim() === '') {
-    apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
-      <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"></line>
-      <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"></line>
-    </svg> ${I18n.getText('apiKeyRequired')}`;
-    apiTestResult.className = 'api-test-result api-test-error';
-    apiTestResult.style.display = 'flex';
+    ToastManager.error(I18n.getText('apiKeyRequired'));
     return false;
   }
 
@@ -411,13 +403,14 @@ async function testApiConnection() {
   saveBtn.classList.add('button-with-spinner');
   saveBtn.disabled = true;
 
-  // Show loading state
-  apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
-    <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
-    <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-  </svg> ${I18n.getText('testingConnection')}`;
-  apiTestResult.className = 'api-test-result api-test-loading';
-  apiTestResult.style.display = 'flex';
+  // 显示全屏遮罩，禁止其他操作
+  pageOverlay.classList.add('active');
+
+  // 禁用所有表单输入字段
+  const formInputs = document.querySelectorAll('#aiSettings input, #aiSettings select');
+  formInputs.forEach(input => {
+    input.disabled = true;
+  });
 
   try {
     // Update API URL settings (if provided)
@@ -438,30 +431,11 @@ async function testApiConnection() {
       maxTokens: 50,
     });
 
-    // Display success
-    apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
-      <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-    </svg> ${I18n.getText('connectionSuccess')}`;
-    apiTestResult.className = 'api-test-result api-test-success';
-
-    // 成功消息在3秒后自动隐藏
-    setTimeout(() => {
-      if (apiTestResult.className.includes('api-test-success')) {
-        apiTestResult.style.display = 'none';
-      }
-    }, 3000);
-
     console.log('API test result:', result);
     return true;
   } catch (error) {
-    // Display error
-    apiTestResult.innerHTML = `<svg class="icon" viewBox="0 0 24 24" width="16" height="16">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle>
-      <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"></line>
-      <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"></line>
-    </svg> ${I18n.getText('connectionError')}: ${error.message}`;
-    apiTestResult.className = 'api-test-result api-test-error';
+    // 测试失败显示错误消息
+    ToastManager.error(`${I18n.getText('connectionError')}: ${error.message}`);
 
     console.error('API test error:', error);
     return false;
@@ -470,6 +444,14 @@ async function testApiConnection() {
     saveBtn.innerHTML = originalBtnText;
     saveBtn.classList.remove('button-with-spinner');
     saveBtn.disabled = false;
+
+    // 移除全屏遮罩
+    pageOverlay.classList.remove('active');
+
+    // 恢复所有表单输入字段
+    formInputs.forEach(input => {
+      input.disabled = false;
+    });
   }
 }
 

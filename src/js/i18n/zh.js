@@ -24,7 +24,7 @@ if (typeof window !== 'undefined') {
     testApi: '测试API连接',
     testing: '正在测试...',
     testingConnection: '正在测试连接...',
-    connectionSuccess: '连接成功！API正常工作。',
+    testingApiConnection: '正在测试API连接，请稍候...',
     connectionError: '连接错误',
     apiKeyRequired: 'API密钥不能为空',
     testAndSave: '测试并保存',

@@ -13,6 +13,14 @@
     />
   </head>
   <body>
+    <!-- 加载遮罩层 -->
+    <div id="pageOverlay" class="page-overlay">
+      <div class="loading-message">
+        <div class="spinner"></div>
+        <span data-i18n="testingApiConnection">正在测试API连接，请稍候...</span>
+      </div>
+    </div>
+
     <div class="options-layout">
       <!-- 侧边栏 -->
       <div class="sidebar">
@@ -108,9 +116,6 @@
               />
               <div id="apiUrlError" class="form-error" style="display: none"></div>
             </div>
-
-            <!-- API测试结果显示区域 -->
-            <div id="apiTestResult" class="api-test-result" style="display: none"></div>
 
             <!-- 新增的AI设置保存按钮 -->
             <div class="form-actions">

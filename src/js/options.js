@@ -728,6 +728,9 @@ function updateAIModels(provider) {
     case 'deepseek':
       models = AiConnector.AI_PROVIDERS.DEEPSEEK.models;
       break;
+    case 'openrouter':
+      models = AiConnector.AI_PROVIDERS.OPENROUTER.models;
+      break;
     default:
       models = AiConnector.AI_PROVIDERS.OPENAI.models;
   }

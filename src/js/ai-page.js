@@ -73,7 +73,7 @@ async function initPage() {
     }
   } catch (error) {
     console.error('Error initializing page:', error);
-    ToastManager.showError('Error initializing page: ' + error.message);
+    ToastManager.error('Error initializing page: ' + error.message);
   }
 }
 
@@ -137,7 +137,7 @@ async function loadTabData(tabId) {
     return true;
   } catch (error) {
     console.error('Error loading tab data:', error);
-    ToastManager.showError(`${I18n.getText('tabDataLoadError')}: ${error.message}`);
+    ToastManager.error(`${I18n.getText('tabDataLoadError')}: ${error.message}`);
     return false;
   }
 }
@@ -251,7 +251,7 @@ function updateProgress(percent, elements, statusText) {
 async function runAiAnalysis() {
   // If analysis is already running, do not allow clicking again
   if (isAnalysisRunning) {
-    ToastManager.showError('Analysis is already running, please wait for completion');
+    ToastManager.error('Analysis is already running, please wait for completion');
     return;
   }
 
@@ -397,7 +397,7 @@ function validateAIConfig(config, elements) {
   if (!config.apiKey) {
     const errorMsg = I18n.getText('noApiKeyConfigured');
     showAnalysisError(errorMsg, elements);
-    ToastManager.showError(errorMsg);
+    ToastManager.error(errorMsg);
     elements.loading.style.display = 'none';
     elements.progress.style.display = 'none';
     return false;
@@ -495,7 +495,7 @@ function resetAnalysisState() {
 // Handle analysis error
 function handleAnalysisError(error, elements) {
   showAnalysisError(`AI analysis error: ${error.message}`, elements);
-  ToastManager.showError(`${I18n.getText('aiAnalysisError')}: ${error.message}`);
+  ToastManager.error(`${I18n.getText('aiAnalysisError')}: ${error.message}`);
   elements.loading.style.display = 'none';
   elements.progress.style.display = 'none';
   resetAnalysisState();
@@ -523,7 +523,7 @@ async function getAIConfig() {
 function showNoDataError(elements) {
   const noDataMsg = I18n.getText('noDataAvailable');
   showAnalysisError(noDataMsg, elements);
-  ToastManager.showError(noDataMsg);
+  ToastManager.error(noDataMsg);
   elements.loading.style.display = 'none';
 }
 
@@ -640,7 +640,7 @@ function formatAnalysisText(text) {
 function copyAnalysisResults() {
   const analysisText = document.getElementById('analysisText');
   if (!analysisText || !analysisText.innerHTML) {
-    ToastManager.showError(I18n.getText('noCopyContent'));
+    ToastManager.error(I18n.getText('noCopyContent'));
     return;
   }
 
@@ -654,7 +654,7 @@ function copyAnalysisResults() {
     })
     .catch(err => {
       console.error('Failed to copy analysis results:', err);
-      ToastManager.showError(`${I18n.getText('copyFailed')}: ${err.message}`);
+      ToastManager.error(`${I18n.getText('copyFailed')}: ${err.message}`);
     });
 }
 
@@ -665,7 +665,7 @@ function downloadReport() {
 
   // If no analysis results, show error
   if (!analysisText.innerHTML.trim()) {
-    ToastManager.showError(I18n.getText('noAnalysisResultsToDownload'));
+    ToastManager.error(I18n.getText('noAnalysisResultsToDownload'));
     return;
   }
 
@@ -809,7 +809,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
         `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.json`
       );
     } else {
-      ToastManager.showError(I18n.getText('noDataAvailable'));
+      ToastManager.error(I18n.getText('noDataAvailable'));
     }
     closeDropdown();
   });
@@ -821,7 +821,7 @@ function setupDownloadOptionListeners(dropdown, analysisText, domainName, curren
       const csvData = convertRequestsToCSV(requestsData);
       downloadTextFile(csvData, `${I18n.getText('dataFileName')}-${domainName}-${currentDate}.csv`);
     } else {
-      ToastManager.showError(I18n.getText('noDataAvailable'));
+      ToastManager.error(I18n.getText('noDataAvailable'));
     }
     closeDropdown();
   });
@@ -1282,7 +1282,7 @@ async function init() {
     console.log('AI analysis page initialized, waiting for user to click run analysis');
   } catch (error) {
     console.error('Error initializing AI analysis page:', error);
-    ToastManager.showError(`${I18n.getText('initPageError')}: ${error.message}`);
+    ToastManager.error(`${I18n.getText('initPageError')}: ${error.message}`);
   }
 }
 

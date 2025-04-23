@@ -7,6 +7,7 @@ import { AiConnectorBase, AI_PROVIDERS } from './ai-connector-base.js';
 import { AiOpenAIConnector } from './ai-openai-connector.js';
 import { AiAnthropicConnector } from './ai-anthropic-connector.js';
 import { AiDeepseekConnector } from './ai-deepseek-connector.js';
+import { AiOpenRouterConnector } from './ai-openrouter-connector.js';
 
 /**
  * Send data to the specified AI based on provider
@@ -34,6 +35,14 @@ async function sendToAI(analysisData, provider, apiKey, model, options = {}, max
       return AiAnthropicConnector.sendToAnthropic(analysisData, apiKey, model, maxTokens, options);
     case 'DEEPSEEK':
       return AiDeepseekConnector.sendToDeepseek(analysisData, apiKey, model, maxTokens, options);
+    case 'OPENROUTER':
+      return AiOpenRouterConnector.sendToOpenRouter(
+        analysisData,
+        apiKey,
+        model,
+        maxTokens,
+        options
+      );
     default:
       throw new Error(`Unsupported AI provider: ${provider}`);
   }
@@ -156,6 +165,17 @@ async function streamToAI(
           abortController
         );
         break;
+      case 'OPENROUTER':
+        result = await AiOpenRouterConnector.streamOpenRouter(
+          analysisData,
+          apiKey,
+          model,
+          maxTokens,
+          options,
+          onChunk,
+          abortController
+        );
+        break;
       default:
         throw new Error(`Unsupported AI provider for streaming: ${provider}`);
     }
@@ -192,9 +212,11 @@ export const AiConnectorManager = {
   sendToOpenAI: AiOpenAIConnector.sendToOpenAI,
   sendToAnthropic: AiAnthropicConnector.sendToAnthropic,
   sendToDeepseek: AiDeepseekConnector.sendToDeepseek,
+  sendToOpenRouter: AiOpenRouterConnector.sendToOpenRouter,
   streamOpenAI: AiOpenAIConnector.streamOpenAI,
   streamAnthropic: AiAnthropicConnector.streamAnthropic,
   streamDeepseek: AiDeepseekConnector.streamDeepseek,
+  streamOpenRouter: AiOpenRouterConnector.streamOpenRouter,
 
   // Cache management
   clearAnalysisCache: AiCacheManager.clearCache,

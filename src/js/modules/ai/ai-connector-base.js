@@ -108,6 +108,40 @@ export const AI_PROVIDERS = {
       Authorization: `Bearer ${apiKey}`,
     }),
   },
+
+  // OpenRouter configuration
+  OPENROUTER: {
+    name: 'OpenRouter',
+    models: {
+      'deepseek-chat-v3-0324:free': 'deepseek/deepseek-chat-v3-0324:free',
+      'deepseek-r1-zero:free': 'deepseek/deepseek-r1-zero:free',
+      'qwen-vl-3b-instruct:free': 'qwen/qwen2.5-vl-3b-instruct:free',
+      'qwq-32b-arliai-rpr-v1:free': 'arliai/qwq-32b-arliai-rpr-v1:free',
+      'gemini-2.5-pro-exp-03-25:free': 'google/gemini-2.5-pro-exp-03-25:free',
+    },
+    defaultModel: 'deepseek-chat-v3-0324',
+    defaultApiUrl: 'https://openrouter.ai/api/v1/chat/completions',
+    buildRequest: (model, messages, maxTokens, stream = false) => ({
+      model: model,
+      messages: messages,
+      max_tokens: maxTokens,
+      temperature: 0.3,
+      stream: stream,
+    }),
+    extractResponse: data => data.choices[0].message.content,
+    extractStreamResponse: data => {
+      if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+        return data.choices[0].delta.content;
+      }
+      return '';
+    },
+    buildHeaders: apiKey => ({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': 'https://chrome-network-analyzer.extension',
+      'X-Title': 'Chrome Network Analyzer',
+    }),
+  },
 };
 
 // Configuration constants
@@ -123,6 +157,7 @@ let userApiSettings = {
   OPENAI: AI_PROVIDERS.OPENAI.defaultApiUrl,
   ANTHROPIC: AI_PROVIDERS.ANTHROPIC.defaultApiUrl,
   DEEPSEEK: AI_PROVIDERS.DEEPSEEK.defaultApiUrl,
+  OPENROUTER: AI_PROVIDERS.OPENROUTER.defaultApiUrl,
 };
 
 /**

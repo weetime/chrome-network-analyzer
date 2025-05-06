@@ -55,3 +55,17 @@
   gap: 8px;
   align-items: center;
 }
+
+/* 禁用状态的按钮样式 */
+.btn-minimal.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(70%);
+  box-shadow: none !important;
+}
+
+.btn-minimal.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}

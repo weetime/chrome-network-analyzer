@@ -1302,7 +1302,19 @@ async function init() {
       openOptionsLink.addEventListener('click', openOptionsPage);
     }
 
-    console.log('AI analysis page initialized, waiting for user to click run analysis');
+    // 检查URL参数中是否有自动开始分析的标志
+    const urlParams = new URLSearchParams(window.location.search);
+    const autoStart = urlParams.get('autoStart') === 'true';
+
+    if (autoStart) {
+      console.log('Auto-start parameter detected, automatically running analysis');
+      // 等待一小段时间，确保页面和数据完全加载
+      setTimeout(() => {
+        runAiAnalysis();
+      }, 800);
+    } else {
+      console.log('AI analysis page initialized, waiting for user to click run analysis');
+    }
   } catch (error) {
     console.error('Error initializing AI analysis page:', error);
     ToastManager.error(`${I18n.getText('initPageError')}: ${error.message}`);

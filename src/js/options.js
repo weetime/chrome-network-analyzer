@@ -459,72 +459,91 @@ async function testApiConnection() {
  * Save AI settings
  */
 function saveAISettings() {
-  const aiProvider = document.getElementById('aiProvider').value;
-  const aiModel = document.getElementById('aiModel').value;
+  const provider = document.getElementById('aiProvider').value;
+  const model = document.getElementById('aiModel').value;
   const apiKey = document.getElementById('aiApiKey').value;
   const apiUrl = document.getElementById('aiApiUrl').value;
 
-  // Update API URL settings (if provided)
-  if (apiUrl) {
-    const providerKey = aiProvider.toUpperCase();
-    AiConnector.setCustomApiUrl(providerKey, apiUrl);
+  // Validate required fields
+  if (!apiKey) {
+    ToastManager.error(I18n.getText('apiKeyRequired'));
+    return false;
   }
 
-  // Save to Chrome Storage
+  // Check API URL format if provided
+  if (apiUrl && !isValidURL(apiUrl)) {
+    ToastManager.error(I18n.getText('invalidApiUrl'));
+    return false;
+  }
+
+  // Save settings to Chrome storage
   chrome.storage.sync.set(
     {
-      aiProvider: aiProvider,
-      aiModel: aiModel,
-      apiKey: apiKey,
-      apiUrl: apiUrl,
+      aiProvider: provider,
+      aiModel: model,
+      aiApiKey: apiKey,
+      aiApiUrl: apiUrl,
     },
     function () {
-      ToastManager.success(I18n.getText('aiSettingsSaved'));
-      // Remove pulse effect from save button
-      const saveButton = document.getElementById('saveAISettingsBtn');
-      if (saveButton) saveButton.classList.remove('pulse');
+      ToastManager.success(I18n.getText('settingsSaved'));
     }
   );
+
+  return true;
 }
 
 /**
- * Load AI settings
+ * Load saved AI settings
  */
 function loadAISettings() {
-  chrome.storage.sync.get(
-    ['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'],
-    function (result) {
-      const aiProviderSelect = document.getElementById('aiProvider');
-      const aiModelSelect = document.getElementById('aiModel');
-      const apiKeyInput = document.getElementById('aiApiKey');
-      const apiUrlInput = document.getElementById('aiApiUrl');
+  chrome.storage.sync.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiApiUrl'], function (data) {
+    const aiProviderSelect = document.getElementById('aiProvider');
+    const aiModelSelect = document.getElementById('aiModel');
+    const aiApiKeyInput = document.getElementById('aiApiKey');
+    const aiApiUrlInput = document.getElementById('aiApiUrl');
 
-      // Set AI provider
-      if (result.aiProvider) {
-        aiProviderSelect.value = result.aiProvider;
-        // Update model list for the provider
-        updateAIModels(result.aiProvider);
-      }
+    // Import AI provider information
+    const { AI_PROVIDERS } = AiConnector;
 
-      // Set AI model
-      if (result.aiModel) {
-        aiModelSelect.value = result.aiModel;
-      }
+    // If no AI settings exist (new installation), set default to OpenRouter
+    if (!data.aiProvider) {
+      // Set OpenRouter as default
+      data.aiProvider = 'openrouter';
+      data.aiModel = AI_PROVIDERS.OPENROUTER.defaultModel;
+      data.aiApiKey = AI_PROVIDERS.OPENROUTER.defaultApiKey;
 
-      // Set API key
-      if (result.apiKey) {
-        apiKeyInput.value = result.apiKey;
-      } else if (result.openaiApiKey) {
-        // Backward compatibility for old version settings
-        apiKeyInput.value = result.openaiApiKey;
-      }
-
-      // Set API URL
-      if (result.apiUrl) {
-        apiUrlInput.value = result.apiUrl;
-      }
+      // Save default settings
+      chrome.storage.sync.set({
+        aiProvider: data.aiProvider,
+        aiModel: data.aiModel,
+        aiApiKey: data.aiApiKey,
+      });
     }
-  );
+
+    // Set provider in dropdown
+    if (data.aiProvider && aiProviderSelect) {
+      aiProviderSelect.value = data.aiProvider;
+      // Update model options based on provider
+      updateAIModels(data.aiProvider);
+    }
+
+    // Set model in dropdown
+    if (data.aiModel && aiModelSelect) {
+      // Wait a bit for the models to be loaded
+      setTimeout(() => {
+        aiModelSelect.value = data.aiModel;
+      }, 100);
+    }
+
+    // Set API key and URL
+    if (data.aiApiKey && aiApiKeyInput) {
+      aiApiKeyInput.value = data.aiApiKey;
+    }
+
+    if (data.aiApiUrl && aiApiUrlInput) {
+      aiApiUrlInput.value = data.aiApiUrl;
+    }
+  });
 }
 
 /**
@@ -678,9 +697,25 @@ function initAIProviderSelection() {
     return;
   }
 
+  // Set default provider to OpenRouter if not already selected
+  if (aiProviderSelect.value === '') {
+    aiProviderSelect.value = 'openrouter';
+  }
+
   // Update model list based on selected provider
   aiProviderSelect.addEventListener('change', function () {
     updateAIModels(this.value);
+
+    // If changed to OpenRouter and API key is empty, set default key
+    if (this.value === 'openrouter') {
+      const apiKeyInput = document.getElementById('aiApiKey');
+      if (apiKeyInput && !apiKeyInput.value.trim()) {
+        const defaultKey = AiConnector.AI_PROVIDERS.OPENROUTER.defaultApiKey;
+        if (defaultKey) {
+          apiKeyInput.value = defaultKey;
+        }
+      }
+    }
   });
 
   // Initial model list setup
@@ -729,5 +764,19 @@ function updateAIModels(provider) {
   const providerKey = provider.toUpperCase();
   if (AiConnector.AI_PROVIDERS[providerKey] && AiConnector.AI_PROVIDERS[providerKey].defaultModel) {
     aiModelSelect.value = AiConnector.AI_PROVIDERS[providerKey].defaultModel;
+  }
+}
+
+/**
+ * Validate URL format
+ * @param {string} url - URL to validate
+ * @returns {boolean} True if URL is valid
+ */
+function isValidURL(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
   }
 }

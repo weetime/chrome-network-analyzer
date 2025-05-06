@@ -119,7 +119,8 @@ export const AI_PROVIDERS = {
       'qwq-32b-arliai-rpr-v1:free': 'arliai/qwq-32b-arliai-rpr-v1:free',
       'gemini-2.5-pro-exp-03-25:free': 'google/gemini-2.5-pro-exp-03-25:free',
     },
-    defaultModel: 'deepseek-chat-v3-0324',
+    defaultModel: 'deepseek-chat-v3-0324:free',
+    defaultApiKey: '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',
     defaultApiUrl: 'https://openrouter.ai/api/v1/chat/completions',
     buildRequest: (model, messages, maxTokens, stream = false) => ({
       model: model,

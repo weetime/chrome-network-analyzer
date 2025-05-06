@@ -52,6 +52,8 @@ function setupMessageListeners() {
         TableManager.updateTableData(currentData);
         // Update statistics
         StatsManager.updateStatistics();
+        // Update AI analysis button state
+        updateAiAnalysisButtonState();
 
         // Ensure internationalization updates
         I18n.updatePageText();
@@ -69,6 +71,8 @@ function setupMessageListeners() {
         TableManager.updateTableData(currentData);
         // Update statistics
         StatsManager.updateStatistics();
+        // Update AI analysis button state
+        updateAiAnalysisButtonState();
 
         // Ensure internationalization updates
         I18n.updatePageText();
@@ -94,6 +98,9 @@ function requestNetworkData() {
 
       // Update statistics
       StatsManager.updateStatistics();
+
+      // Update AI analysis button state
+      updateAiAnalysisButtonState();
 
       // Ensure internationalization updates
       I18n.updatePageText();
@@ -153,6 +160,14 @@ function setupControlButtons() {
   const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
   if (aiAnalysisToggleBtn) {
     aiAnalysisToggleBtn.addEventListener('click', () => {
+      // 检查是否有数据
+      const requestData = TableManager.getRequestData();
+      if (Object.keys(requestData).length === 0) {
+        // 如果没有数据，不执行跳转并提示用户
+        ToastManager.error(I18n.getText('noDataForAnalysis') || 'No data available for analysis');
+        return;
+      }
+
       // Open standalone AI analysis page, and pass current tabId parameter
       chrome.tabs.create({
         url: chrome.runtime.getURL(`src/ai-analysis.html?tabId=${currentTabId}&autoStart=true`),
@@ -252,6 +267,9 @@ function clearData() {
 
           // Update statistics
           StatsManager.updateStatistics();
+
+          // Update AI analysis button state
+          updateAiAnalysisButtonState();
 
           // Close any open request details
           try {
@@ -354,6 +372,9 @@ async function initPopup() {
   // Start real-time updates
   startRealTimeUpdates();
 
+  // Update AI analysis button state
+  updateAiAnalysisButtonState();
+
   // Listen for popup close event
   window.addEventListener('beforeunload', function () {
     stopRealTimeUpdates();
@@ -377,9 +398,39 @@ function checkDomainAndLoadData(domain) {
 
       // Hide authorized content
       document.getElementById('authorizedContent').style.display = 'none';
+
+      // 确保AI分析按钮被禁用
+      const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
+      if (aiAnalysisToggleBtn) {
+        aiAnalysisToggleBtn.classList.add('disabled');
+        aiAnalysisToggleBtn.disabled = true;
+        aiAnalysisToggleBtn.title = I18n.getText('domainNotAuthorized') || 'Domain not authorized';
+      }
     }
   });
 }
 
 // Initialize popup when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', initPopup);
+
+// 更新AI分析按钮状态
+function updateAiAnalysisButtonState() {
+  const requestData = TableManager.getRequestData();
+  const hasData = Object.keys(requestData).length > 0;
+  const aiAnalysisToggleBtn = document.getElementById('aiAnalysisToggleBtn');
+
+  if (aiAnalysisToggleBtn) {
+    if (hasData) {
+      // 有数据，启用按钮
+      aiAnalysisToggleBtn.classList.remove('disabled');
+      aiAnalysisToggleBtn.disabled = false;
+      aiAnalysisToggleBtn.title = I18n.getText('aiAnalysis') || 'AI Analysis';
+    } else {
+      // 没有数据，禁用按钮
+      aiAnalysisToggleBtn.classList.add('disabled');
+      aiAnalysisToggleBtn.disabled = true;
+      aiAnalysisToggleBtn.title =
+        I18n.getText('noDataForAnalysis') || 'No data available for analysis';
+    }
+  }
+}

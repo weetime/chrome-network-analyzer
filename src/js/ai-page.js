@@ -27,13 +27,11 @@ let abortController = null; // Add abort controller
 // Get current tab ID and network request data
 async function initPage() {
   try {
-    // 首先检查API密钥是否配置
+    // 首先检查API密钥配置，确保有可用配置
     const apiConfigured = await checkApiKeyConfiguration();
-    if (!apiConfigured) {
-      // 显示错误提示并禁用页面操作
-      disablePageOperations();
-      return;
-    }
+
+    // 由于我们现在会自动设置默认值，不再需要检查apiConfigured是否为false
+    // 但保留此逻辑以便未来可能需要
 
     // 获取tabId从URL参数
     const urlParams = new URLSearchParams(window.location.search);
@@ -320,7 +318,7 @@ async function runAiAnalysis() {
     updateProgress(30, elements, I18n.getText('loadingAiConfig'));
     const config = await getAIConfig();
 
-    if (!validateAIConfig(config, elements)) {
+    if (!(await validateAIConfig(config, elements))) {
       resetAnalysisState();
       return;
     }
@@ -393,14 +391,39 @@ async function ensureRequestData(elements) {
 }
 
 // Validate AI configuration
-function validateAIConfig(config, elements) {
+async function validateAIConfig(config, elements) {
   if (!config.apiKey) {
-    const errorMsg = I18n.getText('noApiKeyConfigured');
-    showAnalysisError(errorMsg, elements);
-    ToastManager.error(errorMsg);
-    elements.loading.style.display = 'none';
-    elements.progress.style.display = 'none';
-    return false;
+    // 如果没有API密钥，尝试获取默认配置
+    console.log('No API key in config, trying to get default configuration');
+
+    // 从AiConnector获取默认配置
+    const { AI_PROVIDERS } = AiConnector;
+    const defaultApiKey = AI_PROVIDERS.OPENROUTER.defaultApiKey;
+
+    if (defaultApiKey) {
+      // 使用默认API密钥更新配置
+      config.apiKey = defaultApiKey;
+      config.provider = 'openrouter';
+      config.model = AI_PROVIDERS.OPENROUTER.defaultModel;
+
+      // 保存配置到存储
+      chrome.storage.sync.set({
+        aiProvider: config.provider,
+        aiModel: config.model,
+        aiApiKey: config.apiKey,
+      });
+
+      console.log('Applied default OpenRouter configuration for analysis');
+      return true;
+    } else {
+      // 无法获取默认API密钥，显示错误
+      const errorMsg = I18n.getText('noApiKeyConfigured');
+      showAnalysisError(errorMsg, elements);
+      ToastManager.error(errorMsg);
+      elements.loading.style.display = 'none';
+      elements.progress.style.display = 'none';
+      return false;
+    }
   }
   return true;
 }
@@ -504,18 +527,30 @@ function handleAnalysisError(error, elements) {
 // Get AI configuration
 async function getAIConfig() {
   return new Promise(resolve => {
-    chrome.storage.sync.get(
-      ['aiProvider', 'aiModel', 'apiKey', 'apiUrl', 'openaiApiKey'],
-      result => {
-        const config = {
-          provider: result.aiProvider || 'openai',
-          apiKey: result.apiKey || result.openaiApiKey || '',
-          model: result.aiModel || 'gpt-4-turbo',
-          apiUrl: result.apiUrl || '',
-        };
-        resolve(config);
+    chrome.storage.sync.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiApiUrl'], result => {
+      // 从AiConnector获取默认配置信息
+      const { AI_PROVIDERS } = AiConnector;
+
+      const config = {
+        provider: result.aiProvider || 'openrouter',
+        apiKey: result.aiApiKey || AI_PROVIDERS.OPENROUTER.defaultApiKey || '',
+        model:
+          result.aiModel || AI_PROVIDERS.OPENROUTER.defaultModel || 'deepseek-chat-v3-0324:free',
+        apiUrl: result.aiApiUrl || '',
+      };
+
+      // 如果没有设置提供商或apiKey，自动保存默认配置
+      if (!result.aiProvider || !result.aiApiKey) {
+        chrome.storage.sync.set({
+          aiProvider: config.provider,
+          aiModel: config.model,
+          aiApiKey: config.apiKey,
+        });
+        console.log('Saved default OpenRouter configuration');
       }
-    );
+
+      resolve(config);
+    });
   });
 }
 
@@ -594,19 +629,7 @@ function showAnalysisError(message, elements, isApiConfigError = false) {
   elements.error.style.display = 'block';
 
   // Set error information
-  if (isApiConfigError) {
-    const apiConfigMissing = document.getElementById('apiConfigMissing');
-    if (apiConfigMissing) {
-      apiConfigMissing.style.display = 'flex';
-      elements.error.style.display = 'none';
-    } else {
-      // 如果没有找到专门的错误提示区域，则回退到普通错误提示
-      elements.error.style.display = 'block';
-      elements.errorText.textContent = message;
-    }
-  } else {
-    elements.errorText.textContent = message;
-  }
+  elements.errorText.textContent = message;
 }
 
 // Use similar Markdown format to format analysis text
@@ -1296,16 +1319,6 @@ async function initI18n() {
   }
 }
 
-// Initialize AI provider and model display
-async function initAIProviderDisplay() {
-  try {
-    const config = await getAIConfig();
-    updateAIProviderDisplay(config);
-  } catch (error) {
-    console.error('Error initializing AI provider display:', error);
-  }
-}
-
 // Set event handlers
 function setupEventHandlers() {
   // Back to main page button
@@ -1371,16 +1384,35 @@ function setupEventHandlers() {
  */
 async function checkApiKeyConfiguration() {
   return new Promise(resolve => {
-    chrome.storage.sync.get(['apiKey', 'openaiApiKey'], result => {
-      const apiKey = result.apiKey || result.openaiApiKey || '';
+    chrome.storage.sync.get(['aiApiKey', 'aiProvider', 'aiModel'], result => {
+      const apiKey = result.aiApiKey || '';
+
+      // 如果没有配置API密钥，自动配置默认的OpenRouter设置
       if (!apiKey) {
-        const errorMsg =
-          I18n.getText('configRequired') ||
-          'API key not configured. Please configure API key in settings page.';
-        showAnalysisError(errorMsg, null, true);
-        console.error('API key not configured');
-        resolve(false);
+        console.log('API key not configured, setting up default OpenRouter configuration');
+
+        // 从AiConnector获取默认配置
+        const { AI_PROVIDERS } = AiConnector;
+        const defaultProvider = 'openrouter';
+        const defaultModel = AI_PROVIDERS.OPENROUTER.defaultModel;
+        const defaultApiKey = AI_PROVIDERS.OPENROUTER.defaultApiKey;
+
+        // 保存默认设置到存储
+        chrome.storage.sync.set(
+          {
+            aiProvider: defaultProvider,
+            aiModel: defaultModel,
+            aiApiKey: defaultApiKey,
+          },
+          () => {
+            console.log('Default OpenRouter configuration applied successfully');
+
+            // 自动配置成功，返回true
+            resolve(true);
+          }
+        );
       } else {
+        // 已配置API密钥，直接返回true
         resolve(true);
       }
     });
@@ -1435,5 +1467,32 @@ function openOptionsPage(e) {
     chrome.runtime.openOptionsPage();
   } else {
     window.open(chrome.runtime.getURL('options.html'));
+  }
+}
+
+// Initialize AI provider and model display
+async function initAIProviderDisplay() {
+  try {
+    // 获取AI配置，这会自动应用默认值
+    await checkApiKeyConfiguration();
+    const config = await getAIConfig();
+    updateAIProviderDisplay(config);
+
+    // 确保显示AI提供商名称和模型
+    const analysisProvider = document.getElementById('analysisProvider');
+    const analysisModel = document.getElementById('analysisModel');
+
+    if (analysisProvider && analysisModel) {
+      if (!analysisProvider.textContent || analysisProvider.textContent === 'OpenAI') {
+        const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+        analysisProvider.textContent = providerName;
+      }
+
+      if (!analysisModel.textContent || analysisModel.textContent === 'GPT-4') {
+        analysisModel.textContent = config.model;
+      }
+    }
+  } catch (error) {
+    console.error('Error initializing AI provider display:', error);
   }
 }

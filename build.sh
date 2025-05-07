@@ -18,14 +18,22 @@ fi
 TMP_DIR=$(mktemp -d)
 echo "创建临时目录: $TMP_DIR"
 
+# 复制manifest.json到临时目录
+echo "复制manifest.json..."
+cp manifest.json $TMP_DIR/
+
+# 创建src目录结构
+echo "创建src目录结构..."
+mkdir -p "$TMP_DIR/src"
+
 # 复制所需的主要文件到临时目录
 echo "复制主要文件..."
-cp -r manifest.json popup.html options.html ai-analysis.html $TMP_DIR/
-cp -r js css _locales $TMP_DIR/
+cp -r src/popup.html src/options.html src/ai-analysis.html "$TMP_DIR/src/"
+cp -r src/js src/css "$TMP_DIR/src/"
 
 # 创建images目录并只复制必要的图片
 echo "只复制必要的图片..."
-mkdir -p "$TMP_DIR/images"
+mkdir -p "$TMP_DIR/src/images"
 
 # 列出需要的图片文件
 REQUIRED_IMAGES=(
@@ -36,25 +44,28 @@ REQUIRED_IMAGES=(
 
 # 复制必要的图片文件
 for img in "${REQUIRED_IMAGES[@]}"; do
-  if [ -f "images/$img" ]; then
-    cp "images/$img" "$TMP_DIR/images/"
+  if [ -f "src/images/$img" ]; then
+    cp "src/images/$img" "$TMP_DIR/src/images/"
   fi
 done
 
 # 确保复制manifest.json中引用的所有图像
 echo "确保复制manifest.json中引用的图像..."
-MANIFEST_IMAGES=$(grep -o '"[^"]*\.\(png\|jpg\|jpeg\|svg\|gif\)"' manifest.json | tr -d '"')
+MANIFEST_IMAGES=$(grep -o '"src/[^"]*\.\(png\|jpg\|jpeg\|svg\|gif\)"' manifest.json | tr -d '"')
 for img in $MANIFEST_IMAGES; do
-  # 检查图像路径是否包含"images/"
-  if [[ $img == images/* ]]; then
-    img_name=${img#images/}
+  if [ -f "$img" ]; then
     # 确保目标目录存在
-    mkdir -p "$TMP_DIR/$(dirname $img)"
-    if [ -f "$img" ]; then
-      cp "$img" "$TMP_DIR/$img"
-    fi
+    target_dir="$TMP_DIR/$(dirname $img)"
+    mkdir -p "$target_dir"
+    cp "$img" "$TMP_DIR/$img"
   fi
 done
+
+# 复制_locales目录
+echo "复制_locales目录..."
+if [ -d "_locales" ]; then
+  cp -r _locales "$TMP_DIR/"
+fi
 
 # 移动到临时目录并创建zip
 echo "创建ZIP包: $OUTPUT_ZIP"

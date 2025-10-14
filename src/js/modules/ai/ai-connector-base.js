@@ -113,14 +113,13 @@ export const AI_PROVIDERS = {
   OPENROUTER: {
     name: 'OpenRouter',
     models: {
-      'deepseek-chat-v3-0324:free': 'deepseek/deepseek-chat-v3-0324:free',
-      'deepseek-r1-zero:free': 'deepseek/deepseek-r1-zero:free',
-      'qwen-vl-3b-instruct:free': 'qwen/qwen2.5-vl-3b-instruct:free',
-      'qwq-32b-arliai-rpr-v1:free': 'arliai/qwq-32b-arliai-rpr-v1:free',
-      'gemini-2.5-pro-exp-03-25:free': 'google/gemini-2.5-pro-exp-03-25:free',
+      'deepseek/deepseek-chat-v3.1:free': 'deepseek/deepseek-chat-v3.1:free',
+      'deepseek/deepseek-r1-0528:free': 'deepseek/deepseek-r1-0528:free',
+      'qwen/qwen3-235b-a22b:free': 'qwen/qwen3-235b-a22b:free',
+      'google/gemini-2.0-flash-exp:free': 'google/gemini-2.0-flash-exp:free',
     },
-    defaultModel: 'deepseek-chat-v3-0324:free',
-    defaultApiKey: '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',
+    defaultModel: 'deepseek/deepseek-chat-v3.1:free',
+    defaultApiKey: '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',
     defaultApiUrl: 'https://openrouter.ai/api/v1/chat/completions',
     buildRequest: (model, messages, maxTokens, stream = false) => ({
       model: model,
